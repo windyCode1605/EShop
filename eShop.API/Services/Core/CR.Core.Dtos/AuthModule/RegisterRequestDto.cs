@@ -1,0 +1,1 @@
+namespace CR.Core.Dtos.Auth;
