@@ -48,9 +48,9 @@ public class Result
     /// Constructor cho kết quả thất bại đầu tiên trong stack trace
     /// nhận thêm data trả ra
     /// </summary>
-    /// <param name="errorCode"></param>
-    /// <param name="stackTrace"></param>
-    /// <param name="otherData"></param>
+    /// <param name="errorCode"> Mã lỗi </param>
+    /// <param name="stackTrace"> Stack trace </param>
+    /// <param name="otherData"> Dữ liệu khác </param>
     protected Result(int errorCode, string stackTrace, object otherData)
         : this(errorCode, stackTrace)
     {
@@ -61,10 +61,10 @@ public class Result
     /// Constructor cho kết quả thất bại đầu tiên trong stack trace
     /// nhận thêm data trả ra và list param phục vụ cho localization
     /// </summary>
-    /// <param name="errorCode"></param>
-    /// <param name="stackTrace"></param>
-    /// <param name="otherData"></param>
-    /// <param name="listParam"></param>
+    /// <param name="errorCode"> Mã lỗi </param>
+    /// <param name="stackTrace"> Stack trace </param>
+    /// <param name="otherData"> Dữ liệu khác </param>
+    /// <param name="listParam"> Danh sách tham số cho localization </param>
     protected Result(int errorCode, string stackTrace, object otherData, params string[] listParam)
         : this(errorCode, stackTrace, otherData)
     {
@@ -75,9 +75,9 @@ public class Result
     /// Constructor cho kết quả thất bại đầu tiên trong stack trace
     /// nhận thêm list param phục vụ cho localization
     /// </summary>
-    /// <param name="errorCode"></param>
-    /// <param name="stackTrace"></param>
-    /// <param name="listParam"></param>
+    /// <param name="errorCode"> Mã lỗi </param>
+    /// <param name="stackTrace"> Stack trace </param>
+    /// <param name="listParam"> Danh sách tham số cho localization </param>
     protected Result(int errorCode, string stackTrace, params string[] listParam)
         : this(errorCode, stackTrace)
     {
@@ -107,8 +107,8 @@ public class Result
     /// <summary>
     /// Method để báo lỗi đầu tiên
     /// </summary>
-    /// <param name="errorCode"></param>
-    /// <param name="stackTrace"></param>
+    /// <param name="errorCode"> Mã lỗi </param>
+    /// <param name="stackTrace"> Stack trace </param>
     /// <returns></returns>
     public static Result Failure(int errorCode, string stackTrace)
     {
@@ -118,9 +118,9 @@ public class Result
     /// <summary>
     /// Method để báo lỗi đầu tiên và thêm thông tin khác
     /// </summary>
-    /// <param name="errorCode"></param>
-    /// <param name="stackTrace"></param>
-    /// <param name="otherData"></param>
+    /// <param name="errorCode"> Mã lỗi </param>
+    /// <param name="stackTrace"> Stack trace </param>
+    /// <param name="otherData"> Dữ liệu khác </param>
     /// <returns></returns>
     public static Result Failure(int errorCode, string stackTrace, object otherData)
     {
@@ -130,9 +130,9 @@ public class Result
     /// <summary>
     /// Method để báo lỗi đầu tiên và thêm thông tin khác
     /// </summary>
-    /// <param name="errorCode"></param>
-    /// <param name="stackTrace"></param>
-    /// <param name="listParam"></param>
+    /// <param name="errorCode"> Mã lỗi </param>
+    /// <param name="stackTrace"> Stack trace </param>
+    /// <param name="listParam"> Danh sách tham số cho localization </param>
     /// <returns></returns>
     public static Result Failure(int errorCode, string stackTrace, params string[] listParam)
     {
@@ -142,10 +142,10 @@ public class Result
     /// <summary>
     /// Method để báo lỗi đầu tiên và thêm thông tin khác
     /// </summary>
-    /// <param name="errorCode"></param>
-    /// <param name="stackTrace"></param>
-    /// <param name="otherData"></param>
-    /// <param name="listParam"></param>
+    /// <param name="errorCode"> Mã lỗi </param>
+    /// <param name="stackTrace"> Stack trace </param>
+    /// <param name="otherData"> Dữ liệu khác </param>
+    /// <param name="listParam"> Danh sách tham số cho localization </param>
     /// <returns></returns>
     public static Result Failure(
         int errorCode,
@@ -168,9 +168,9 @@ public class Result
     /// <summary>
     /// Forward sang hàm Result&lt;T&gt;.Failure(errorCode, stackTrace)
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="errorCode"></param>
-    /// <param name="stackTrace"></param>
+    /// <typeparam name="T"> Kiểu dữ liệu của kết quả </typeparam>
+    /// <param name="errorCode"> Mã lỗi </param>
+    /// <param name="stackTrace"> Stack trace </param>
     /// <returns></returns>
     public static Result<T> Failure<T>(int errorCode, string stackTrace)
     {
@@ -180,8 +180,8 @@ public class Result
     /// <summary>
     /// Forward sang hàm Result&lt;T&gt;.Failure(result)
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="result"></param>
+    /// <typeparam name="T"> Kiểu dữ liệu của kết quả </typeparam>
+    /// <param name="result"> Kết quả lỗi </param>
     /// <returns></returns>
     public static Result<T> Failure<T>(Result result)
     {
@@ -191,7 +191,10 @@ public class Result
     /// <summary>
     /// Forward sang hàm Result&lt;T&gt;.Failure(errorCode, stackTrace, otherData: otherData)
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T"> Kiểu dữ liệu của kết quả </typeparam>
+    /// <param name="errorCode"> Mã lỗi </param>
+    /// <param name="stackTrace"> Stack trace </param>
+    /// <param name="otherData"> Dữ liệu khác </param>
     /// <returns></returns>
     public static Result<T> Failure<T>(int errorCode, string stackTrace, object otherData)
     {
@@ -201,7 +204,10 @@ public class Result
     /// <summary>
     /// Forward sang hàm Result&lt;T&gt;.Failure(errorCode, stackTrace, listParam: listParam)
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T"> Kiểu dữ liệu của kết quả </typeparam>
+    /// <param name="errorCode"> Mã lỗi </param>
+    /// <param name="stackTrace"> Stack trace </param>
+    /// <param name="listParam"> Danh sách tham số cho localization </param>
     /// <returns></returns>
     public static Result<T> Failure<T>(int errorCode, string stackTrace, params string[] listParam)
     {

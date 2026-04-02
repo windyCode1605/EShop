@@ -1,11 +1,11 @@
-# 🛒 eShop — AI-Powered Commerce System
+#  eShop — AI-Powered Commerce System
 
 > **Định vị rõ ràng:** Đây không phải web bán hàng thông thường.  
 > AI là trung tâm vận hành — không phải tính năng bổ sung.
 
 ---
 
-## 📌 Mục lục
+##  Mục lục
 
 1. [Core Value & Định vị hệ thống](#-core-value)
 2. [Kiến trúc tổng thể](#-kiến-trúc-tổng-thể)
@@ -419,7 +419,7 @@ eShop/
 │       └── CR.UserRolePermission/
 │           └── PermissionConstants.cs
 │
-├── 🛠️ Tools/
+├──  Tools/
 │   ├── CR.Migrations/
 │   ├── CR.HostConsole/                   # CLI: seed data, scheduled jobs
 │   └── CR.Project.AppHost/              # Aspire orchestration
@@ -459,7 +459,7 @@ Products ──────────  ProductVectors
                     (embedding vector cho similarity search)
 ```
 
-> 🆕 **Bổ sung so với tài liệu gốc:** `UserBehaviorLogs` và `ProductVectors` là nền tảng bắt buộc cho Recommendation System — thiếu hai bảng này thì feature recommendation không thể triển khai.
+>  **Bổ sung so với tài liệu gốc:** `UserBehaviorLogs` và `ProductVectors` là nền tảng bắt buộc cho Recommendation System — thiếu hai bảng này thì feature recommendation không thể triển khai.
 
 ---
 
@@ -537,7 +537,7 @@ docker run -e 'ACCEPT_EULA=Y' -e 'SA_PASSWORD=YourPassword123' \
 
 ---
 
-## 📡 API Reference
+##  API Reference
 
 ### Authentication
 | Method | Endpoint | Mô tả |
@@ -570,7 +570,7 @@ docker run -e 'ACCEPT_EULA=Y' -e 'SA_PASSWORD=YourPassword123' \
 
 ---
 
-## 🚀 Lộ trình phát triển
+##  Lộ trình phát triển
 
 ### Phase 1 — Nền tảng ✅
 - [x] Clean Architecture setup (.NET 9)
@@ -684,3 +684,15 @@ docker run -e 'ACCEPT_EULA=Y' -e 'SA_PASSWORD=YourPassword123' \
 - Nhận thông tin đơn hàng
 - Cập nhật trạng thái giao hàng
 - API tích hợp
+
+
+
+### Bài toán cốt lõi: Xử lý lượng truy cập (traffic) tăng đột biến trong thời gian ngắn và đảm bảo tính nhất quán của số lượng tồn kho (không bị over-selling).
+
+Điểm nhấn kỹ thuật ăn điểm:
+
+Áp dụng CQRS (Command Query Responsibility Segregation) để tách biệt hoàn toàn luồng đọc (xem sản phẩm, tìm kiếm) và luồng ghi (đặt hàng), giúp tối ưu hóa việc mở rộng độc lập.
+
+Sử dụng Redis Distributed Cache với các pattern như Cache Aside hoặc Write Through để giảm tải database khi user ồ ạt xem sản phẩm flash sale.
+
+Xử lý giao dịch phân tán (Distributed Transactions) khi thanh toán và trừ tồn kho bằng Saga Pattern (sử dụng Choreography hoặc Orchestration) cùng logic hành động bù trừ (compensating actions) nếu có lỗi xảy ra.

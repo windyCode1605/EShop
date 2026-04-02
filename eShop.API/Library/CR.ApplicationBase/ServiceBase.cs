@@ -9,19 +9,19 @@ using CR.Core.ApplicationServices.Common.ServiceImplementations;
 
 namespace CR.ApplicationBase;
 
-public abstract class ServiceBase<TContext> where TContext : DbContext
+public abstract class ServiceBase<TDbContext> : ServiceAbstract where TDbContext : DbContext
 {
-    protected readonly TContext _db;
-    protected readonly ILogger _logger;
-    protected readonly IMapper _mapper;
-    // private CoreDbContext db;
-    // private IMapper mapper;
-
-    protected ServiceBase(TContext db, ILogger logger, IMapper mapper)
+    protected readonly TDbContext _dbContext;
+    protected ServiceBase(ILogger logger, IHttpContextAccessor httpContext)
+        : base(logger, httpContext)
     {
-        _db = db;
-        _logger = logger;
-        _mapper = mapper;
+        _dbContext = httpContext.HttpContext!.RequestServices.GetRequiredService<TDbContext>();
+    }
+    // Constructor: nhận logger, dbContext và localization từ DI container
+    protected ServiceBase( ILogger logger, IHttpContextAccessor httpContext, ILocalization localization)
+    : base(logger, httpContext, localization)
+    {
+        _dbContext = httpContext.HttpContext!.RequestServices.GetRequiredService<TDbContext>();
     }
 
     // protected ServiceBase(CoreDbContext db, ILogger<ProductService> logger, IMapper mapper)
@@ -33,5 +33,5 @@ public abstract class ServiceBase<TContext> where TContext : DbContext
 
     // Helper: lấy tất cả, không lấy soft-deleted
     protected IQueryable<T> QueryActive<T>() where T : BaseEntity
-    => _db.Set<T>().Where(x => !x.IsDeleted);
+    => _dbContext.Set<T>().Where(x => !x.IsDeleted);
 }
