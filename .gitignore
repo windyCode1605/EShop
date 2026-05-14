@@ -1,7 +1,10 @@
-# Local settings
+# Local settings & Environment variables
 appsettings.local.json
 appsettings.*.local.json
 *.local.json
+.env
+.env.local
+.env.*.local
 
 # Logs
 logs/

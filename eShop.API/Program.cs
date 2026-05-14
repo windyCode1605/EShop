@@ -9,6 +9,10 @@ using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models; // Đã thêm thư viện chuẩn cho Swagger
 using OpenIddict.Abstractions;
+using DotNetEnv;
+
+// Load environment variables from .env file
+DotNetEnv.Env.Load();
 
 var builder = WebApplication.CreateBuilder(args);
 

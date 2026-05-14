@@ -6,6 +6,9 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-  <PackageReference Include="StackExchange.Redis" Version="2.x.x" />
+  <ItemGroup>
+    <PackageReference Include="StackExchange.Redis" Version="2.x.x" />
+    <PackageReference Include="dotnet-env" Version="0.1.9" />
+  </ItemGroup>
 
 </Project>
