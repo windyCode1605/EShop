@@ -12,9 +12,83 @@ using OpenIddict.Abstractions;
 using DotNetEnv;
 
 // Load environment variables from .env file
-DotNetEnv.Env.Load();
+var envPath = Path.Combine(AppContext.BaseDirectory, ".env");
+if (!File.Exists(envPath))
+{
+    // Try going up directories from bin
+    envPath = Path.Combine(AppContext.BaseDirectory, "..", "..", "..", ".env");
+}
+
+Console.WriteLine($"[DEBUG] Looking for .env at: {Path.GetFullPath(envPath)}");
+
+if (File.Exists(envPath))
+{
+    Console.WriteLine($"[DEBUG] Found .env file, loading...");
+    Env.Load(envPath);
+    Console.WriteLine($"[DEBUG] .env file loaded successfully");
+}
+else
+{
+    Console.WriteLine($"[DEBUG] .env file not found at {Path.GetFullPath(envPath)}");
+    Console.WriteLine($"[DEBUG] Current directory: {AppContext.BaseDirectory}");
+}
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Override configuration from environment variables
+var connectionString = Environment.GetEnvironmentVariable("CONNECTIONSTRINGS_DEFAULTCONNECTION");
+if (!string.IsNullOrEmpty(connectionString))
+{
+    builder.Configuration["ConnectionStrings:DefaultConnection"] = connectionString;
+}
+
+var googleClientId = Environment.GetEnvironmentVariable("AUTHENTICATION_GOOGLE_CLIENTID");
+if (!string.IsNullOrEmpty(googleClientId))
+{
+    builder.Configuration["Authentication:Google:ClientId"] = googleClientId;
+}
+
+var googleClientSecret = Environment.GetEnvironmentVariable("AUTHENTICATION_GOOGLE_CLIENTSECRET");
+if (!string.IsNullOrEmpty(googleClientSecret))
+{
+    builder.Configuration["Authentication:Google:ClientSecret"] = googleClientSecret;
+}
+
+var jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRETKEY");
+if (!string.IsNullOrEmpty(jwtSecret))
+{
+    builder.Configuration["Jwt:SecretKey"] = jwtSecret;
+}
+
+var smtpHost = Environment.GetEnvironmentVariable("SMTP_HOST");
+if (!string.IsNullOrEmpty(smtpHost))
+{
+    builder.Configuration["Smtp:Host"] = smtpHost;
+}
+
+var smtpPort = Environment.GetEnvironmentVariable("SMTP_PORT");
+if (!string.IsNullOrEmpty(smtpPort) && int.TryParse(smtpPort, out var port))
+{
+    builder.Configuration["Smtp:Port"] = port.ToString();
+}
+
+var smtpUsername = Environment.GetEnvironmentVariable("SMTP_USERNAME");
+if (!string.IsNullOrEmpty(smtpUsername))
+{
+    builder.Configuration["Smtp:UserName"] = smtpUsername;
+}
+
+var smtpPassword = Environment.GetEnvironmentVariable("SMTP_PASSWORD");
+if (!string.IsNullOrEmpty(smtpPassword))
+{
+    builder.Configuration["Smtp:Password"] = smtpPassword;
+}
+
+var smtpFromEmail = Environment.GetEnvironmentVariable("SMTP_FROMEMAIL");
+if (!string.IsNullOrEmpty(smtpFromEmail))
+{
+    builder.Configuration["Smtp:FromEmail"] = smtpFromEmail;
+}
 
 // ===============================================
 // 1. BASIC SERVICES & SWAGGER

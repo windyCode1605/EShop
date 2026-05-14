@@ -8,7 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="StackExchange.Redis" Version="2.x.x" />
-    <PackageReference Include="dotnet-env" Version="0.1.9" />
+    <PackageReference Include="DotNetEnv" Version="3.1.2" />
   </ItemGroup>
 
 </Project>
