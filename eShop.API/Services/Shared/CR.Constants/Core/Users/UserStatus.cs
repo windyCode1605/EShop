@@ -4,13 +4,13 @@ namespace CR.Constants.Core.Users
 {
     public static class UserStatus
     {
-        public const int ACTIVE = 1;
-        public const int DEACTIVE = 2;
-        public const int LOCK = 3;
+        public const int ACTIVE = 1;       // Hoạt động
+        public const int DEACTIVE = 2;     // Bị khoá
+        public const int LOCK = 3;         // Xóa tài khoản
         /// <summary>
         /// Đăng kí tài khoản chưa OTP
         /// </summary>
-        public const int TEMP = 4;
+        public const int TEMP = 4;          // Tạm: Chờ OTP
         /// <summary>
         /// Đăng kí tài khoản đã OTP
         /// </summary>

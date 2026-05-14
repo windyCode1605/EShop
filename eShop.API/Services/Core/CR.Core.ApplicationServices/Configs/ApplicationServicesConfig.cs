@@ -1,4 +1,8 @@
+using CR.Core.ApplicationServices.AuthenticationModule.Abstracts;
+using CR.Core.ApplicationServices.AuthenticationModule.Implements;
 using CR.Core.ApplicationServices.Common.ServiceImplementations;
+using CR.Core.ApplicationServices.OtpModule.Abstracts;
+using CR.Core.ApplicationServices.OtpModule.Implements;
 using CR.Core.ApplicationServices.ProductModule.Abstracts;
 
 namespace CR.Core.ApplicationServices.Configs;
@@ -10,7 +14,14 @@ public static class ApplicationServicesConfig
     // Đăng ký các service của tầng Application vào IServiceCollection.
     public static IServiceCollection AddApplicationServices(this IServiceCollection services)
     {
-        // Mỗi request HTTP nhận một instance ProductService mới.
+        // Authentication & User services
+        services.AddScoped<IUserService, UserService>();
+        services.AddScoped<IUserAuthenticationService, UserAuthorizationService>();
+        services.AddScoped<ITokenService, TokenService>();
+        services.AddScoped<INotificationTokenService, NotificationTokenService>();
+        services.AddScoped<IOtpService, OtpService>();
+
+        // Product services
         services.AddScoped<IProductService, ProductService>();
 
         // Quét assembly hiện tại để nạp các AutoMapper Profile.

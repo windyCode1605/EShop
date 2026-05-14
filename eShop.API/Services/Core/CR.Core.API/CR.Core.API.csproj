@@ -6,4 +6,6 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <PackageReference Include="StackExchange.Redis" Version="2.x.x" />
+
 </Project>

@@ -6,4 +6,17 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="16.1.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CR.Core.Domain\CR.Core.Domain.csproj" />
+    <ProjectReference Include="..\CR.Core.Dtos\CR.Core.Dtos.csproj" />
+    <ProjectReference Include="..\..\Shared\CR.Constants\CR.Constants.csproj" />
+    <ProjectReference Include="..\..\..\..\Library\CR.ApplicationBase\CR.ApplicationBase.csproj" />
+    <ProjectReference Include="..\..\..\..\Library\CR.DtoBase\CR.DtoBase.csproj" />
+    <ProjectReference Include="..\..\Shared\CR.Common\CR.Common.csproj" />
+  </ItemGroup>
+
 </Project>

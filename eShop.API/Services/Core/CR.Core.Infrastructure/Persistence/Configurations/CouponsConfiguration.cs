@@ -17,11 +17,6 @@ namespace CR.Core.Infrastructure.Persistence.Configurations
             entity.Property(c => c.IsActive).IsRequired();
             entity.Property(c => c.MinOrderValue).HasColumnType("decimal(18,2)");
             entity.Property(c => c.MaxDiscountValue).HasColumnType("decimal(18,2)");
-
-            entity.HasMany(c => c.OrderCoupons)
-            .WithOne(oc =>  oc.Coupon)
-            .HasForeignKey(oc => oc.CouponId)
-            .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

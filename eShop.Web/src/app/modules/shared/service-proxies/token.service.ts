@@ -1,0 +1,30 @@
+import { Injectable } from "@angular/core";
+import { CookieService } from 'ngx-cookie-service';
+
+@Injectable({
+    providedIn: 'root'
+})
+export class TokenService {
+
+    constructor(private _cookieService: CookieService) { }
+
+    setToken(accessToken: string, expireDate: Date): void {
+        this._cookieService.set('access_token', accessToken, expireDate, '/');
+    }
+    setRefreshToken(refreshToken: string): void {
+        this._cookieService.set('refresh_token', refreshToken, undefined, '/');
+    }
+
+    getToken(): string {
+        return this._cookieService.get('access_token');
+    }
+
+    getRefreshToken(): string {
+        return this._cookieService.get('refresh_token');
+    }
+
+    clearAllCookie(): void {
+        this._cookieService.delete('access_token', '/');
+        this._cookieService.delete('refresh_token', '/');
+    }
+}

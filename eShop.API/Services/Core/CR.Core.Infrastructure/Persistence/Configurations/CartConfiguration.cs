@@ -1,20 +1,20 @@
-using CR.Core.Domain.Cart;
+using CR.Core.Domain.Carts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace CR.Core.Infrastructure.Persistence.Configurations
 {
-    public class CartConfiguration : IEntityTypeConfiguration<Carts>
+    public class CartConfiguration : IEntityTypeConfiguration<Cart>
     {
-        public void Configure(EntityTypeBuilder<Carts> entity)
+        public void Configure(EntityTypeBuilder<Cart> entity)
         {
             entity.HasKey(c => c.Id);
             entity.Property(c => c.UserId).IsRequired();
-            entity.Property(c => c.CreatedAt).IsRequired();
+            entity.Property(c => c.LastUpdatedAt).IsRequired();
 
             entity.HasOne(c => c.User)
             .WithOne(u => u.Cart)
-            .HasForeignKey<Carts>(c => c.UserId)
+            .HasForeignKey<Cart>(c => c.UserId)
             .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasMany(c => c.Items)

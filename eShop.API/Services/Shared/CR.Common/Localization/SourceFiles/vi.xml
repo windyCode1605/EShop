@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<localizationDictionary culture="vi">
+	<texts>
+    <!-- File: CR.Common/Localization/SourceFiles/vi.xml -->
+        <text name="error_UsernameOrPasswordIncorrect"> Tài khoản hoặc mật khẩu không chính xác. Vui lòng kiểm tra và thử lại </text>
+        <text name="error_UserNotFound">Tài khoản không tồn tại. Vui lòng kiểm tra lại</text>
+        <text name="error_UserIsDeactive"> Tài khoản bị khoá </text>
+        <text name="error_AppPasswordIncorrect">    Mật khẩu không chính xác, tài khoản sẽ bị khóa nếu sai liên tiếp ({0}) lần. Còn lại ({1}) </text>
+        <text name="error_UserIsInactiveBecauseMultiLoginTime">    Vì lý do bảo mật, tài khoản tạm thời bị khóa do đăng nhập quá nhiều lần. Vui lòng thử lại sau. </text>
+    </texts>
+</localizationDictionary>
+

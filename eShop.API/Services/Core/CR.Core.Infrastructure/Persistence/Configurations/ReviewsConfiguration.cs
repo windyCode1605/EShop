@@ -8,7 +8,7 @@ namespace CR.Core.Infrastructure.Persistence.Configurations
     {
         public void Configure(EntityTypeBuilder<Reviews> entity)
         {
-            entity.HasQueryFilter(r => !r.Product.IsDeleted);
+            entity.HasQueryFilter(r => !r.Product.Deleted);
 
             entity.HasKey(r => r.Id);
             entity.Property(r => r.Comment).IsRequired().HasMaxLength(1000);

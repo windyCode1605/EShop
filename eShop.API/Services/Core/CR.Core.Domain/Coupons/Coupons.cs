@@ -1,15 +1,13 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using CR.Constants.Common.Database;
 using CR.Constants.Discount;
-using CR.Core.Domain.Order;
 using CR.EntitiesBase;
 using Microsoft.EntityFrameworkCore;
 
 namespace CR.Core.Domain.Coupons
 {
 
-
-    [Table(nameof(Coupons), Schema = DbSchemas.CRCore)]
+    [Table(nameof(Coupons), Schema = DbSchemas.Default)]
     [Index(nameof(Code), IsUnique = true)]
     public class Coupons : BaseEntity
     {
@@ -79,6 +77,5 @@ namespace CR.Core.Domain.Coupons
         /// false = đã tắt (admin disable)
         /// </summary>
         public bool IsActive { get; set; } = true;
-        public ICollection<OrderCoupons> OrderCoupons { get; set; } = new List<OrderCoupons>();
     }
 }

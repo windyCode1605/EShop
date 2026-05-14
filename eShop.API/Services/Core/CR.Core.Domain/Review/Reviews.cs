@@ -4,7 +4,7 @@ using CR.Constants.Common.Database;
 
 namespace CR.Core.Domain.Review
 {
-    [Table(nameof(Reviews), Schema = DbSchemas.CRCore)]
+    [Table(nameof(Reviews), Schema = DbSchemas.Default)]
     public class Reviews
     {
         [Key]
@@ -29,7 +29,7 @@ namespace CR.Core.Domain.Review
         public User.Users User { get; set; } = null!;
 
         [ForeignKey(nameof(ProductId))]
-        public Product.Products Product { get; set; } = null!;
+        public Catalog.Product Product { get; set; } = null!;
     }
 }
 

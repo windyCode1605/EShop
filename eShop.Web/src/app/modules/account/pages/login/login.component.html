@@ -1,0 +1,65 @@
+<section class="auth-page" [class.auth-page--dark]="dark" aria-labelledby="login-title">
+	<div class="auth-card">
+		<header class="auth-header">
+			<h1 id="login-title" class="auth-title">Đăng nhập hệ thống</h1>
+			<p class="auth-subtitle">Quản lý phiên làm việc của bạn an toàn và nhanh chóng.</p>
+		</header>
+
+		<form #loginForm="ngForm" (ngSubmit)="login()" novalidate>
+			<div class="field" [class.field--error]="usernameModel.invalid && (usernameModel.touched || loginForm.submitted)">
+				<label class="field__label" for="username">Tên đăng nhập</label>
+				<input
+					#username
+					id="username"
+					class="field__input"
+					name="username"
+					required
+					minlength="3"
+					[(ngModel)]="authService.authenticateModel.username"
+					#usernameModel="ngModel"
+					placeholder="Nhập tên đăng nhập"
+					autocomplete="username"
+				/>
+				<span class="field__error" *ngIf="usernameModel.invalid && (usernameModel.touched || loginForm.submitted)">
+					Tên đăng nhập tối thiểu 3 ký tự.
+				</span>
+			</div>
+
+			<div class="field" [class.field--error]="passwordModel.invalid && (passwordModel.touched || loginForm.submitted)">
+				<label class="field__label" for="password">Mật khẩu</label>
+				<input
+					id="password"
+					class="field__input"
+					type="password"
+					name="password"
+					required
+					minlength="6"
+					[(ngModel)]="authService.authenticateModel.password"
+					#passwordModel="ngModel"
+					placeholder="Nhập mật khẩu"
+					autocomplete="current-password"
+				/>
+				<span class="field__error" *ngIf="passwordModel.invalid && (passwordModel.touched || loginForm.submitted)">
+					Mật khẩu tối thiểu 6 ký tự.
+				</span>
+			</div>
+
+			<label class="remember-row">
+				<input type="checkbox" name="rememberClient" [(ngModel)]="authService.authenticateModel.rememberClient" />
+				<span>Ghi nhớ đăng nhập</span>
+			</label>
+
+			<button type="submit" class="btn-submit" [disabled]="submitting || loginForm.invalid">
+				<span *ngIf="!submitting">Đăng nhập</span>
+				<span *ngIf="submitting" class="spinner" aria-hidden="true"></span>
+			</button>
+		</form>
+
+		<div class="auth-actions">
+			<button type="button" class="btn-theme" (click)="ToggleDarkMode()">
+				{{ dark ? 'Chế độ sáng' : 'Chế độ tối' }}
+			</button>
+			<a routerLink="../register">Đăng ký tài khoản</a>
+		</div>
+	</div>
+</section>

@@ -2,11 +2,11 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using CR.Constants.Common.Database;
 using CR.Constants.Payment;
-using CR.Core.Domain.Order;
+using CR.Core.Domain.Orders;
 
 namespace CR.Core.Domain.Payment
 {
-    [Table(nameof(Payments), Schema = DbSchemas.CRCore)]
+    [Table(nameof(Payments), Schema = DbSchemas.Default)]
     public class Payments
     {
         [Key]
@@ -31,6 +31,6 @@ namespace CR.Core.Domain.Payment
         public DateTime? PaidAt { get; set; } 
 
         [ForeignKey(nameof(OrderId))]
-        public Orders Order { get; set; } = null!;
+        public Order Order { get; set; } = null!;
     }
 }

@@ -9,10 +9,8 @@ namespace CR.Core.Infrastructure.Persistence.Configurations
         public void Configure(EntityTypeBuilder<Users> entity)
         {
             entity.HasKey(u => u.Id);
-            entity.Property(u => u.FullName).IsRequired().HasMaxLength(100);
             entity.Property(u => u.Username).IsRequired().HasMaxLength(50);
-            entity.Property(u => u.Email).IsRequired().HasMaxLength(100);
-            entity.Property(u => u.PasswordHash).IsRequired();
+            entity.Property(u => u.PasswordHash).IsRequired().HasMaxLength(256);
 
         }
     }

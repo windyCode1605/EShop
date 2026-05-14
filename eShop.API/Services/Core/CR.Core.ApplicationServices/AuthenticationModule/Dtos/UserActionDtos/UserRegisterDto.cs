@@ -1,9 +1,10 @@
+using System.ComponentModel.DataAnnotations;
 using CR.DtoBase.Validations;
 
 namespace CR.Core.ApplicationServices.AuthenticationModule.Dtos.UserActionDtos
 {
     /// <summary>
-    /// Thiết lập mật khẩu khi đăng kí tài khoản 
+    /// Thông tin đăng ký ban đầu cho tài khoản 
     /// </summary>
     public class UserRegisterDto
     {

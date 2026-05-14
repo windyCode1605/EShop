@@ -1,0 +1,115 @@
+<div class="filter-container card mb-4">
+  <div class="card-body">
+    <h5 class="card-title mb-4">Filter Products</h5>
+    
+    <form>
+      <div class="row mb-3">
+        <!-- Keyword Search -->
+        <div class="col-md-4">
+          <label for="keyword" class="form-label">Search</label>
+          <input
+            type="text"
+            class="form-control"
+            id="keyword"
+            placeholder="Product name, SKU..."
+            [(ngModel)]="filter.keyword"
+            [ngModelOptions]="{ updateOn: 'blur' }"
+          />
+        </div>
+
+        <!-- Category Filter -->
+        <div class="col-md-4">
+          <label for="category" class="form-label">Category</label>
+          <select
+            class="form-select"
+            id="category"
+            [(ngModel)]="filter.categoryId"
+            [ngModelOptions]="{ updateOn: 'change' }"
+          >
+            <option value="">All Categories</option>
+            <option *ngFor="let cat of categories" [value]="cat.id">
+              {{ cat.name }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Status Filter -->
+        <div class="col-md-4">
+          <label for="status" class="form-label">Status</label>
+          <select
+            class="form-select"
+            id="status"
+            [(ngModel)]="filter.isActive"
+            [ngModelOptions]="{ updateOn: 'change' }"
+          >
+            <option [value]="null">All</option>
+            <option [value]="true">Active</option>
+            <option [value]="false">Inactive</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row mb-3">
+        <!-- Price Range -->
+        <div class="col-md-4">
+          <label for="minPrice" class="form-label">Min Price</label>
+          <input
+            type="number"
+            class="form-control"
+            id="minPrice"
+            placeholder="0"
+            [(ngModel)]="filter.minPrice"
+            [ngModelOptions]="{ updateOn: 'blur' }"
+          />
+        </div>
+
+        <div class="col-md-4">
+          <label for="maxPrice" class="form-label">Max Price</label>
+          <input
+            type="number"
+            class="form-control"
+            id="maxPrice"
+            placeholder="999999"
+            [(ngModel)]="filter.maxPrice"
+            [ngModelOptions]="{ updateOn: 'blur' }"
+          />
+        </div>
+
+        <!-- Sort -->
+        <div class="col-md-4">
+          <label for="sortBy" class="form-label">Sort By</label>
+          <select
+            class="form-select"
+            id="sortBy"
+            [(ngModel)]="filter.sortBy"
+            [ngModelOptions]="{ updateOn: 'change' }"
+          >
+            <option value="name">Name</option>
+            <option value="price">Price</option>
+            <option value="stock">Stock</option>
+            <option value="createdAt">Created Date</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-12">
+          <button
+            type="button"
+            class="btn btn-primary"
+            (click)="applyFilter()"
+          >
+            <i class="bi bi-search"></i> Apply Filter
+          </button>
+          <button
+            type="button"
+            class="btn btn-secondary ms-2"
+            (click)="resetFilter()"
+          >
+            <i class="bi bi-arrow-clockwise"></i> Reset
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>

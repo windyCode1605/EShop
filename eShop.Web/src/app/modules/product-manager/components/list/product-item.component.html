@@ -1,0 +1,54 @@
+<div class="product-card">
+  <!-- Product Image -->
+  <div class="product-card-image">
+    <img
+      [src]="product.image || 'assets/placeholder.jpg'"
+      [alt]="product.name"
+      class="product-image"
+    />
+    <span class="product-badge" [ngClass]="product.isActive ? 'badge-active' : 'badge-inactive'">
+      {{ product.isActive ? 'Active' : 'Inactive' }}
+    </span>
+  </div>
+
+  <!-- Product Info -->
+  <div class="product-card-body">
+    <div class="product-category">{{ product.categoryName }}</div>
+    <h3 class="product-name">{{ product.name }}</h3>
+    <p class="product-description">SKU: <strong>{{ product.sku }}</strong></p>
+    
+    <!-- Stock Status -->
+    <div class="stock-info">
+      <small [ngClass]="getStockClass()">
+        {{ getStockStatus() }} ({{ product.stock }} units)
+      </small>
+    </div>
+  </div>
+
+  <!-- Product Footer -->
+  <div class="product-card-footer">
+    <div class="price-details">
+      <span class="product-price">
+        {{ product.price | currency: 'USD': 'symbol': '1.2-2' }}
+      </span>
+    </div>
+    <div class="action-buttons">
+      <button
+        type="button"
+        class="btn-action btn-view"
+        (click)="onView()"
+        title="Xem chi tiết"
+      >
+        Xem chi tiết
+      </button>
+      <button
+        type="button"
+        class="btn-action btn-cart"
+        (click)="onAddToCart()"
+        title="Thêm giỏ"
+      >
+        Thêm giỏ
+      </button>
+    </div>
+  </div>
+</div>

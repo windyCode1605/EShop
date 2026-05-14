@@ -5,7 +5,7 @@ using CR.EntitiesBase;
 
 namespace CR.Core.Domain.Address
 {
-    [Table(nameof(Addresses), Schema = DbSchemas.CRCore)]
+    [Table(nameof(Addresses), Schema = DbSchemas.Default)]
     public class Addresses : BaseEntity
     {
         public int? UserId { get; set; }
@@ -22,6 +22,6 @@ namespace CR.Core.Domain.Address
         public bool IsDefault { get; set; } = false;
         [ForeignKey(nameof(UserId))]
         public User.Users? User { get; set; } = null!;
-        public ICollection<CR.Core.Domain.Order.Orders> Orders { get; set; } = new List<CR.Core.Domain.Order.Orders>();
+        public ICollection<CR.Core.Domain.Orders.Order> Orders { get; set; } = new List<CR.Core.Domain.Orders.Order>();
     }
 }

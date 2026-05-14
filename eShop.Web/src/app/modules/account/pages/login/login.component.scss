@@ -1,0 +1,325 @@
+// ── Tokens ───────────────────────────────────────────────────────────────────
+$color-primary:      #D4A574;
+$color-primary-dark: #A68E5F;
+$color-error:        #F87171;
+$color-border:       #E5E7EB;
+$color-border-focus: $color-primary;
+$color-text:         #2B2B2B;
+$color-muted:        #6B7280;
+$color-surface:      #FFFFFF;
+$radius:             .5rem;
+$transition:         180ms ease;
+
+// ── Background ────────────────────────────────────────────────────────────────
+// Luxury premium gradient background
+.auth-page {
+  min-block-size: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+  position: relative;
+  overflow: hidden;
+
+  // Gradient nền
+  background: linear-gradient(135deg, #FAFAF9 0%, #F5F5F4 100%);
+
+  // Hai orb trang trí chuyển động
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(60px);
+    pointer-events: none;
+    animation: float 12s ease-in-out infinite alternate;
+  }
+
+  &::before {
+    inline-size: 380px;
+    block-size: 380px;
+    background: rgb(212 165 116 / .08);
+    inset-inline-start: -80px;
+    inset-block-start: -60px;
+    animation-delay: 0s;
+  }
+
+  &::after {
+    inline-size: 320px;
+    block-size: 320px;
+    background: rgb(139 157 108 / .06);
+    inset-inline-end: -60px;
+    inset-block-end: -40px;
+    animation-delay: -6s;
+  }
+}
+
+@keyframes float {
+  from { transform: translate(0, 0)    scale(1); }
+  to   { transform: translate(30px, 20px) scale(1.08); }
+}
+
+// ── Card ──────────────────────────────────────────────────────────────────────
+.auth-card {
+  position: relative;   // nằm trên orb
+  z-index: 1;
+  inline-size: 100%;
+  max-inline-size: 420px;
+  background: rgb(255 255 255 / .98);
+  backdrop-filter: blur(18px) saturate(1.4);
+  -webkit-backdrop-filter: blur(18px) saturate(1.4);
+  border: 1px solid var(--color-border);
+  border-radius: $radius * 2.5;
+  padding: 2.5rem 2rem;
+  box-shadow:
+    0 2px  4px  rgb(0 0 0 / .04),
+    0 8px  24px rgb(0 0 0 / .08),
+    0 24px 48px rgb(212 165 116 / .06);
+  display: grid;
+  gap: 1.5rem;
+
+  // Xuất hiện từ dưới lên khi load
+  animation: slide-up .45s cubic-bezier(.22, 1, .36, 1) both;
+
+  @media (max-inline-size: 480px) {
+    padding: 2rem 1.25rem;
+  }
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// ── Header ────────────────────────────────────────────────────────────────────
+.auth-header { text-align: center; }
+
+.auth-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: $color-text;
+  margin: 0 0 .25rem;
+  // Gradient chữ
+  background: linear-gradient(135deg, #1F2937 0%, #D4A574 50%, #8B7D6B 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.auth-subtitle {
+  font-size: .9rem;
+  color: $color-muted;
+  margin: 0;
+}
+
+// ── Form ──────────────────────────────────────────────────────────────────────
+form {
+  display: grid;
+  gap: 1rem;
+}
+
+// ── Field ─────────────────────────────────────────────────────────────────────
+.field {
+  display: grid;
+  gap: .35rem;
+
+  // Stagger animation cho từng field
+  &:nth-child(1) { animation: slide-up .45s .1s cubic-bezier(.22,1,.36,1) both; }
+  &:nth-child(2) { animation: slide-up .45s .18s cubic-bezier(.22,1,.36,1) both; }
+
+  &__label {
+    font-size: .85rem;
+    font-weight: 600;
+    color: $color-text;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  &__input-wrap {
+    position: relative;
+    display: flex;
+  }
+
+  &__input {
+    inline-size: 100%;
+    padding: .65rem .75rem;
+    border: 1.5px solid $color-border;
+    border-radius: $radius;
+    font-size: 1rem;
+    color: $color-text;
+    background: rgb(255 255 255 / .95);
+    transition: border-color $transition, box-shadow $transition, background $transition;
+    outline: none;
+
+    &::placeholder { color: $color-muted; }
+
+    &:focus {
+      border-color: $color-border-focus;
+      background: $color-surface;
+      box-shadow: 0 0 0 3px rgb(212 165 116 / .15);
+    }
+
+    .field__input-wrap & { padding-inline-end: 2.75rem; }
+  }
+
+  &__toggle {
+    position: absolute;
+    inset-inline-end: .5rem;
+    inset-block-start: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    line-height: 1;
+    padding: .25rem;
+    color: $color-muted;
+    transition: color $transition;
+
+    &:hover { color: $color-text; }
+    &:focus-visible {
+      outline: 2px solid $color-border-focus;
+      border-radius: 4px;
+    }
+  }
+
+  &__error {
+    font-size: .8rem;
+    color: $color-error;
+    animation: shake .3s ease both;
+  }
+
+  &--error .field__input {
+    border-color: $color-error;
+    &:focus { box-shadow: 0 0 0 3px rgb(220 38 38 / .15); }
+  }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25%       { transform: translateX(-4px); }
+  75%       { transform: translateX(4px); }
+}
+
+// ── Server error ──────────────────────────────────────────────────────────────
+.auth-error {
+  font-size: .85rem;
+  color: $color-error;
+  background: rgb(248 113 113 / .08);
+  border: 1px solid rgb(248 113 113 / .25);
+  border-radius: $radius;
+  padding: .6rem .75rem;
+  margin: 0;
+  animation: shake .3s ease both;
+}
+
+// ── Submit button ─────────────────────────────────────────────────────────────
+.btn-submit {
+  inline-size: 100%;
+  padding: .75rem;
+  background: linear-gradient(135deg, $color-primary 0%, #A68E5F 100%);
+  background-size: 200% 100%;
+  background-position: left center;
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: $radius;
+  cursor: pointer;
+  transition: background-position .4s ease, opacity $transition, box-shadow $transition, transform $transition;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-block-size: 2.75rem;
+
+  &:hover:not(:disabled) {
+    background-position: right center;
+    box-shadow: 0 4px 16px rgb(212 165 116 / .35);
+    transform: translateY(-1px);
+  }
+
+  &:active:not(:disabled) { transform: translateY(0); }
+
+  &:focus-visible {
+    outline: 2px solid $color-primary;
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    opacity: .55;
+    cursor: not-allowed;
+  }
+}
+
+// ── Spinner ───────────────────────────────────────────────────────────────────
+.spinner {
+  inline-size: 1.1rem;
+  block-size: 1.1rem;
+  border: 2px solid rgb(255 255 255 / .4);
+  border-block-start-color: #fff;
+  border-radius: 50%;
+  animation: spin .65s linear infinite;
+}
+
+@keyframes spin { to { rotate: 1turn; } }
+
+// ── Footer ────────────────────────────────────────────────────────────────────
+.auth-footer {
+  text-align: center;
+  font-size: .875rem;
+  color: $color-muted;
+
+  a {
+    color: $color-primary;
+    font-weight: 500;
+    text-decoration: none;
+    transition: color $transition;
+
+    &:hover {
+      color: $color-primary-dark;
+      text-decoration: underline;
+    }
+
+    &:focus-visible {
+      outline: 2px solid $color-primary;
+      border-radius: 2px;
+    }
+  }
+}
+
+.auth-page--dark {
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 10%, rgb(59 130 246 / .18) 0%, transparent 62%),
+    radial-gradient(ellipse 60% 50% at 80% 90%, rgb(76 29 149 / .22) 0%, transparent 58%),
+    #060b12;
+}
+
+.remember-row {
+  display: inline-flex;
+  align-items: center;
+  gap: .55rem;
+  color: $color-muted;
+  font-size: .88rem;
+}
+
+.auth-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  font-size: .9rem;
+}
+
+.btn-theme {
+  border: 1px solid rgb(37 99 235 / .35);
+  background: rgb(37 99 235 / .08);
+  color: $color-primary-dark;
+  border-radius: $radius;
+  padding: .45rem .75rem;
+  cursor: pointer;
+}

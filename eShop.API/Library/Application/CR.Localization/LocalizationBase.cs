@@ -1,5 +1,3 @@
-
-
 using System.Reflection;
 using System.Xml.Linq;
 
@@ -7,68 +5,70 @@ namespace CR.ApplicationBase.Localization
 {
     public class LocalizationBase : ILocalization
     {
-        protected Dictionary<string, string> Dictionary = new();
-        public const string DicNameDefault = LocalizationName.Vietnamese;
-
-        protected void LoadDictionary(string nameSpace)
+        public Dictionary<string, Dictionary<string, string>> Dictionary = new();
+        public const string DicNameDefault = LocalizationNames.Vietnamese;
+        protected readonly IHttpContextAccessor _httpContext;
+        public LocalizationBase(IHttpContextAccessor httpContext)
         {
-            // nameSpace sẽ là tên của file chứa các key và value ngôn ngữ khác nhau, ví dụ: "CR.ApplicationBase.Localization.Vi" hoặc "CR.ApplicationBase.Localization.En"
+            _httpContext = httpContext;
+        }
+        public void LoadDictionary(string nameSpace)
+        {
             string rootNameSpace = nameSpace ?? throw new ArgumentNullException(nameof(nameSpace));
-            // assembly sẽ là assembly chứa file đó, ví dụ: assembly của project CR.ApplicationBase
-            var assembly = Assembly.GetExecutingAssembly();
-
+            var assembly = Assembly.GetCallingAssembly();
             foreach (
-                var resourceName in assembly
-                .GetManifestResourceNames()
-                .Where(x => x.StartsWith(rootNameSpace))
+                var resourceName in assembly.GetManifestResourceNames().Where(r => r.StartsWith(rootNameSpace))
             )
             {
-                // Ý nghĩa:
-                // Lấy file embedded trong DLL
-                // resourceName kiểu như:
-                // CR.Localization.vi.xml
                 using Stream stream = assembly.GetManifestResourceStream(resourceName)!;
-
-                // Convert stream → XML object
                 XElement element = XElement.Load(stream);
-                //Lấy attribute đầu tiên của root:
-                //<localization name="vi">
-                //  Result:
-                //  = "vi"
                 var dicName = element.FirstAttribute!.Value;
 
-                var dicValues = element
-                .Elements("text")
-                .Elements("texts")
-                .ToDictionary(
-                    e => e.Attribute("name")!.Value,
-                    e => e.Attribute("value").Value ?? e.Value
-                );
+                var textElements = element.Element("Texts")?.Elements("Text") ?? Enumerable.Empty<XElement>();
+                var dicValues = textElements.ToDictionary(
+        x => x.Attribute("Name")!.Value,
+        x => x.Attribute("value")?.Value ?? x.Value
+    );
                 if (!Dictionary.ContainsKey(dicName))
                 {
                     Dictionary[dicName] = dicValues;
                 }
                 else
                 {
-                    // nếu đã tồn tại rồi thì sẽ ghi đè lên các key đã tồn tại, còn các key mới thì sẽ thêm vào
                     foreach (var item in dicValues)
                     {
                         Dictionary[dicName][item.Key] = item.Value;
                     }
                 }
             }
-
         }
 
+        private string Localize(string dicName, string keyName)
+        {
+            try
+            {
+                return Dictionary[dicName][keyName];
+            }
+            catch
+            {
+                return $"{dicName}:{keyName}";
+            }
+        }
 
         public string Localize(string keyName)
         {
-            throw new NotImplementedException();
+            string localizationName =
+                _httpContext.HttpContext?.Items[LocalizationQuery.QueryName]?.ToString()
+                ?? DicNameDefault;
+            return Localize(localizationName, keyName);
         }
 
-        public string Localize(string keyName, string[]? listParams)
+        public string Localize(string keyName, string[]? listParam)
         {
-            throw new NotImplementedException();
+            string localizationName =
+                _httpContext.HttpContext?.Items[LocalizationQuery.QueryName]?.ToString()
+                ?? DicNameDefault;
+            return string.Format(Localize(localizationName, keyName), listParam ?? []);
         }
     }
 }

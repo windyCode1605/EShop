@@ -7,7 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.0" />
+    <ProjectReference Include="..\..\Shared\CR.Constants\CR.Constants.csproj" />
+    <ProjectReference Include="..\CR.Utils\CR.Utils.csproj" />
+    <ProjectReference Include="..\CR.DtoBase\CR.DtoBase.csproj" />
+    <ProjectReference Include="..\Infrastructure\CR.ConstantBase\CR.ConstantBase.csproj" />
+    <ProjectReference Include="..\..\Services\Core\CR.Core.Infrastructure\CR.Core.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,29 +1,34 @@
-using CR.Core.Domain.Product;
+using CR.Core.Domain.Orders;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace CR.Core.Infrastructure.Persistence.Configurations
 {
-    public class OrderItemConfiguration : IEntityTypeConfiguration<OrderItems>
+    public class OrderItemConfiguration : IEntityTypeConfiguration<OrderItem>
     {
-        public void Configure(EntityTypeBuilder<OrderItems> entity)
+        public void Configure(EntityTypeBuilder<OrderItem> entity)
         {
-            entity.HasQueryFilter(oi => !oi.Variant.Product.IsDeleted);
+            entity.HasQueryFilter(oi => !oi.ProductVariant.Product.Deleted && !oi.ProductVariant.Deleted);
 
             entity.HasKey(oi => oi.Id);
             entity.Property(oi => oi.UnitPrice).HasColumnType("decimal(18,2)");
-            entity.Property(oi => oi.Total).HasColumnType("decimal(18,2)");
-            entity.Property(oi => oi.ProductName).IsRequired().HasMaxLength(255);
+            entity.Property(oi => oi.ProductName).IsRequired().HasMaxLength(256);
+            entity.Property(oi => oi.VariantSKU).IsRequired().HasMaxLength(100).IsUnicode(false);
             
 
             entity.HasOne(oi => oi.Order)
-                .WithMany(o => o.Items)
+                .WithMany(o => o.OrderItems)
                 .HasForeignKey(oi => oi.OrderId)
                 .OnDelete(DeleteBehavior.Cascade);
-            entity.HasOne(oi => oi.Variant)
-                .WithMany() 
-                .HasForeignKey(oi => oi.VariantId)
+            entity.HasOne(oi => oi.ProductVariant)
+                .WithMany()
+                .HasForeignKey(oi => oi.ProductVariantId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasMany(oi => oi.Refunds)
+                .WithOne(r => r.OrderItem)
+                .HasForeignKey(r => r.OrderItemId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

@@ -1,25 +1,21 @@
 
 // Services/Core/CR.Core.Infrastructure/Persistence/Configurations/ProductConfiguration.cs
 // Tách config ra file riêng — không viết lẫn vào DbContext
-using CR.Core.Domain.Product;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using CR.Core.Domain.Catalog;
 
-public class ProductConfiguration : IEntityTypeConfiguration<Products>
+public class ProductConfiguration : IEntityTypeConfiguration<Product>
 {
-    public void Configure(EntityTypeBuilder<Products> b)
+    public void Configure(EntityTypeBuilder<Product> b)
     {
-        b.ToTable("Products");
         b.HasKey(p => p.Id);
-        b.Property(p => p.Name).IsRequired().HasMaxLength(300);
-        b.Property(p => p.Price).HasColumnType("decimal(18,2)");
-        b.Property(p => p.AI_Description).HasColumnType("text");
+        b.Property(p => p.Name).IsRequired().HasMaxLength(256);
+        b.Property(p => p.Slug).IsRequired().HasMaxLength(256).IsUnicode(false);
+        b.Property(p => p.BasePrice).HasColumnType("decimal(18,2)");
 
-        // Index để tăng tốc tìm kiếm theo CategoryId
         b.HasIndex(p => p.CategoryId);
-
-        // Query filter: tự động loại soft-deleted records khỏi mọi query
-        b.HasQueryFilter(p => !p.IsDeleted);
+        b.HasQueryFilter(p => !p.Deleted);
 
         b.HasOne(p => p.Category)
          .WithMany(c => c.Products)
@@ -40,5 +36,6 @@ public class ProductConfiguration : IEntityTypeConfiguration<Products>
         .WithOne(r => r.Product)
         .HasForeignKey(r => r.ProductId)
         .OnDelete(DeleteBehavior.Cascade);
+
     }
 }

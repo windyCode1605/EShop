@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using CR.Core.Domain.Order;
 using CR.DtoBase;
 
 namespace CR.Core.Dtos.Order;

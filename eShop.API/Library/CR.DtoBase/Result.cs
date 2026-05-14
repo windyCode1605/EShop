@@ -12,6 +12,10 @@ public class Result
     public int ErrorCode { get; protected set; }
     public object? OtherData { get; protected set; }
     public string[]? ListParam { get; protected set; }
+
+    /// <summary>
+    ///  Stack trace của lỗi, sẽ được nối tiếp qua các lần gọi hàm để có thể biết được lỗi gốc phát sinh từ đâu
+    /// </summary>
     public string StackTrace { get; protected set; } = null!;
 
     public Result()

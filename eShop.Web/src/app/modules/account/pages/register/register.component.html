@@ -1,0 +1,21 @@
+<section class="auth-page">
+  <h1>Đăng ký</h1>
+
+  <p class="message success" *ngIf="successMessage">{{ successMessage }}</p>
+  <p class="message error" *ngIf="errorMessage">{{ errorMessage }}</p>
+
+  <form *ngIf="step === 'register'" [formGroup]="registerForm" (ngSubmit)="submitRegister()">
+    <input type="text" placeholder="Họ tên" formControlName="displayName" />
+    <input type="email" placeholder="Email" formControlName="email" />
+    <input type="text" placeholder="Mã người dùng (tuỳ chọn)" formControlName="userCode" />
+    <button type="submit" [disabled]="registerForm.invalid || submitting">Đăng ký & nhận OTP</button>
+  </form>
+
+  <form *ngIf="step === 'verify'" [formGroup]="verifyForm" (ngSubmit)="submitVerifyOtp()">
+    <input type="text" placeholder="Nhập OTP 6 số" formControlName="otpCode" maxlength="6" />
+    <button type="submit" [disabled]="verifyForm.invalid || submitting">Xác thực OTP</button>
+    <button type="button" class="secondary" (click)="backToRegister()" [disabled]="submitting">Đổi email</button>
+  </form>
+
+  <a routerLink="../login">Đã có tài khoản? Đăng nhập</a>
+</section>

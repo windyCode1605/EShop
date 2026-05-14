@@ -1,7 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using CR.Constants.Common.Database;
-using CR.Core.Domain.User;
 using CR.EntitiesBase.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,8 +13,13 @@ namespace CR.Core.Domain.User
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
+
+        [Required]
         public int UserId { get; set; }
+
+        [Required]
         public int RoleId { get; set; }
+
         public DateTime? CreatedDate { get; set; }
         public int? CreatedBy { get; set; }
         public DateTime? ModifiedDate { get; set; }
@@ -24,16 +28,10 @@ namespace CR.Core.Domain.User
         public bool Deleted { get; set; }
         public int? DeletedBy { get; set; }
 
-        /// <summary>
-        /// Người dùng được cấu hình vai trò
-        /// </summary>
         public Users User { get; set; } = null!;
-
-        /// <summary>
-        /// Vai trò thuộc người dùng
-        /// </summary>
         public Role Role { get; set; } = null!;
-        int IUserRole<int, int>.User { get ; set ; }
-        int IUserRole<int, int>.Role { get ; set ; }
+
+        int IUserRole<int, int>.User { get; set; }
+        int IUserRole<int, int>.Role { get; set; }
     }
 }

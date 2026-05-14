@@ -22,19 +22,19 @@
 
 ---
 
-## 🎯 Core Value
+##  Core Value
 
 | | Shopee / Tiki / Lazada | **eShop AI** |
 |---|---|---|
-| Tìm kiếm | Keyword matching | 🆕 **NLP intent parsing** |
-| Mô tả sản phẩm | Nhập tay | 🆕 **AI auto-generate** |
-| Xử lý đơn hàng | Nhân viên CSKH | 🆕 **AI Agent tự động** |
-| Gợi ý sản phẩm | Rule-based | 🆕 **Vector similarity search** |
-| Kiến trúc | Monolith CRUD | 🆕 **AI Service Layer tách biệt** |
+| Tìm kiếm | Keyword matching |  **NLP intent parsing** |
+| Mô tả sản phẩm | Nhập tay |  **AI auto-generate** |
+| Xử lý đơn hàng | Nhân viên CSKH |  **AI Agent tự động** |
+| Gợi ý sản phẩm | Rule-based |  **Vector similarity search** |
+| Kiến trúc | Monolith CRUD |  **AI Service Layer tách biệt** |
 
 ---
 
-## 🏗 Kiến trúc tổng thể
+##  Kiến trúc tổng thể
 
 ```
 ┌─────────────────────────────────────────────┐
@@ -57,11 +57,11 @@
 └───────────────────────────────────────────────┘
 ```
 
-> 💡 **Thay đổi so với tài liệu gốc:** Tách rõ `Core API` và `AI API` thành 2 service độc lập ngay từ sơ đồ kiến trúc, giúp scale và deploy riêng biệt.
+>  **Thay đổi so với tài liệu gốc:** Tách rõ `Core API` và `AI API` thành 2 service độc lập ngay từ sơ đồ kiến trúc, giúp scale và deploy riêng biệt.
 
 ---
 
-## 🤖 AI Features
+## AI Features
 
 ### 1. Intelligent Sales Agent
 
@@ -90,14 +90,14 @@ User: "Tôi cần áo đi tiệc cưới mùa hè dưới 2 triệu"
  └───────────────────┘
 ```
 
-#### 🆕 Nâng cấp đề xuất
+####  Nâng cấp đề xuất
 
 - **Thêm confidence score** cho mỗi kết quả NLP parsing — nếu score thấp, hỏi lại người dùng thay vì trả về sai
 - **Fallback strategy:** NLP parse thất bại → tự động chuyển về keyword search thay vì báo lỗi
 - **SearchLogs analytics:** Lưu toàn bộ query để cải thiện model theo thời gian
 
 ```csharp
-// 🆕 Interface nâng cấp — thêm confidence + fallback
+//  Interface nâng cấp — thêm confidence + fallback
 public interface IAISearchService
 {
     Task<SearchParseResult> ParseQueryAsync(string naturalLanguageQuery);
@@ -133,7 +133,7 @@ public async Task<AgentResult> HandleCancelAsync(int orderId, int userId)
 {
     var order = await _orderRepo.GetByIdAsync(orderId);
 
-    // 🆕 Kiểm tra ownership — tránh user A hủy đơn user B
+    //  Kiểm tra ownership — tránh user A hủy đơn user B
     if (order.UserId != userId)
         return AgentResult.Unauthorized();
 
@@ -147,7 +147,7 @@ public async Task<AgentResult> HandleCancelAsync(int orderId, int userId)
 }
 ```
 
-#### 🆕 Nâng cấp đề xuất
+####  Nâng cấp đề xuất
 
 - **Thêm ownership check** — bảo vệ endpoint khỏi truy cập trái phép (thiếu trong tài liệu gốc)
 - **AgentResult pattern** — response thống nhất thay vì throw exception tự do
@@ -191,7 +191,7 @@ Filtering                    Filtering
         Top-K Recommendation
 ```
 
-#### 🆕 Nâng cấp đề xuất
+####  Nâng cấp đề xuất
 
 - **Cold start handling:** User mới chưa có lịch sử → dùng global trending thay vì trả về rỗng
 - **Phân loại output rõ ràng:**
@@ -200,7 +200,7 @@ Filtering                    Filtering
 "Sản phẩm tương tự"     → Content-based (cùng danh mục)
 "Có thể bạn thích"      → Collaborative (user như bạn đã mua)
 "Mua cùng nhau"         → Association rules (frequently bought together)
-"Đang hot hôm nay"      → 🆕 Trending (cold-start fallback)
+"Đang hot hôm nay"      → Trending (cold-start fallback)
 ```
 
 ---

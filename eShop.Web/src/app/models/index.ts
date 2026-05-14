@@ -4,37 +4,44 @@ export interface LoginRequest {
 }
 
 export interface RegisterRequest {
-  username: string;
+  userName: string;
   email: string;
-  password: string;
-  firstName: string;
-  lastName: string;
+  userCode: string;
+}
+
+export interface ApiResponse<T> {
+  success: boolean;
+  data?: T;
+  message?: string;
+  errors?: string[];
+  statusCode: number;
 }
 
 export interface AuthResponse {
-  success: boolean;
-  message: string;
-  token?: string;
-  user?: UserDto;
+  accessToken: string;
+  email: string;
+  role: string;
+  expiresAt: string;
 }
 
 export interface UserDto {
   id: number;
-  username: string;
-  email: string;
-  firstName: string;
-  lastName: string;
+  userName: string;
+  fullName?: string;
+  email?: string;
+  userType?: number;
+  status?: number;
 }
 
 export interface ProductDto {
   id: number;
   name: string;
-  description: string;
+  description?: string;
   price: number;
   stock: number;
-  category: string;
-  imageUrl: string;
-  isAvailable: boolean;
+  categoryName: string;
+  ai_Description?: string;
+  ai_Generated: boolean;
 }
 
 export interface CreateProductDto {
@@ -42,6 +49,15 @@ export interface CreateProductDto {
   description: string;
   price: number;
   stock: number;
-  category: string;
-  imageUrl: string;
+  categoryId: number;
+}
+
+export interface PaginatedResult<T> {
+  items: T[];
+  totalCount: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrev: boolean;
 }

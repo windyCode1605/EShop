@@ -2,8 +2,7 @@ using AutoMapper;
 using CR.ApplicationBase;
 using CR.Common;
 using CR.Core.ApplicationServices.ProductModule.Abstracts;
-using CR.Core.Domain.Product;
-using CR.Core.Domain.Category;
+using CR.Core.Domain.Catalog;
 using CR.Core.Dtos.Product;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,15 +10,16 @@ namespace CR.Core.ApplicationServices.Common.ServiceImplementations;
 
 public class ProductService : ServiceBase<CoreDbContext>, IProductService
 {
-    public ProductService(CoreDbContext db,
+    public ProductService(
+        CoreDbContext dbContext,
         ILogger<ProductService> logger,
         IMapper mapper)
-        : base(db, logger, mapper) { }
+        : base(dbContext, logger, mapper) { }
 
      public async Task<ProductResponseDto> CreateAsync(ProductRequestDto dto)
     {
         // Validate CategoryId exists
-        var categoryExists = await _db.Set<Categories>()
+        var categoryExists = await _dbContext.Set<Category>()
             .AnyAsync(c => c.Id == dto.CategoryId);
         
         if (!categoryExists)
@@ -27,14 +27,14 @@ public class ProductService : ServiceBase<CoreDbContext>, IProductService
             throw new InvalidOperationException($"Category with Id {dto.CategoryId} does not exist.");
         }
 
-        var product = _mapper.Map<Products>(dto);
+        var product = _mapper.Map<Product>(dto);
 
         product.Slug = GenerateSlug(dto.Name);
 
-        _db.Products.Add(product);
-        await _db.SaveChangesAsync();
+        _dbContext.Products.Add(product);
+        await _dbContext.SaveChangesAsync();
 
-        var result = await _db.Products
+        var result = await _dbContext.Products
             .Include(p => p.Category)
             .FirstAsync(p => p.Id == product.Id);
 
@@ -53,9 +53,12 @@ public class ProductService : ServiceBase<CoreDbContext>, IProductService
 
     public async Task<PaginatedResult<ProductResponseDto>> GetAllAsync(int page, int size)
     {
-        var query = QueryActive<Products>()
+        _logger.LogInformation("Method Name: {Method}, Page: {Page}, Size: {Size}", nameof(GetAllAsync), page, size);
+        var query = _dbContext.Products
+            .Where(p => !p.Deleted)
             .Include(p => p.Category)
-            .OrderByDescending(p => p.CreatedAt);
+            .Include(p => p.Images)
+            .OrderByDescending(p => p.CreatedDate);
 
         var total = await query.CountAsync();
 

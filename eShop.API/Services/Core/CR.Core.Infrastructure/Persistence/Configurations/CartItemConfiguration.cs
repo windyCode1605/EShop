@@ -1,18 +1,18 @@
-using CR.Core.Domain.Cart;
+using CR.Core.Domain.Carts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace CR.Core.Infrastructure.Persistence.Configurations
 {
-    public class CartItemConfiguration : IEntityTypeConfiguration<CartItems>
+    public class CartItemConfiguration : IEntityTypeConfiguration<CartItem>
     {
-        public void Configure(EntityTypeBuilder<CartItems> entity)
+        public void Configure(EntityTypeBuilder<CartItem> entity)
         {
-            entity.HasQueryFilter(ci => !ci.Variant.Product.IsDeleted);
+            entity.HasQueryFilter(ci => !ci.ProductVariant.Product.Deleted && !ci.ProductVariant.Deleted);
 
             entity.HasKey(ci => ci.Id);
             entity.Property(ci => ci.CartId).IsRequired();
-            entity.Property(ci => ci.VariantId).IsRequired();
+            entity.Property(ci => ci.ProductVariantId).IsRequired();
             entity.Property(ci => ci.Quantity).IsRequired();
 
             entity.HasOne(ci => ci.Cart)
@@ -20,9 +20,9 @@ namespace CR.Core.Infrastructure.Persistence.Configurations
             .HasForeignKey( ci => ci.CartId)
             .OnDelete(DeleteBehavior.Cascade);
 
-            entity.HasOne(ci => ci.Variant)
-            .WithMany( c => c.CartItems)
-            .HasForeignKey(ci => ci.VariantId)
+            entity.HasOne(ci => ci.ProductVariant)
+            .WithMany()
+            .HasForeignKey(ci => ci.ProductVariantId)
             .OnDelete(DeleteBehavior.Cascade);
         }
            

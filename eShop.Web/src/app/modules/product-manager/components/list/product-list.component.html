@@ -1,0 +1,206 @@
+<div class="storefront-shell">
+  <section class="store-hero">
+    <div class="hero-content">
+      <!-- <p class="hero-tag">Thời trang hiện đại và tối giản</p> -->
+       <p class="hero-tag">Làm chủ không khó </p>
+      <h1 class="hero-title">Làm Cả Chủ Nhật</h1>
+      <p class="hero-subtitle">
+        Bộ sưu tập mới dành cho khách hàng yêu thích thiết kế sắc sảo, tinh gọn và cao cấp.
+      </p>
+      <div class="hero-actions">
+        <button type="button" class="btn btn-primary" (click)="onFilterReset()">Khám phá ngay</button>
+        <button type="button" class="btn btn-secondary" (click)="goToPage(1)">Xem lookbook</button>
+      </div>
+    </div>
+    <div class="hero-highlight">
+      <div class="highlight-card">
+        <p class="label">Thiết kế cho thị trường Việt Nam</p>
+        <h3>Hiển thị sản phẩm trực quan</h3>
+        <p>Tối ưu trải nghiệm mua sắm, lọc nhanh, xem chi tiết và phân trang mượt.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="spec-banner">
+    <article class="spec-card">
+      <p class="spec-label">Loại sản phẩm</p>
+      <p class="spec-value">Quần áo thời trang</p>
+      <p class="spec-sub">Nam, Nữ, Trẻ em</p>
+    </article>
+    <article class="spec-card">
+      <p class="spec-label">Phong cách</p>
+      <p class="spec-value">Hiện đại, tối giản</p>
+      <p class="spec-sub">Storefront rõ ràng, dễ mua</p>
+    </article>
+    <article class="spec-card">
+      <p class="spec-label">Tính năng</p>
+      <p class="spec-value">Bộ lọc và chi tiết</p>
+      <p class="spec-sub">Phân trang, tìm kiếm, danh mục</p>
+    </article>
+    <article class="spec-card">
+      <p class="spec-label">Mục tiêu</p>
+      <p class="spec-value">Khách hàng cuối</p>
+      <p class="spec-sub">UI tiếng Việt</p>
+    </article>
+  </section>
+
+  <section class="filter-panel">
+    <div class="filter-head">
+      <h2>Sản phẩm nổi bật</h2>
+      <p>Khám phá danh mục mới nhất theo nhu cầu của bạn.</p>
+    </div>
+
+    <div class="filter-row">
+      <div class="filter-chips" role="tablist" aria-label="Danh mục sản phẩm">
+        <button
+          type="button"
+          *ngFor="let category of featuredCategories"
+          class="filter-chip"
+          [class.active]="selectedCategory === category"
+          (click)="onCategoryChipChange(category)"
+        >
+          {{ category }}
+        </button>
+      </div>
+
+      <div class="search-sort-group">
+        <input
+          class="store-search"
+          type="text"
+          [ngModel]="currentFilter.keyword || ''"
+          (ngModelChange)="onKeywordChange($event)"
+          placeholder="Tìm tên, danh mục..."
+          aria-label="Tìm sản phẩm"
+        />
+
+        <select
+          class="store-sort"
+          [ngModel]="sortValue"
+          (ngModelChange)="onSortChange($event)"
+          aria-label="Sắp xếp sản phẩm"
+        >
+          <option value="popular">Phổ biến nhất</option>
+          <option value="priceAsc">Giá tăng dần</option>
+          <option value="priceDesc">Giá giảm dần</option>
+          <option value="newest">Mới nhất</option>
+        </select>
+      </div>
+    </div>
+  </section>
+
+  <div *ngIf="error" class="error-message" role="alert">
+    {{ error }}
+    <button
+      type="button"
+      class="btn-close btn-close-white"
+      (click)="error = null"
+      aria-label="Close"
+      style="margin-inline-start: auto;"
+    ></button>
+  </div>
+
+  <div *ngIf="loading" class="loading-container">
+    <div>
+      <div class="loader"></div>
+      <p class="mt-4 text-secondary">Đang tải sản phẩm...</p>
+    </div>
+  </div>
+
+  <section *ngIf="!loading && products.length > 0" class="products-section">
+    <div class="product-grid">
+      <div *ngFor="let product of products; trackBy: trackByProductId" class="product-card">
+        <app-product-item
+          [product]="product"
+          (view)="onProductView($event)"
+          (addToCart)="onProductAddToCart($event)"
+        ></app-product-item>
+      </div>
+    </div>
+  </section>
+
+  <section class="detail-section" *ngIf="!loading && selectedProduct">
+    <h2 class="detail-section-title">Chi tiết sản phẩm</h2>
+    <div class="detail-wrap">
+      <div class="detail-media">
+        <img
+          class="detail-image"
+          [src]="selectedProduct.image || 'assets/placeholder.jpg'"
+          [alt]="selectedProduct.name"
+        />
+      </div>
+
+      <div class="detail-content">
+        <p class="detail-brand">Atelier Studio</p>
+        <h3 class="detail-name">{{ selectedProduct.name }}</h3>
+        <p class="detail-price">
+          {{ selectedProduct.price | currency: 'USD': 'symbol': '1.2-2' }}
+        </p>
+        <p class="detail-description">{{ selectedProduct.description || 'Sản phẩm chưa có mô tả chi tiết.' }}</p>
+
+        <div class="detail-meta">
+          <span>Danh mục: <strong>{{ selectedProduct.categoryName }}</strong></span>
+          <span>Tồn kho: <strong>{{ selectedProduct.stock }}</strong></span>
+          <span>SKU: <strong>{{ selectedProduct.sku || 'N/A' }}</strong></span>
+        </div>
+
+        <div class="detail-actions">
+          <button type="button" class="btn btn-primary" (click)="onProductAddToCart(selectedProduct)">
+            Thêm vào giỏ hàng
+          </button>
+          <button type="button" class="btn btn-secondary" (click)="onProductView(selectedProduct)">
+            Đang xem chi tiết
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div *ngIf="!loading && products.length === 0" class="empty-state">
+    <div class="empty-icon">📦</div>
+    <h3 class="empty-title">Không tìm thấy sản phẩm</h3>
+    <p class="empty-description">{{ getEmptyMessage() }}</p>
+    <button
+      type="button"
+      class="btn btn-primary"
+      (click)="onFilterReset()"
+      *ngIf="currentFilter.hasFilters()"
+    >
+      Xóa bộ lọc
+    </button>
+  </div>
+
+  <div
+    *ngIf="!loading && products.length > 0 && totalPages > 1"
+    class="pagination-container"
+    role="navigation"
+    aria-label="Phân trang sản phẩm"
+  >
+    <button
+      class="page-btn"
+      [disabled]="currentFilter.pageIndex === 1"
+      (click)="previousPage()"
+      title="Trang trước"
+    >
+      ← Trước
+    </button>
+
+    <button
+      *ngFor="let page of [].constructor(totalPages); let i = index"
+      class="page-btn"
+      [class.active]="currentFilter.pageIndex === i + 1"
+      (click)="goToPage(i + 1)"
+      title="Trang {{ i + 1 }}"
+    >
+      {{ i + 1 }}
+    </button>
+
+    <button
+      class="page-btn"
+      [disabled]="currentFilter.pageIndex === totalPages"
+      (click)="nextPage()"
+      title="Trang tiếp"
+    >
+      Tiếp →
+    </button>
+  </div>
+</div>
