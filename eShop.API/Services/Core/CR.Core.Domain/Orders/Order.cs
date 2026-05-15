@@ -1,6 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using CR.Constants.Common.Database;
+using CR.Core.Domain.Logistics;
+using CR.Core.Domain.Payment;
 using CR.Core.Domain.User;
 using CR.EntitiesBase.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -37,6 +39,7 @@ namespace CR.Core.Domain.Orders
 
         public virtual Users User { get; set; } = null!;
         public virtual ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
-        public virtual ICollection<CR.Core.Domain.Payment.Payments> Payments { get; set; } = new List<CR.Core.Domain.Payment.Payments>();
+        public virtual ICollection<Payments> Payments { get; set; } = new List<Payments>();
+        public virtual ICollection<Shipment> Shipments { get; set; } = new List<Shipment>();
     }
 }

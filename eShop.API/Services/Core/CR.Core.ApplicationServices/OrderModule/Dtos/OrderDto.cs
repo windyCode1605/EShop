@@ -1,4 +1,6 @@
 // ApplicationServices/OrderModule/Dtos/OrderDto.cs
+using CR.DtoBase;
+
 namespace CR.Core.ApplicationServices.OrderModule.Dtos;
 
 public class OrderDto
@@ -33,6 +35,7 @@ public class OrderItemDto
 public class PaymentDto
 {
     public int      Id     { get; set; }
+    public int      OrderId { get; set; }
     public string   Method { get; set; } = null!;
     public string   Status { get; set; } = null!;
     public decimal  Amount { get; set; }
@@ -41,9 +44,22 @@ public class PaymentDto
 
 public class ShipmentDto
 {
-    public int     Id               { get; set; }
-    public string  ShippingProvider { get; set; } = null!;
-    public string? TrackingNumber   { get; set; }
-    public string  Status           { get; set; } = null!;
+    
+    public int      Id               { get; set; }
+    public int      OrderId          { get; set; }
+    public string   ShippingProvider { get; set; } = null!;
+    public string?  TrackingNumber   { get; set; }
+    public decimal  ShippingFee      { get; set; }
+    public string   ReceiverName     { get; set; } = null!;
+    public string   ReceiverPhone    { get; set; } = null!;
+    public string   ShippingAddress  { get; set; } = null!;
+    public string   Status           { get; set; } = null!;
     public DateTime? EstimatedDelivery { get; set; }
+    public DateTime? ActualDelivery    { get; set; }
+    public DateTime? CreatedDate       { get; set; }
+}
+public class FilterOrderPagingDto : PagingRequestBaseDto
+{
+    /// <summary>Lọc theo trạng thái: PENDING, CONFIRMED, SHIPPING,...</summary>
+    public string? Status { get; set; }
 }

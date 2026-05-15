@@ -44,5 +44,9 @@ namespace CR.Constants.ErrorCodes
         public const int CouponExpired = 7001; // Mã giảm giá đã hết hạn
         public const int CouponUsageLimitReached = 7002; // Mã giảm giá đã đạt giới hạn sử dụng
         public const int CouponMinOrderNotMet = 7003; // Đơn hàng không đạt giá trị tối thiểu để áp dụng mã giảm giá
+
+        public  const int PAGING_INVALID = 8000; // Thông tin phân trang không hợp lệ (ví dụ: pageNumber < 1 hoặc pageSize < 1)
+        public const int OrderNotFound = 9000; // Đơn hàng không tồn tại
+        public const int OrderStatusInvalid = 9001; // Trạng thái đơn hàng không hợp lệ
     }
 }

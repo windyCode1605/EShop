@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models; // Đã thêm thư viện chuẩn cho Swagger
 using OpenIddict.Abstractions;
 using DotNetEnv;
+using CR.API.Filters;
 
 // Load environment variables from .env file
 var envPath = Path.Combine(AppContext.BaseDirectory, ".env");
@@ -132,6 +133,12 @@ builder.Services.AddSingleton<LocalizationBase>();
 builder.Services.AddSingleton<ILocalization>(sp => sp.GetRequiredService<LocalizationBase>());
 
 builder.Logging.ClearProviders();
+
+// Program.cs — đăng ký filter
+builder.Services.AddControllers(options =>
+{
+    options.Filters.Add<PagingValidationFilter>();
+});
 
 if (builder.Environment.IsDevelopment())
 {

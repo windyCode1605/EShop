@@ -164,7 +164,7 @@ public class Result
     /// <summary>
     /// Method để trả ra bên ngoài nối tiếp chuỗi gọi stack trace
     /// </summary>
-    public static Result Failure(Result result)
+    public static Result Failure(string v, Result result)
     {
         return new Result(result);
     }
@@ -187,7 +187,7 @@ public class Result
     /// <typeparam name="T"> Kiểu dữ liệu của kết quả </typeparam>
     /// <param name="result"> Kết quả lỗi </param>
     /// <returns></returns>
-    public static Result<T> Failure<T>(Result result)
+    public static Result<T> Failure<T>(string v, Result result)
     {
         return Result<T>.Failure(result);
     }

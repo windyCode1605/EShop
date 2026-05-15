@@ -8,14 +8,8 @@ public interface IOrderService
 {
     Task<Result<OrderDto>>               CreateOrder(CreateOrderDto input);
     Task<Result<OrderDto>>               GetById(int orderId);
-    Task<Result<PagingResult<OrderDto>>> GetMyOrders(PagingRequestBaseDto input);
+    Task<Result<PageResult<OrderDto>>>   GetMyOrders(FilterOrderPagingDto input);
+    Task<Result<PageResult<OrderDto>>> GetAllOrders(FilterOrderPagingDto input);  // Admin
     Task<Result>                         CancelOrder(int orderId, string? reason = null);
-}
-
-public class PagingRequestBaseDto
-{
-}
-
-public class PagingResult<T>
-{
+    Task<Result>                         UpdateOrderStatus(int orderId, string newStatus); // Admin
 }
