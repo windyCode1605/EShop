@@ -48,5 +48,8 @@ namespace CR.Constants.ErrorCodes
         public  const int PAGING_INVALID = 8000; // Thông tin phân trang không hợp lệ (ví dụ: pageNumber < 1 hoặc pageSize < 1)
         public const int OrderNotFound = 9000; // Đơn hàng không tồn tại
         public const int OrderStatusInvalid = 9001; // Trạng thái đơn hàng không hợp lệ
+        public const int OrderCannotBeCancelled = 9002; // Đơn hàng không thể hủy (ví dụ: đã giao hàng hoặc đang trong quá trình giao hàng)
+    
+        public const int PaymentNotFound = 9000; // Thông tin thanh toán không tồn tại
     }
 }
