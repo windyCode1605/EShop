@@ -1,6 +1,7 @@
 using CR.Core.ApplicationServices.OrderModule.Abstracts;
 using CR.Core.ApplicationServices.OrderModule.Dtos;
 using CR.DtoBase;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
@@ -25,5 +26,26 @@ public class OrderController : ControllerBase
     [ProducesResponseType(typeof(Result<string>), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> CreateOrder([FromBody] CreateOrderDto input)
         => Ok(await _orderService.CreateOrder(input));
+
+    /// <summary>
+    /// Lấy thông tin chi tiết của một đơn hàng cụ thể
+    /// </summary>
+    [Authorize]
+    [HttpGet("{orderId:int}")]
+    public async Task<IActionResult> GetById([FromRoute]int orderId)
+        => Ok(await _orderService.GetById(orderId));
+
+    /// <summary>
+    /// Lấy danh sách đơn hàng của người dùng hiện tại với phân trang
+    /// </summary>
+    [HttpGet("my-orders")]
+    public async Task<IActionResult> GetMyOrders([FromQuery] FilterOrderPagingDto input)
+        => Ok(await _orderService.GetMyOrders(input));
     
+    /// <summary>
+    /// Hủy đơn hàng ( chỉ khi PENDING hoặc CONFIRMED)
+    /// </summary>
+    [HttpPost("{orderId:int}/cancel")]
+    public async Task<IActionResult> CancelOrder([FromRoute] int orderId, [FromQuery] string? reason = null)
+        => Ok(await _orderService.CancelOrder(orderId, reason));
 }

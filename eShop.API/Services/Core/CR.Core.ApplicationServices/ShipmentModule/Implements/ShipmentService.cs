@@ -15,7 +15,7 @@ namespace CR.Core.ApplicationServices.ShipmentModule.Implements
 {
     public class ShipmentService : CoreServiceBase, IShipmentService
     {
-        public ShipmentService(ILogger logger, IHttpContextAccessor httpContextAccessor) : base(logger, httpContextAccessor)
+        public ShipmentService(ILogger<ShipmentService> logger, IHttpContextAccessor httpContextAccessor) : base(logger, httpContextAccessor)
         {
         }
 

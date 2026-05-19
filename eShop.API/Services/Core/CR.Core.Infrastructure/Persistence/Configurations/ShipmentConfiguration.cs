@@ -19,9 +19,9 @@ namespace CR.Core.Infrastructure.Persistence.Configurations
             entity.Property(s => s.ShippingAddress).IsRequired().HasMaxLength(1024);
             entity.Property(s => s.Status).IsRequired().HasMaxLength(50).IsUnicode(false);
 
-            // Index để hỗ trợ tra cứu vận đơn nhanh theo Tracking Number
+            // CẬP NHẬT: Thay đổi HasName thành HasDatabaseName để hết warning
             entity.HasIndex(s => s.TrackingNumber)
-                .HasName($"IX_{nameof(Shipment)}_TrackingNumber");
+                .HasDatabaseName($"IX_{nameof(Shipment)}_TrackingNumber");
 
             // Query Filter: không hiển thị Shipment bị xóa
             entity.HasQueryFilter(s => !s.Deleted);

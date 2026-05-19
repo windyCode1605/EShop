@@ -1,4 +1,6 @@
 using CR.Core.ApplicationServices.Configs;
+using CR.Core.ApplicationServices.OrderModule.Abstracts;
+using CR.Core.ApplicationServices.OrderModule.Implements; // Giả định namespace chứa OrderService
 using CR.Core.Domain.Catalog;
 using CR.ApplicationBase.Localization;
 using CR.WebAPIBase.Filters;
@@ -7,16 +9,23 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.OpenApi.Models; // Đã thêm thư viện chuẩn cho Swagger
+using Microsoft.OpenApi.Models;
 using OpenIddict.Abstractions;
 using DotNetEnv;
 using CR.API.Filters;
+using CR.Core.ApplicationServices.ProductModule.Abstracts;
+using CR.Core.ApplicationServices.Common.ServiceImplementations;
+using CR.Core.ApplicationServices.ShipmentModule.Abstracts;
+using CR.Core.ApplicationServices.PaymentModule.Implement;
+using CR.Core.ApplicationServices.PaymentModule.Abstracts;
+using CR.Core.ApplicationServices.ShipmentModule.Implements;
 
-// Load environment variables from .env file
+// ===============================================
+// 0. ENVIRONMENT & CONFIGURATION LOAD
+// ===============================================
 var envPath = Path.Combine(AppContext.BaseDirectory, ".env");
 if (!File.Exists(envPath))
 {
-    // Try going up directories from bin
     envPath = Path.Combine(AppContext.BaseDirectory, "..", "..", "..", ".env");
 }
 
@@ -28,78 +37,64 @@ if (File.Exists(envPath))
     Env.Load(envPath);
     Console.WriteLine($"[DEBUG] .env file loaded successfully");
 }
-else
-{
-    Console.WriteLine($"[DEBUG] .env file not found at {Path.GetFullPath(envPath)}");
-    Console.WriteLine($"[DEBUG] Current directory: {AppContext.BaseDirectory}");
-}
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Override configuration from environment variables
-var connectionString = Environment.GetEnvironmentVariable("CONNECTIONSTRINGS_DEFAULTCONNECTION");
-if (!string.IsNullOrEmpty(connectionString))
+var configMappings = new Dictionary<string, string>
 {
-    builder.Configuration["ConnectionStrings:DefaultConnection"] = connectionString;
-}
+    { "CONNECTIONSTRINGS_DEFAULTCONNECTION", "ConnectionStrings:DefaultConnection" },
+    { "AUTHENTICATION_GOOGLE_CLIENTID", "Authentication:Google:ClientId" },
+    { "AUTHENTICATION_GOOGLE_CLIENTSECRET", "Authentication:Google:ClientSecret" },
+    { "JWT_SECRETKEY", "Jwt:SecretKey" },
+    { "SMTP_HOST", "Smtp:Host" },
+    { "SMTP_PORT", "Smtp:Port" },
+    { "SMTP_USERNAME", "Smtp:UserName" },
+    { "SMTP_PASSWORD", "Smtp:Password" },
+    { "SMTP_FROMEMAIL", "Smtp:FromEmail" }
+};
 
-var googleClientId = Environment.GetEnvironmentVariable("AUTHENTICATION_GOOGLE_CLIENTID");
-if (!string.IsNullOrEmpty(googleClientId))
+foreach (var mapping in configMappings)
 {
-    builder.Configuration["Authentication:Google:ClientId"] = googleClientId;
-}
-
-var googleClientSecret = Environment.GetEnvironmentVariable("AUTHENTICATION_GOOGLE_CLIENTSECRET");
-if (!string.IsNullOrEmpty(googleClientSecret))
-{
-    builder.Configuration["Authentication:Google:ClientSecret"] = googleClientSecret;
-}
-
-var jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRETKEY");
-if (!string.IsNullOrEmpty(jwtSecret))
-{
-    builder.Configuration["Jwt:SecretKey"] = jwtSecret;
-}
-
-var smtpHost = Environment.GetEnvironmentVariable("SMTP_HOST");
-if (!string.IsNullOrEmpty(smtpHost))
-{
-    builder.Configuration["Smtp:Host"] = smtpHost;
-}
-
-var smtpPort = Environment.GetEnvironmentVariable("SMTP_PORT");
-if (!string.IsNullOrEmpty(smtpPort) && int.TryParse(smtpPort, out var port))
-{
-    builder.Configuration["Smtp:Port"] = port.ToString();
-}
-
-var smtpUsername = Environment.GetEnvironmentVariable("SMTP_USERNAME");
-if (!string.IsNullOrEmpty(smtpUsername))
-{
-    builder.Configuration["Smtp:UserName"] = smtpUsername;
-}
-
-var smtpPassword = Environment.GetEnvironmentVariable("SMTP_PASSWORD");
-if (!string.IsNullOrEmpty(smtpPassword))
-{
-    builder.Configuration["Smtp:Password"] = smtpPassword;
-}
-
-var smtpFromEmail = Environment.GetEnvironmentVariable("SMTP_FROMEMAIL");
-if (!string.IsNullOrEmpty(smtpFromEmail))
-{
-    builder.Configuration["Smtp:FromEmail"] = smtpFromEmail;
+    var envValue = Environment.GetEnvironmentVariable(mapping.Key);
+    if (!string.IsNullOrEmpty(envValue))
+    {
+        builder.Configuration[mapping.Value] = envValue;
+    }
 }
 
 // ===============================================
-// 1. BASIC SERVICES & SWAGGER
+// 1. LOGGING SETUP
 // ===============================================
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+if (builder.Environment.IsDevelopment())
+{
+    builder.Logging.AddDebug();
+}
+builder.Logging.AddConfiguration(builder.Configuration.GetSection("Logging"));
+
+// ===============================================
+// 2. CORE API SERVICES & CONTROLLERS
+// ===============================================
+// Đã gộp 2 lần AddControllers/AddControllersWithViews thành 1 khối duy nhất
+builder.Services.AddControllersWithViews(options =>
+{
+    options.Filters.Add<ValidationFilter>();
+    options.Filters.Add<PagingValidationFilter>();
+})
+.AddRazorRuntimeCompilation();
+
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddHttpContextAccessor();
+
+// ===============================================
+// 3. SWAGGER CONFIGURATION
+// ===============================================
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo { Title = "CR eShop API", Version = "v1" });
 
-    // Khai báo nút Authorize nhập JWT Token
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
@@ -110,65 +105,75 @@ builder.Services.AddSwaggerGen(options =>
         Description = "Nhập token vào ô bên dưới theo định dạng: Bearer {access_token}"
     });
 
-    // Áp dụng ổ khóa (Security Requirement) cho tất cả API
     options.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
             new OpenApiSecurityScheme
             {
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                }
+                Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" }
             },
             Array.Empty<string>()
         }
     });
 });
 
-builder.Services.AddHttpContextAccessor();
-builder.Services.AddSingleton<IMapErrorCode, MapErrorCode>();
-builder.Services.AddSingleton<LocalizationBase>();
-builder.Services.AddSingleton<ILocalization>(sp => sp.GetRequiredService<LocalizationBase>());
+// ===============================================
+// 4. DATABASE & OPENIDDICT CONFIGURATION
+// ===============================================
+builder.Services.AddDbContext<CoreDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
+           .UseOpenIddict()
+);
 
-builder.Logging.ClearProviders();
+builder.Services
+    .AddOpenIddict()
+    .AddCore(options =>
+    {
+        options.UseEntityFrameworkCore().UseDbContext<CoreDbContext>();
+    })
+    .AddServer(options =>
+    {
+        options.SetAuthorizationEndpointUris("/api/authorization/connect/authorize")
+               .SetTokenEndpointUris("/connect/token");
 
-// Program.cs — đăng ký filter
-builder.Services.AddControllers(options =>
-{
-    options.Filters.Add<PagingValidationFilter>();
-});
+        options.AllowAuthorizationCodeFlow().RequireProofKeyForCodeExchange();
+        options.AllowRefreshTokenFlow();
+        options.AllowPasswordFlow();
+        options.AllowClientCredentialsFlow();
 
-if (builder.Environment.IsDevelopment())
-{
-    builder.Logging.AddConsole();
-    builder.Logging.AddDebug();
-}
-else
-{
-    builder.Logging.AddConsole();
-}
+        options.RegisterScopes(
+            OpenIddictConstants.Scopes.Email,
+            OpenIddictConstants.Scopes.Profile,
+            OpenIddictConstants.Scopes.Roles,
+            "api"
+        );
 
-builder.Logging.AddConfiguration(builder.Configuration.GetSection("Logging"));
+        options.AddDevelopmentEncryptionCertificate().AddDevelopmentSigningCertificate();
+
+        var aspNetCore = options.UseAspNetCore()
+            .EnableAuthorizationEndpointPassthrough()
+            .EnableTokenEndpointPassthrough();
+
+        if (builder.Environment.IsDevelopment())
+        {
+            aspNetCore.DisableTransportSecurityRequirement();
+        }
+    });
 
 // ===============================================
-// 2. CORS POLICY
+// 5. AUTHENTICATION, AUTHORIZATION & CORS
 // ===============================================
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("WebClient", policy =>
     {
         policy.WithOrigins("http://localhost:4200")
-          .AllowAnyHeader()
-          .AllowAnyMethod()
-          .AllowCredentials(); // Critical for OAuth flows
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
     });
 });
 
-// ===============================================
-// 3. AUTHENTICATION & AUTHORIZATION
-// ===============================================
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
@@ -177,8 +182,6 @@ builder.Services.AddAuthentication(options =>
 {
     options.LoginPath = "/auth/login";
     options.AccessDeniedPath = "/auth/denied";
-
-    // QUAN TRỌNG: tránh redirect ra trang HTML đăng nhập khi gọi API bị lỗi 401
     options.Events.OnRedirectToLogin = context =>
     {
         if (context.Request.Path.StartsWithSegments("/api"))
@@ -186,7 +189,6 @@ builder.Services.AddAuthentication(options =>
             context.Response.StatusCode = 401;
             return Task.CompletedTask;
         }
-
         context.Response.Redirect(context.RedirectUri);
         return Task.CompletedTask;
     };
@@ -199,89 +201,39 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy("ApiUser", policy =>
-    {
-        policy.RequireAuthenticatedUser();
-    });
+    options.AddPolicy("ApiUser", policy => policy.RequireAuthenticatedUser());
 });
 
 // ===============================================
-// 4. DATABASE CONFIGURATION
+// 6. DEPENDENCY INJECTION (DI) 
 // ===============================================
-builder.Services.AddDbContext<CoreDbContext>(options =>
-    options.UseSqlServer(
-        builder.Configuration.GetConnectionString("DefaultConnection")
-    )
-    .UseOpenIddict()
-);
+// Infrastructure / Common
+builder.Services.AddSingleton<IMapErrorCode, MapErrorCode>();
+builder.Services.AddSingleton<LocalizationBase>();
+builder.Services.AddSingleton<ILocalization>(sp => sp.GetRequiredService<LocalizationBase>());
 
-// ===============================================
-// 5. OPENIDDICT CONFIGURATION (OAUTH2 SERVER)
-// ===============================================
-builder.Services
-    .AddOpenIddict()
-    .AddCore(options =>
-    {
-        options.UseEntityFrameworkCore()
-               .UseDbContext<CoreDbContext>();
-    })
-    .AddServer(options =>
-    {
-        options.SetAuthorizationEndpointUris("/api/authorization/connect/authorize")
-               .SetTokenEndpointUris("/connect/token");
+// Application Services (Giải quyết lỗi IOrderService)
+// BẠN KHAI BÁO CÁC SERVICE CÒN THIẾU TẠI ĐÂY
+builder.Services.AddScoped<IOrderService, OrderService>(); 
+builder.Services.AddScoped<IProductService, ProductService>(); 
+builder.Services.AddScoped<IShipmentService, ShipmentService>();
+builder.Services.AddScoped<IPaymentService, PaymentService>();
 
-        // Các luồng cấp Token được phép
-        options.AllowAuthorizationCodeFlow()
-               .RequireProofKeyForCodeExchange();
-        options.AllowRefreshTokenFlow();
-        options.AllowPasswordFlow();
-        options.AllowClientCredentialsFlow();
+// builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 
-        options.RegisterScopes(
-            OpenIddictConstants.Scopes.Email,
-            OpenIddictConstants.Scopes.Profile,
-            OpenIddictConstants.Scopes.Roles,
-            "api"
-        );
-
-        options.AddDevelopmentEncryptionCertificate()
-               .AddDevelopmentSigningCertificate();
-
-        var aspNetCore = options.UseAspNetCore()
-            .EnableAuthorizationEndpointPassthrough()
-            .EnableTokenEndpointPassthrough();
-
-        if (builder.Environment.IsDevelopment())
-        {
-            aspNetCore.DisableTransportSecurityRequirement(); // Tắt bắt buộc HTTPS khi dev local
-        }
-    });
-
-// ===============================================
-// 6. DEPENDENCY INJECTION & MVC
-// ===============================================
-// AddApplicationServices() tự chứa cấu hình AutoMapper bên trong
+// Nơi bạn đã đóng gói các DI khác thông qua Extension Method
 builder.Services.AddApplicationServices(); 
 
-builder.Services.AddControllersWithViews(options =>
-{
-    options.Filters.Add<ValidationFilter>();
-})
-.AddRazorRuntimeCompilation();
-
 // ===============================================
-// 7. BUILD APP & DATABASE INITIALIZATION
+// 7. BUILD APP & DATABASE SEEDING
 // ===============================================
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<CoreDbContext>();
-    // Use EnsureCreatedAsync instead of MigrateAsync to create schema without migrations
-    // This bypasses the pending model changes validation issue
     await db.Database.EnsureCreatedAsync();
 
-    // Seed OpenIddict Application (Tạo Client mặc định cho Web Angular)
     var applicationManager = scope.ServiceProvider.GetRequiredService<IOpenIddictApplicationManager>();
     
     if (await applicationManager.FindByClientIdAsync("client-web") == null)
@@ -311,26 +263,31 @@ using (var scope = app.Services.CreateScope())
 }
 
 // ===============================================
-// 8. MIDDLEWARE PIPELINE (THỨ TỰ CỰC KỲ QUAN TRỌNG)
+// 8. HTTP REQUEST PIPELINE (THỨ TỰ CHUẨN)
 // ===============================================
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
     app.UseSwagger();
-    app.UseSwaggerUI(); // Nút Authorize xanh lá sẽ xuất hiện ở đây
+    app.UseSwaggerUI();
 }
 
-app.UseMiddleware<GlobalExceptionMiddleware>(); // Bắt lỗi tổng
+// 1. Exception Handling
+app.UseMiddleware<GlobalExceptionMiddleware>();
+
+// 2. HTTPS & Static Files
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
+// 3. Routing & CORS
 app.UseRouting();
 app.UseCors("WebClient");
 
-// AuthN luôn phải đứng trước AuthZ
+// 4. Authentication & Authorization (Phải nằm giữa Routing và Endpoints)
 app.UseAuthentication(); 
 app.UseAuthorization();  
 
+// 5. Endpoints
 app.MapControllers();
 
 app.Run();
