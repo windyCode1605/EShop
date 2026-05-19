@@ -1,4 +1,5 @@
-﻿namespace CR.DtoBase;
+﻿
+namespace CR.DtoBase;
 
 /// <summary>
 /// Kết quả trả về từ một hàm void
@@ -217,6 +218,7 @@ public class Result
     {
         return Result<T>.Failure(errorCode, stackTrace, listParam: listParam);
     }
+
 }
 
 public class Result<T> : Result
@@ -232,6 +234,11 @@ public class Result<T> : Result
     {
         Value = value;
     }
+    /// <summary>
+    /// Constructor cho kết quả thất bại đầu tiên trong stack trace
+    /// </summary>
+    /// <param name="errorCode"></param>
+    /// <param name="stackTrace"> Stack trace là chuỗi mô tả lỗi </param>
 
     protected Result(int errorCode, string stackTrace)
         : base(errorCode, stackTrace)
@@ -351,7 +358,7 @@ public class Result<T> : Result
     /// <summary>
     /// Method để trả ra bên ngoài nối tiếp chuỗi gọi stack trace
     /// </summary>
-    public static new Result<T> Failure(Result result)
+    public static Result<T> Failure(Result result)
     {
         return new Result<T>(result);
     }

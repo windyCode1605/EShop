@@ -81,7 +81,7 @@ namespace CR.Core.ApplicationServices.AuthenticationModule.Implements
                 var sendOtpResult = await _otpService.SendOtp(user.Id);
                 if (sendOtpResult.IsFailure)
                 {
-                    return Result.Failure<UserDto>(sendOtpResult);
+                    return Result.Failure<UserDto>(this.GetCurrentMethodInfo(), sendOtpResult);
                 }
 
                 return Result<UserDto>.Success(new UserDto
@@ -124,7 +124,7 @@ namespace CR.Core.ApplicationServices.AuthenticationModule.Implements
             var verifyResult = await _otpService.VerifyOtp(otpCode, user.Id);
             if (verifyResult.IsFailure) 
             {
-                return Result.Failure(verifyResult);
+                return Result.Failure( this.GetCurrentMethodInfo(), verifyResult);
             }
 
             // Verify xong -> User được phép đặt mật khẩu (nhưng trạng thái vẫn TEMP cho đến khi SetPassword)

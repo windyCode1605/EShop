@@ -22,5 +22,10 @@ public interface IPaymentService
     /// <param name="orderId"></param>
     /// <returns></returns>
     Task<Result>                    ConfirmBankTransfer(int orderId);               // Xác nhận đã nhận được chuyển khoản ngân hàng (dùng cho offline payment)  
+    /// <summary>
+    /// Hoàn tiền cho đơn hàng (có thể dùng cho cả online và offline payment)
+    /// </summary>
+    /// <param name="orderId"></param>
+    /// <param name="reason"></param>
     Task<Result>                    RefundPayment(int orderId, string reason);      // Hoàn tiền cho đơn hàng (có thể dùng cho cả online và offline payment)
 }

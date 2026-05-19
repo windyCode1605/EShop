@@ -9,6 +9,7 @@ using CR.DtoBase;
 using CR.InfrastructureBase;
 using CR.Utils.DataUtils;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 
 namespace CR.Core.ApplicationServices.PaymentModule.Implement
 {
@@ -213,9 +214,33 @@ namespace CR.Core.ApplicationServices.PaymentModule.Implement
             return Result.Success();
         }
 
-        public Task<Result> RefundPayment(int orderId, string reason)
+        public async Task<Result> RefundPayment(int orderId, string reason)
         {
-            throw new NotImplementedException();
+            _logger.LogInformation("{method}: OrderId: {orderId}, Reason: {reason}", nameof(RefundPayment), orderId, reason);
+            var payment = _dbContext.Payments
+                .Include(p => p.Order)
+                .FirstOrDefault(p => p.OrderId == orderId);
+            if(payment == null) 
+            {
+                return Result.Failure(
+                    ErrorCode.PaymentNotFound,
+                    this.GetCurrentMethodInfo()
+                );
+            }
+            if(payment.Status != PaymentStatus.Success)
+            {
+                return Result.Failure(
+                    ErrorCode.PaymentCannotRefund,
+                    this.GetCurrentMethodInfo()
+                );
+            }
+            // TODO Production: Goi API của VNPay/MoMo để thực hiện hoàn tiền thực tế
+            payment.Status = PaymentStatus.Refunded;
+            var order = await _dbContext.Orders.FirstAsync(o => o.Id == orderId);
+            if(order != null) order.ModifiedDate = DateTimeUtils.GetDate();
+            _logger.LogInformation("Đơn hàng {OrderCode} đã được hoàn tiền. Lý do: {reason}", payment.Order.OrderCode, reason);
+            await _dbContext.SaveChangesAsync();
+            return Result.Success();
         }
         private static string BuildMockPaymentUrl(string orderCode, decimal amount, string method)
         {

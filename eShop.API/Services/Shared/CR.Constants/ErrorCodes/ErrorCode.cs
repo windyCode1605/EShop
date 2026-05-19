@@ -51,5 +51,7 @@ namespace CR.Constants.ErrorCodes
         public const int OrderCannotBeCancelled = 9002; // Đơn hàng không thể hủy (ví dụ: đã giao hàng hoặc đang trong quá trình giao hàng)
     
         public const int PaymentNotFound = 9000; // Thông tin thanh toán không tồn tại
+        public const int PaymentCannotRefund = 9001; // Không thể hoàn tiền cho đơn hàng (ví dụ: đơn hàng chưa thanh toán thành công hoặc đã được hoàn tiền trước đó)
+        public const int ShipmentNotFound = 10002; // Thông tin vận chuyển không tồn tại
     }
 }

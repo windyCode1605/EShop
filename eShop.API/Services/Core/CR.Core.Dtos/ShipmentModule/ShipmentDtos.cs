@@ -34,5 +34,5 @@ public class UpdateTrackingDto
     public int    ShipmentId     { get; set; }
     public string TrackingNumber { get; set; } = null!;
     public string ShippingProvider { get; set; } = null!;
-    public DateTime? EstimatedDelivery { get; set; }
+    public DateTime? EstimatedDelivery { get; set; }        // Tùy chọn: admin có thể nhập luôn ngày dự kiến giao hàng nếu có thông tin từ shipper
 }
