@@ -1,3 +1,4 @@
+using CR.Core.Infrastructure.Persistence.Seeders;
 using CR.Core.ApplicationServices.Configs;
 using CR.Core.ApplicationServices.OrderModule.Abstracts;
 using CR.Core.ApplicationServices.OrderModule.Implements; // Giả định namespace chứa OrderService
@@ -233,6 +234,9 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<CoreDbContext>();
     await db.Database.EnsureCreatedAsync();
+
+    // Tự động Seed Data mỗi lần chạy
+    await DataSeeder.SeedAsync(db);
 
     var applicationManager = scope.ServiceProvider.GetRequiredService<IOpenIddictApplicationManager>();
     

@@ -28,7 +28,7 @@ namespace CR.Core.Infrastructure.Persistence.Configurations
 
             // FK → Order (Cascade: khi hủy đơn thì xóa luôn vận đơn)
             entity.HasOne(s => s.Order)
-                .WithMany()
+                .WithMany(o => o.Shipments)
                 .HasForeignKey(s => s.OrderId)
                 .OnDelete(DeleteBehavior.Cascade);
         }

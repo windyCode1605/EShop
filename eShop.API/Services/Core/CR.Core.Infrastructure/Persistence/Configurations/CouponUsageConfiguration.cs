@@ -37,6 +37,8 @@ namespace CR.Core.Infrastructure.Persistence.Configurations
                 .WithMany()
                 .HasForeignKey(cu => cu.OrderId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasQueryFilter(cu => !cu.Order.Deleted);
         }
     }
 }

@@ -14,6 +14,8 @@ namespace CR.Core.Infrastructure.Persistence.Configurations
                 .WithMany(o => o.Payments)
                 .HasForeignKey(p => p.OrderId)
                 .OnDelete(DeleteBehavior.Cascade);
+                
+            entity.HasQueryFilter(p => !p.Order.Deleted);
         }
     }
 }
