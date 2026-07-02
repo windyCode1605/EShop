@@ -12,6 +12,10 @@ namespace CR.Core.Infrastructure.Persistence.Configurations
             entity.Property(u => u.Username).IsRequired().HasMaxLength(50);
             entity.Property(u => u.PasswordHash).IsRequired().HasMaxLength(256);
 
+            entity.HasOne(u => u.Profile)
+                  .WithOne()
+                  .HasForeignKey<UserProfile>(p => p.UserId);
+
         }
     }
 }

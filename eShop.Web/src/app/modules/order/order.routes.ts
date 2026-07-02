@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { OrderPageComponent } from './order-page.component';
+import { OrderPageComponent } from './pages/order-page/order-page.component';
 
 export const ORDER_ROUTES: Routes = [
   {

@@ -49,7 +49,7 @@ namespace CR.Core.ApplicationServices.OtpModule.Implements
             _logger.LogInformation("{MethodName}: userId={UserId}", nameof(VerifyOtp), UserId);
 
             var maxVerify = await GetIntSysVar(GrNames.OTP, VarNames.OTP_MAX_TURN, DefaultOtpMaxVerify);
-            
+
             var latestOtp = await _dbContext.AuthOtps
                 .Where(x => x.UserId == UserId && !x.IsUsed)
                 .OrderByDescending(x => x.Id)
@@ -79,7 +79,7 @@ namespace CR.Core.ApplicationServices.OtpModule.Implements
 
             var isDefaultOtp = !string.IsNullOrWhiteSpace(defaultOtp?.VarValue) && otp == defaultOtp.VarValue;
             var isValidOtp = isDefaultOtp || PasswordHasher.VerifyPassword(otp, latestOtp.OtpCode);
-            
+
             if (!isValidOtp)
             {
                 latestOtp.VerifyTime += 1;
@@ -113,15 +113,15 @@ namespace CR.Core.ApplicationServices.OtpModule.Implements
             using var transaction = await _dbContext.Database.BeginTransactionAsync();
             try
             {
-                // Dùng Email thay cho Username để thống nhất
+
                 var sendOtpDb = await _dbContext.SendOtps
-                    .FirstOrDefaultAsync(s => s.Username == user.Email); 
+                    .FirstOrDefaultAsync(s => s.Email == user.Email);
 
                 if (sendOtpDb == null)
                 {
                     sendOtpDb = new SendOtp
                     {
-                        Username = user.Email,
+                        Email = user.Email,
                         LastSentDateTime = now,
                         TimeLimitCanVerifyOtp = now.AddSeconds(resendCooldown),
                         SendCount = 0
@@ -149,14 +149,15 @@ namespace CR.Core.ApplicationServices.OtpModule.Implements
 
                 var otpCode = GenerateOTP.GenerateOtp(DefaultOtpLength);
                 var otpHash = PasswordHasher.HashPassword(otpCode);
-                
+
                 await _dbContext.AuthOtps.AddAsync(new AuthOtp
                 {
                     OtpCode = otpHash,
                     ExpireTime = now.AddSeconds(otpLifeTime),
                     IsUsed = false,
                     UserId = userId,
-                    VerifyTime = 0
+                    VerifyTime = 0,
+                    CreatedDate = now
                 });
 
                 sendOtpDb.SendCount += 1;
@@ -167,7 +168,7 @@ namespace CR.Core.ApplicationServices.OtpModule.Implements
 
                 // Gọi hàm gửi Mail bằng MailKit
                 await SendOtpMailAsync(user.Email, otpCode, otpLifeTime);
-                
+
                 await transaction.CommitAsync();
                 return Result.Success();
             }
@@ -189,11 +190,11 @@ namespace CR.Core.ApplicationServices.OtpModule.Implements
             var password = _configuration["Smtp:Password"];
             var fromEmail = _configuration["Smtp:FromEmail"];
             var fromName = _configuration["Smtp:FromName"] ?? "ATELIER eShop";
-            
-            var enableSsl = bool.TryParse(_configuration["Smtp:EnableSsl"], out var ssl) ? ssl : true;
-            var port = int.TryParse(_configuration["Smtp:Port"], out var p) ? p : 587;
 
-            if (string.IsNullOrWhiteSpace(host) || string.IsNullOrWhiteSpace(userName) || 
+            var enableSsl = _configuration.GetValue("Smtp:EnableSsl", true);
+            var port = _configuration.GetValue("Smtp:Port", 587);
+
+            if (string.IsNullOrWhiteSpace(host) || string.IsNullOrWhiteSpace(userName) ||
                 string.IsNullOrWhiteSpace(password) || string.IsNullOrWhiteSpace(fromEmail))
             {
                 throw new InvalidOperationException("SMTP configuration is missing in appsettings.");
@@ -226,7 +227,7 @@ namespace CR.Core.ApplicationServices.OtpModule.Implements
                 // client.ServerCertificateValidationCallback = (s, c, h, e) => true; 
 
                 var secureOptions = enableSsl ? SecureSocketOptions.StartTls : SecureSocketOptions.Auto;
-                
+
                 await client.ConnectAsync(host, port, secureOptions);
                 await client.AuthenticateAsync(userName, password);
                 await client.SendAsync(message);

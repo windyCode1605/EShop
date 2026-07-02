@@ -10,10 +10,10 @@ using Microsoft.EntityFrameworkCore;
 namespace CR.Core.Domain.Opts
 {
     [Table(nameof(SendOtp), Schema = DbSchemas.Default)]
-    [Index(nameof(Username), IsUnique = false, Name = $"IX_{nameof(SendOtp)}")]
-    public class SendOtp 
+    [Index(nameof(Email), IsUnique = false, Name = $"IX_{nameof(SendOtp)}")]
+    public class SendOtp
     {
-        
+
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
@@ -23,13 +23,13 @@ namespace CR.Core.Domain.Opts
         /// </summary>
         [Unicode(false)]
         [MaxLength(128)]
-        public required string Username {get; set; }
+        public required string Email { get; set; }
 
         /// <summary>
         /// Số lần gửi đếm từ 0 , khi đạt giới hạn sẽ không cho gửi nữa
         /// </summary>
         public int SendCount { get; set; } = 0;
-        
+
         /// <summary>
         /// Thời gian gửi OTP cuối cùng, dùng để kiểm tra thời gian chờ giữa
         /// các lần gửi OTP, tránh việc spam liên tục

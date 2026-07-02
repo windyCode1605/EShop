@@ -2,7 +2,7 @@ import { AfterViewInit, Component, ElementRef, OnInit, ViewChild } from '@angula
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { AppAuthService } from '../../../shared/auth/app-auth.service';
+import { AppAuthService } from '../../../../core/auth/app-auth.service';
 
 @Component({
   selector: 'app-account-login-page',

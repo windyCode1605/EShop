@@ -1,6 +1,6 @@
 import { HttpClient, HttpHeaders, HttpParams } from "@angular/common/http";
 import { Injectable } from "@angular/core";
-import { environment } from "../../../my-lib/shared/enviroments/enviroment";
+import { environment } from "../../my-lib/shared/enviroments/enviroment";
 import { catchError, Observable, throwError } from "rxjs";
 
 @Injectable({
@@ -15,9 +15,10 @@ export class AuthService {
         const formData = new HttpParams()
             .set('username', body.username)
             .set('password', body.password)
-            .set('grant_type', body.grant_type || 'password')
-            .set('scope', body.scope || 'offline_access')
-            .set('client_id', body.client_id || 'client-web');
+            .set('grant_type', 'password')
+            .set('scope', environment.scopes)
+            .set('client_id', environment.clientId)
+            .set('client_secret', environment.clientSecret);
         const headers = new HttpHeaders({
             'Content-Type': 'application/x-www-form-urlencoded'
         });

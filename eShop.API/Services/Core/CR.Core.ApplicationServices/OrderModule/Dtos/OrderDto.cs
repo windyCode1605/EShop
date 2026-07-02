@@ -40,6 +40,13 @@ public class PaymentDto
     public string   Status { get; set; } = null!;
     public decimal  Amount { get; set; }
     public DateTime? PaidAt { get; set; }
+    public string?   TransactionId { get; set; }
+    public string?   GatewayResponseCode { get; set; }
+    public string?   PaymentUrl { get; set; }
+    public DateTime? CreatedAt { get; set; }
+    public decimal?  RefundedAmount { get; set; }
+    public DateTime? RefundedAt { get; set; }
+    public string?   RefundReason { get; set; }
 }
 
 public class ShipmentDto

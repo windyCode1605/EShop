@@ -4,13 +4,14 @@ using System.Diagnostics.CodeAnalysis;
 using CR.Constants.Common.Database;
 using CR.Core.Domain.User;
 using CR.EntitiesBase;
+using CR.EntitiesBase.Entities;
 using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace CR.Core.Domain.Opts
 {
     [Table(nameof(AuthOtp), Schema = DbSchemas.Default)]
-    public class AuthOtp
+    public class AuthOtp : AuditableEntity
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]

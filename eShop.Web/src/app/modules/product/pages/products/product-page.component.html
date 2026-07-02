@@ -1,0 +1,77 @@
+<div class="product-page-container">
+  <div class="page-header">
+    <h1 class="text-display">The Collection</h1>
+    <p class="text-body">Minimal design, maximum utility. Explore our meticulously curated selection.</p>
+  </div>
+
+  <div class="ecommerce-layout">
+    <!-- Sidebar: Filters and Categories -->
+    <aside class="sidebar">
+      <div class="sidebar-widget">
+        <h3 class="text-card-title widget-title">Categories</h3>
+        <ul class="category-list">
+          <li *ngFor="let cat of categories">
+            <label class="custom-checkbox">
+              <input type="checkbox" />
+              <span class="checkmark"></span>
+              <span class="label-text">{{ cat.name }}</span>
+              <span class="count">{{ cat.count }}</span>
+            </label>
+          </li>
+        </ul>
+      </div>
+
+      <div class="sidebar-widget">
+        <h3 class="text-card-title widget-title">Price Range</h3>
+        <div class="price-filter">
+          <input type="range" min="0" max="5000" value="5000" class="range-slider">
+          <div class="price-inputs">
+            <input type="number" placeholder="Min" class="app-input input-sm">
+            <span>—</span>
+            <input type="number" placeholder="Max" class="app-input input-sm">
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content: Product Grid -->
+    <main class="main-content">
+      <div class="content-controls">
+        <span class="text-meta">{{ products.length }} Products</span>
+        <select class="app-input select-sm">
+          <option>Sort by: Popularity</option>
+          <option>Sort by: Newest</option>
+          <option>Sort by: Price: Low to High</option>
+          <option>Sort by: Price: High to Low</option>
+        </select>
+      </div>
+
+      <div class="product-grid">
+        <div class="premium-product-card" *ngFor="let product of products">
+          <div class="card-image-wrapper">
+            <span class="badge" *ngIf="product.badge">{{ product.badge }}</span>
+            <span class="badge badge-new" *ngIf="product.isNew">New</span>
+            
+            <img [src]="product.imageUrl" [alt]="product.name" class="product-image">
+            
+            <div class="quick-actions">
+              <button class="icon-btn" title="Wishlist"><i class="fas fa-heart"></i>♡</button>
+            </div>
+            
+            <button class="quick-add-btn">
+              Quick Add
+            </button>
+          </div>
+          
+          <div class="card-meta">
+            <h3 class="product-title">{{ product.name }}</h3>
+            <div class="price-row">
+              <span class="current-price">${{ product.price }}</span>
+              <span class="original-price" *ngIf="product.originalPrice">${{ product.originalPrice }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>

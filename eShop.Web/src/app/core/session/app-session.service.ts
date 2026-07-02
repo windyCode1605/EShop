@@ -2,7 +2,7 @@
 /// Đoạn service này dùng để quản lý thông tin phiên đăng nhập hiện tại của user trong frontend.
 /// </summary>
 import { Injectable } from "@angular/core";
-import { environment } from "../../../my-lib/shared/enviroments/enviroment";
+import { environment } from "../../my-lib/shared/enviroments/enviroment";
 import { BehaviorSubject, firstValueFrom, map, Observable } from "rxjs";
 import { TokenService } from "../service-proxies/token.service";
 import { HttpClient } from "@angular/common/http";

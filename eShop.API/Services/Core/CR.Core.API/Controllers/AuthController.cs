@@ -240,7 +240,7 @@ public class AuthorizationController : AuthorizationControllerBase
             var user = await _userAuthorizationService.ValidateAppUser(input.UserName, input.Password);
 
             var identity = new ClaimsIdentity(CookieAuthenticationDefaults.AuthenticationScheme);
-            
+
             // Đã cập nhật SetClaims để dùng Entity mới
             SetClaims(identity, user);
 
@@ -302,20 +302,22 @@ public class AuthorizationController : AuthorizationControllerBase
                         OpenIddictServerAspNetCoreDefaults.AuthenticationScheme
                     );
                 int userId = int.Parse(result.Principal!.GetClaim(UserClaimTypes.UserId)!);
-                
+
                 // Ở đây cần Includes(u => u.Profile) bên trong hàm FindUserAuthorizationById để SetClaims không bị null FullName
                 var user = await _userAuthorizationService.FindUserAuthorizationById(userId)
                     ?? throw new UserFriendlyException(ErrorCode.UserNotFound);
-                    
+
                 SetClaims(identity, user);
-                
+
                 identity.SetScopes(
                     new[]
                     {
                         Scopes.OpenId,
                         Scopes.Email,
                         Scopes.Profile,
-                        Scopes.OfflineAccess
+                        Scopes.Roles,
+                        Scopes.OfflineAccess,
+                        "api"
                     }.Intersect(request.GetScopes())
                 );
                 identity.SetDestinations(GetDestinations);
@@ -330,14 +332,14 @@ public class AuthorizationController : AuthorizationControllerBase
                     request.Username!.ToLower(),
                     request.Password!
                 );
-                
+
                 // Cập nhật Last Login
                 await _userServices.LoginInfor(user.Id);
-                
+
                 // _authTokenService.AddNotificationToken(user.Id, _.FcmToken, _.ApnsToken);
-                
+
                 SetClaims(identity, user);
-                
+
                 identity.SetScopes(
                     new[]
                     {
@@ -345,16 +347,17 @@ public class AuthorizationController : AuthorizationControllerBase
                             Scopes.Email,
                             Scopes.Profile,
                             Scopes.Roles,
-                            Scopes.OfflineAccess
+                            Scopes.OfflineAccess,
+                            "api"
                     }.Intersect(request.GetScopes())
                 );
                 identity.SetDestinations(GetDestinations);
-                
+
                 var authenticationProperties = new AuthenticationProperties();
                 authenticationProperties.SetParameter(AuthParameters.IsTempPin, user.IsTempPin);
                 authenticationProperties.SetParameter(AuthParameters.IsTempPassword, user.IsTempPassword);
                 authenticationProperties.SetParameter(AuthParameters.IsHasPin, !string.IsNullOrEmpty(user.PinCode));
-                
+
                 return SignIn(
                     new ClaimsPrincipal(identity),
                     authenticationProperties,
@@ -365,13 +368,13 @@ public class AuthorizationController : AuthorizationControllerBase
             {
                 var application = await _applicationManager.FindByClientIdAsync(request.ClientId!)
                     ?? throw new InvalidOperationException("Không tìm thấy ClientId");
-                    
-                identity.SetClaim(Claims.Subject, await _applicationManager.GetClientIdAsync(application)); 
+
+                identity.SetClaim(Claims.Subject, await _applicationManager.GetClientIdAsync(application));
                 identity.SetClaim(Claims.Name, await _applicationManager.GetDisplayNameAsync(application));
-                identity.SetDestinations(static claim => 
-                    claim.Type switch 
+                identity.SetDestinations(static claim =>
+                    claim.Type switch
                     {
-                        Claims.Name when claim.Subject?.HasScope(Scopes.Profile) == true 
+                        Claims.Name when claim.Subject?.HasScope(Scopes.Profile) == true
                             => new[] { Destinations.AccessToken, Destinations.IdentityToken },
                         _ => new[] { Destinations.AccessToken }
                     }
@@ -385,8 +388,8 @@ public class AuthorizationController : AuthorizationControllerBase
                 var user = await _userAuthorizationService.FindUserAuthorizationById(
                     int.Parse(result.Principal!.GetClaim(UserClaimTypes.UserId)!)
                 ) ?? throw new UserFriendlyException(ErrorCode.UserNotFound);
-                
-                if(user.Status != (int)UserStatus.ACTIVE)
+
+                if (user.Status != (int)UserStatus.ACTIVE)
                 {
                     throw new UserFriendlyException(ErrorCode.UserIsDeactive);
                 }
@@ -404,7 +407,7 @@ public class AuthorizationController : AuthorizationControllerBase
                 new Dictionary<string, string?>
                 {
                     [OpenIddictServerAspNetCoreConstants.Properties.Error] = Errors.InvalidGrant,
-                    [OpenIddictServerAspNetCoreConstants.Properties.ErrorDescription] = 
+                    [OpenIddictServerAspNetCoreConstants.Properties.ErrorDescription] =
                     _localization.Localize(_mapErrorCode.GetErrorMessageKey(ex.ErrorCode), ex.ListParam)
                 }
             );
@@ -475,7 +478,7 @@ public class AuthorizationController : AuthorizationControllerBase
             .SetClaim(Claims.Username, user.Email) // Cập nhật sang Email
             .SetClaim(Claims.Email, user.Email)
             .SetClaim(Claims.Subject, $"{user.Id}")
-            .SetClaim(Claims.Issuer, $"{Request.Scheme}://{Request.Host.Value}") 
+            .SetClaim(Claims.Issuer, $"{Request.Scheme}://{Request.Host.Value}")
             .SetClaim(Claims.Name, user.Profile?.FullName ?? string.Empty) // Lấy từ Profile
             .SetClaim(UserClaimTypes.UserType, (int)user.UserType)
             .SetClaim(UserClaimTypes.UserId, user.Id);

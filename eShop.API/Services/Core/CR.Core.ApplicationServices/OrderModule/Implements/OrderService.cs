@@ -36,7 +36,7 @@ public class OrderService : CoreServiceBase, IOrderService
                                          .ThenInclude(ci => ci.ProductVariant)
                                          .ThenInclude(pv => pv.Product)
                                          .FirstOrDefaultAsync(c => c.UserId == userId);
-        if (cart == null || !cart.Items.Any())
+        if (cart == null || cart.Items.Count == 0)
         {
             return Result<OrderDto>.Failure(ErrorCode.CartEmpty, this.GetCurrentMethodInfo());
         }
@@ -73,8 +73,8 @@ public class OrderService : CoreServiceBase, IOrderService
                 return Result<OrderDto>.Failure(ErrorCode.AddressNotFound, this.GetCurrentMethodInfo(), $"Địa chỉ với ID {input.AddressId.Value} không tồn tại.");
 
             var userProfile = await _dbContext.UserProfiles.FirstOrDefaultAsync(up => up.UserId == userId);
-            receiverName = userProfile?.FullName ?? "Khách hàng";
-            receiverPhone = userProfile?.PhoneNumber ?? string.Empty;
+            receiverName = address.ReceiverName ?? userProfile?.FullName ?? "Khách hàng";
+            receiverPhone = address.ReceiverPhone ?? userProfile?.PhoneNumber ?? string.Empty;
             shippingAddressSnapshot = $"{address.Street}, {address.City}, {address.Province}";
         }
         else
@@ -129,7 +129,7 @@ public class OrderService : CoreServiceBase, IOrderService
             discountAmount = Math.Min(discountAmount, tempSubtotal);
         }
 
-        const decimal shippingFee = 30000;
+        const decimal shippingFee = 30000; // TODO: Make this configurable
 
         using var transaction = await _dbContext.Database.BeginTransactionAsync();
         try
@@ -140,6 +140,10 @@ public class OrderService : CoreServiceBase, IOrderService
                 OrderCode = GenerateOrderCode(),
                 UserId = userId,
                 ShippingAddress = shippingAddressSnapshot,
+                Subtotal = tempSubtotal,
+                DiscountAmount = discountAmount,
+                ShippingFee = shippingFee,
+                AddressesId = input.AddressId,
                 TotalAmount = totalAmount,
                 Status = OrderStatusConst.Pending.ToString(),
                 PaymentMethod = input.PaymentMethod,
@@ -243,13 +247,14 @@ public class OrderService : CoreServiceBase, IOrderService
         // Fix cảnh báo Cartesian Explosion bằng AsSplitQuery
         var order = await _dbContext.Orders
             .Include(o => o.OrderItems)
+                .ThenInclude(oi => oi.ProductVariant)
             .Include(o => o.Payments)
             .AsSplitQuery()
             .FirstOrDefaultAsync(o => o.Id == orderId && o.UserId == userId && !o.Deleted);
 
-        if (order == null)       
+        if (order == null)
             return Result.Failure(ErrorCode.OrderNotFound, this.GetCurrentMethodInfo());
-        
+
         if (!OrderStatusConst.CancellableStatuses.Contains(order.Status))
             return Result.Failure(ErrorCode.BadRequest, this.GetCurrentMethodInfo(), $"Đơn hàng hiện tại ở trạng thái '{order.Status}' nên không thể hủy.");
 
@@ -259,9 +264,9 @@ public class OrderService : CoreServiceBase, IOrderService
             order.Status = OrderStatusConst.Cancelled;
             order.ModifiedDate = DateTimeUtils.GetDate();
 
-            foreach(var item in order.OrderItems)
+            foreach (var item in order.OrderItems)
             {
-                var variant = await _dbContext.ProductVariants.FirstOrDefaultAsync(pv => pv.Id == item.ProductVariantId);
+                var variant = item.ProductVariant;
                 if (variant != null)
                 {
                     variant.StockQuantity += item.Quantity;
@@ -330,10 +335,10 @@ public class OrderService : CoreServiceBase, IOrderService
             .OrderByDescending(o => o.CreatedDate);
 
         var totalItems = await query.CountAsync();
-        
+
         // EF Core lấy data về bộ nhớ trước (ToListAsync)
         var orders = await query.Paging(input).ToListAsync();
-        
+
         // Map DTO trên RAM thay vì bắt EF dịch hàm MapToDto sang SQL
         var itemsDto = orders.Select(MapToDto).ToList();
 
@@ -354,15 +359,15 @@ public class OrderService : CoreServiceBase, IOrderService
             .AsSplitQuery()
             .Where(o =>
                 !o.Deleted &&
-                (string.IsNullOrEmpty(input.Status) || o.Status == input.Status) && 
-                (string.IsNullOrEmpty(input.Keyword) || o.OrderCode.Contains(input.Keyword) || o.ShippingAddress.Contains(input.Keyword))) 
+                (string.IsNullOrEmpty(input.Status) || o.Status == input.Status) &&
+                (string.IsNullOrEmpty(input.Keyword) || o.OrderCode.Contains(input.Keyword) || o.ShippingAddress.Contains(input.Keyword)))
             .OrderByDescending(o => o.CreatedDate);
 
         var totalItems = await query.CountAsync();
-        
+
         // Fetch data trước
         var orders = await query.Paging(input).ToListAsync();
-        
+
         // Map sang Dto trong RAM
         var itemsDto = orders.Select(MapToDto).ToList();
 
@@ -376,21 +381,49 @@ public class OrderService : CoreServiceBase, IOrderService
     public async Task<Result> UpdateOrderStatus(int orderId, string newStatus)
     {
         var order = await _dbContext.Orders.FirstOrDefaultAsync(o => o.Id == orderId && !o.Deleted);
-        if (order == null)        
+        if (order == null)
             return Result.Failure(ErrorCode.OrderNotFound, this.GetCurrentMethodInfo());
-        
-        if(OrderStatusConst.TerminalStatuses.Contains(order.Status))
+
+        if (OrderStatusConst.TerminalStatuses.Contains(order.Status))
             return Result.Failure(ErrorCode.OrderCannotBeCancelled, this.GetCurrentMethodInfo(), $"Đơn hàng hiện tại ở trạng thái '{order.Status}' nên không thể cập nhật nữa.");
-    
+
         order.Status = newStatus;
         order.ModifiedDate = DateTimeUtils.GetDate();
 
-        if(newStatus == OrderStatusConst.Shipping)
+        if (newStatus == OrderStatusConst.Cancelled)
+        {
+            // Explicitly load navigation properties needed for cancellation
+            await _dbContext.Entry(order).Collection(o => o.OrderItems).Query().Include(oi => oi.ProductVariant).LoadAsync();
+            await _dbContext.Entry(order).Collection(o => o.Payments).LoadAsync();
+
+            foreach (var item in order.OrderItems)
+            {
+                var variant = item.ProductVariant;
+                if (variant != null)
+                {
+                    variant.StockQuantity += item.Quantity;
+                }
+            }
+
+            var couponUsage = await _dbContext.CouponUsages.Include(cu => cu.Coupon).FirstOrDefaultAsync(cu => cu.OrderId == orderId);
+            if (couponUsage != null)
+            {
+                couponUsage.Coupon.UsedCount = Math.Max(0, couponUsage.Coupon.UsedCount - 1);
+                _dbContext.CouponUsages.Remove(couponUsage);
+            }
+
+            var payment = order.Payments.FirstOrDefault();
+            if (payment != null)
+            {
+                payment.Status = payment.Status == PaymentStatus.Success ? PaymentStatus.Refunded : PaymentStatus.Failed;
+            }
+        }
+        else if (newStatus == OrderStatusConst.Shipping)
         {
             var shipment = await _dbContext.Shipments.FirstOrDefaultAsync(s => s.OrderId == orderId && !s.Deleted);
             if (shipment != null) shipment.Status = ShipmentStatus.InTransit.ToString();
         }
-        if(newStatus == OrderStatusConst.Delivered)
+        else if (newStatus == OrderStatusConst.Delivered)
         {
             var shipment = await _dbContext.Shipments.FirstOrDefaultAsync(s => s.OrderId == orderId && !s.Deleted);
             if (shipment != null)
@@ -410,6 +443,9 @@ public class OrderService : CoreServiceBase, IOrderService
         OrderCode = order.OrderCode,
         Status = order.Status,
         PaymentMethod = order.PaymentMethod,
+        Subtotal = order.Subtotal,
+        DiscountAmount = order.DiscountAmount,
+        ShippingFee = order.ShippingFee,
         TotalAmount = order.TotalAmount,
         ShippingAddress = order.ShippingAddress,
         CreatedDate = order.CreatedDate,
@@ -430,6 +466,13 @@ public class OrderService : CoreServiceBase, IOrderService
             Status = p.Status,
             Amount = p.Amount,
             PaidAt = p.PaidAt,
+            TransactionId = p.TransactionId,
+            GatewayResponseCode = p.GatewayResponseCode,
+            PaymentUrl = p.PaymentUrl,
+            CreatedAt = p.CreatedAt,
+            RefundedAmount = p.RefundedAmount,
+            RefundedAt = p.RefundedAt,
+            RefundReason = p.RefundReason
         } : null,
         Shipment = order.Shipments?.FirstOrDefault() is { } s ? new Dtos.ShipmentDto
         {

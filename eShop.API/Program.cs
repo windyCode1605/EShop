@@ -20,6 +20,8 @@ using CR.Core.ApplicationServices.ShipmentModule.Abstracts;
 using CR.Core.ApplicationServices.PaymentModule.Implement;
 using CR.Core.ApplicationServices.PaymentModule.Abstracts;
 using CR.Core.ApplicationServices.ShipmentModule.Implements;
+using CR.Core.ApplicationServices.CartModule.Abstracts;
+using CR.Core.ApplicationServices.CartModule.Implemts;
 
 // ===============================================
 // 0. ENVIRONMENT & CONFIGURATION LOAD
@@ -150,6 +152,7 @@ builder.Services
         );
 
         options.AddDevelopmentEncryptionCertificate().AddDevelopmentSigningCertificate();
+        options.DisableAccessTokenEncryption();
 
         var aspNetCore = options.UseAspNetCore()
             .EnableAuthorizationEndpointPassthrough()
@@ -159,6 +162,11 @@ builder.Services
         {
             aspNetCore.DisableTransportSecurityRequirement();
         }
+    })
+    .AddValidation(options =>
+    {
+        options.UseLocalServer();
+        options.UseAspNetCore();
     });
 
 // ===============================================
@@ -177,7 +185,8 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddAuthentication(options =>
 {
-    options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+    options.DefaultScheme = OpenIddict.Validation.AspNetCore.OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme;
+    options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
 })
 .AddCookie(options =>
 {
@@ -215,15 +224,16 @@ builder.Services.AddSingleton<ILocalization>(sp => sp.GetRequiredService<Localiz
 
 // Application Services (Giải quyết lỗi IOrderService)
 // BẠN KHAI BÁO CÁC SERVICE CÒN THIẾU TẠI ĐÂY
-builder.Services.AddScoped<IOrderService, OrderService>(); 
-builder.Services.AddScoped<IProductService, ProductService>(); 
+builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IShipmentService, ShipmentService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
+builder.Services.AddScoped<ICartService, CartService>();
 
 // builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 
 // Nơi bạn đã đóng gói các DI khác thông qua Extension Method
-builder.Services.AddApplicationServices(); 
+builder.Services.AddApplicationServices();
 
 // ===============================================
 // 7. BUILD APP & DATABASE SEEDING
@@ -239,7 +249,7 @@ using (var scope = app.Services.CreateScope())
     await DataSeeder.SeedAsync(db);
 
     var applicationManager = scope.ServiceProvider.GetRequiredService<IOpenIddictApplicationManager>();
-    
+
     if (await applicationManager.FindByClientIdAsync("client-web") == null)
     {
         var descriptor = new OpenIddictApplicationDescriptor
@@ -248,7 +258,7 @@ using (var scope = app.Services.CreateScope())
             ClientSecret = "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",
             DisplayName = "Web Client",
         };
-        
+
         descriptor.RedirectUris.Add(new Uri("http://localhost:4200/callback"));
         descriptor.Permissions.Add(OpenIddictConstants.Permissions.Endpoints.Authorization);
         descriptor.Permissions.Add(OpenIddictConstants.Permissions.Endpoints.Token);
@@ -288,8 +298,8 @@ app.UseRouting();
 app.UseCors("WebClient");
 
 // 4. Authentication & Authorization (Phải nằm giữa Routing và Endpoints)
-app.UseAuthentication(); 
-app.UseAuthorization();  
+app.UseAuthentication();
+app.UseAuthorization();
 
 // 5. Endpoints
 app.MapControllers();

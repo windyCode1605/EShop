@@ -1,4 +1,4 @@
-import { ApiResponse, UserDto } from '../../../models';
+import { ApiResponse, UserDto } from '../../../core/models';
 
 export interface RegisterRequest {
   userName: string;

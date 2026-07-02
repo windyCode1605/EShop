@@ -9,7 +9,7 @@ namespace CR.Core.Domain.Carts
 {
     [Table(nameof(Cart), Schema = DbSchemas.Default)]
     [Index(nameof(UserId), IsUnique = true, Name = $"IX_{nameof(Cart)}_UserId")]
-    public class Cart
+    public class Cart : AuditableEntity
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]

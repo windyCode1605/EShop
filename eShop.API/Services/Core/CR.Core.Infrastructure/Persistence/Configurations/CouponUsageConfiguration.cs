@@ -18,7 +18,7 @@ namespace CR.Core.Infrastructure.Persistence.Configurations
 
             // Index để hỗ trợ truy vấn nhanh: "Người dùng này đã xài mã này bao nhiêu lần?"
             entity.HasIndex(cu => new { cu.UserId, cu.CouponId })
-                .HasName($"IX_{nameof(CouponUsage)}_UserId_CouponId");
+                .HasDatabaseName($"IX_{nameof(CouponUsage)}_UserId_CouponId");
 
             // FK → Coupons (Restrict: không cho xóa Coupon nếu đã có người xài)
             entity.HasOne(cu => cu.Coupon)

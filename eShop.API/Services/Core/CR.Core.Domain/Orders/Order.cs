@@ -26,7 +26,18 @@ namespace CR.Core.Domain.Orders
         public string ShippingAddress { get; set; } = null!;
 
         [Column(TypeName = "decimal(18,2)")]
+        public decimal Subtotal { get; set; }
+
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal DiscountAmount { get; set; }
+
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal ShippingFee { get; set; }
+
+        [Column(TypeName = "decimal(18,2)")]
         public decimal TotalAmount { get; set; }
+
+        public int? AddressesId { get; set; }
 
         [Required, MaxLength(50), Unicode(false)]
         public string Status { get; set; } = null!;

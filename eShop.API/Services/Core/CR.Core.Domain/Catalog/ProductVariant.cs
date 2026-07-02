@@ -34,5 +34,6 @@ namespace CR.Core.Domain.Catalog
         public byte[] RowVersion { get; set; } = null!;
 
         public virtual Product Product { get; set; } = null!;
+        public virtual ICollection<ProductVariantAttribute> VariantAttributes { get; set; } = new List<ProductVariantAttribute>();
     }
 }

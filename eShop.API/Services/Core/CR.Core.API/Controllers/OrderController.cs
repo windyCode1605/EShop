@@ -4,6 +4,7 @@ using CR.DtoBase;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class OrderController : ControllerBase
@@ -30,9 +31,8 @@ public class OrderController : ControllerBase
     /// <summary>
     /// Lấy thông tin chi tiết của một đơn hàng cụ thể
     /// </summary>
-    [Authorize]
     [HttpGet("{orderId:int}")]
-    public async Task<IActionResult> GetById([FromRoute]int orderId)
+    public async Task<IActionResult> GetById([FromRoute] int orderId)
         => Ok(await _orderService.GetById(orderId));
 
     /// <summary>
@@ -41,7 +41,7 @@ public class OrderController : ControllerBase
     [HttpGet("my-orders")]
     public async Task<IActionResult> GetMyOrders([FromQuery] FilterOrderPagingDto input)
         => Ok(await _orderService.GetMyOrders(input));
-    
+
     /// <summary>
     /// Hủy đơn hàng ( chỉ khi PENDING hoặc CONFIRMED)
     /// </summary>

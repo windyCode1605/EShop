@@ -18,6 +18,12 @@ namespace CR.Core.Domain.Address
         [Required]
         [MaxLength(100)]
         public string Province { get; set; } = null!;
+
+        [MaxLength(256)]
+        public string? ReceiverName { get; set; }
+
+        [MaxLength(40)]
+        public string? ReceiverPhone { get; set; }
         [Required]
         public bool IsDefault { get; set; } = false;
         [ForeignKey(nameof(UserId))]

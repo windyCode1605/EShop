@@ -2,7 +2,7 @@ import { Injectable } from "@angular/core";
 import { HttpErrorResponse } from "@angular/common/http";
 import { AuthenticateModel, AuthenticateResultModel } from "../service-proxies/service-proxies";
 import { AuthService } from "../services/auth.service";
-import { environment } from "../../../my-lib/shared/enviroments/enviroment";
+import { environment } from "../../my-lib/shared/enviroments/enviroment";
 import { MessageService } from 'primeng/api';
 import { catchError, finalize, throwError } from "rxjs";
 import { jwtDecode } from 'jwt-decode';
@@ -111,11 +111,9 @@ export class AppAuthService {
         if(userIfo?.user_type === 2 || userIfo?.user_type === 1 || userIfo?.userType === 2 || userIfo?.userType === 1) {
             // Admin/Staff: redirect to product manager
             this._router.navigate(['/product-manager']).catch(err => console.error('Navigation error:', err));
-        }
-        else 
-        {
-            // Customer: redirect to customer order page
-            location.href = `${environment.baseUrlCore}/customer-order/customer-order-overview`;
+        } else {
+            // Customer: redirect to customer product page
+            this._router.navigate(['/product']).catch(err => console.error('Navigation error:', err));
         }
     }
     /// <summary>

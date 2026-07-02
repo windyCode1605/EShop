@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
-import { DashboardComponent } from './layout/components/dashboard.component';
-import { ProductsComponent } from './layout/components/products.component';
+import { DashboardComponent } from './modules/dashboard/pages/dashboard/dashboard.component';
+import { ProductsComponent } from './modules/product/pages/products/products.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: '/account/login', pathMatch: 'full' },

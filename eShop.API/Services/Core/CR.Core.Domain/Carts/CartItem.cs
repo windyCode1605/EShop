@@ -2,11 +2,12 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using CR.Constants.Common.Database;
 using CR.Core.Domain.Catalog;
+using CR.EntitiesBase.Entities;
 
 namespace CR.Core.Domain.Carts
 {
     [Table(nameof(CartItem), Schema = DbSchemas.Default)]
-    public class CartItem
+    public class CartItem : AuditableEntity
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]

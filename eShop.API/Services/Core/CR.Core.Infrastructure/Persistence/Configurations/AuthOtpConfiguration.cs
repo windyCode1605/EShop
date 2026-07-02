@@ -13,9 +13,10 @@ namespace CR.Core.Infrastructure.Persistence.Configurations
             entity.Property(a => a.ExpireTime).IsRequired();
             entity.Property(a => a.IsUsed).IsRequired();
             entity.Property(a => a.VerifyTime).IsRequired();
+            entity.Property(a => a.CreatedDate).IsRequired();
 
             entity.HasOne(a => a.User)
-                .WithMany()
+                .WithMany(u => u.AuthOtps)
                 .HasForeignKey(a => a.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
         }

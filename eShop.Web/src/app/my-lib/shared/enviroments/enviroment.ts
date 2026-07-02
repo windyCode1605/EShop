@@ -2,10 +2,9 @@ import { IEnvironment } from "../../src/lib/shared/interfaces/environment.interf
 
 export const environment: IEnvironment = {
     production: false,
-    api: 'https://localhost:5187',
-    baseUrlCore: 'https://localhost:5187',
+    api: 'http://localhost:5178',
+    baseUrlCore: 'http://localhost:5178',
     clientId: 'client-web',
-    // Public browser clients must not ship a client secret; use PKCE instead.
-    clientSecret: '',
+    clientSecret: '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',
     scopes: 'offline_access'
 }

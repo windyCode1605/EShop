@@ -8,7 +8,7 @@ namespace CR.Core.Infrastructure.Persistence.Configurations
     {
         public void Configure(EntityTypeBuilder<CartItem> entity)
         {
-            entity.HasQueryFilter(ci => !ci.ProductVariant.Product.Deleted && !ci.ProductVariant.Deleted);
+            entity.HasQueryFilter(ci => !ci.Deleted);
 
             entity.HasKey(ci => ci.Id);
             entity.Property(ci => ci.CartId).IsRequired();
@@ -16,8 +16,8 @@ namespace CR.Core.Infrastructure.Persistence.Configurations
             entity.Property(ci => ci.Quantity).IsRequired();
 
             entity.HasOne(ci => ci.Cart)
-            .WithMany( c => c.Items)
-            .HasForeignKey( ci => ci.CartId)
+            .WithMany(c => c.Items)
+            .HasForeignKey(ci => ci.CartId)
             .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasOne(ci => ci.ProductVariant)
@@ -25,6 +25,6 @@ namespace CR.Core.Infrastructure.Persistence.Configurations
             .HasForeignKey(ci => ci.ProductVariantId)
             .OnDelete(DeleteBehavior.Cascade);
         }
-           
+
     }
 }

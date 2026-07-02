@@ -2,6 +2,7 @@ using System.Security.Cryptography.X509Certificates;
 using CR.Core.Domain.AuthToken;
 using CR.Core.Domain.Carts;
 using CR.Core.Domain.Catalog;
+using CatalogAttribute = CR.Core.Domain.Catalog.Attribute;
 using CR.Core.Domain.Orders;
 using CR.Core.Domain.SysVar;
 using CR.Core.Domain.User;
@@ -25,6 +26,9 @@ public class CoreDbContext : ApplicationDbContext<Users>
     public DbSet<Product> Products { get; set; }
     public DbSet<ProductVariant> ProductVariants { get; set; }
     public DbSet<ProductImage> ProductImages { get; set; }
+    public DbSet<CatalogAttribute> Attributes { get; set; }
+    public DbSet<AttributeValue> AttributeValues { get; set; }
+    public DbSet<ProductVariantAttribute> ProductVariantAttributes { get; set; }
     
     // === CART & ORDER ===
     public DbSet<Cart> Carts { get; set; }

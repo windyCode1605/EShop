@@ -44,6 +44,7 @@ namespace CR.Core.Domain.User
         public DateTime? TimeLockUser { get; set; }
         
         public DateTime? LastLogin { get; set; }
+        public bool IsOtpVerified { get; set; }
 
         // --- NAVIGATION PROPERTIES ---
         // LIÊN KẾT 1-1 SANG BẢNG PROFILE
