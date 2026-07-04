@@ -40,7 +40,7 @@ public class GlobalExceptionMiddleware
             _logger.LogError(ex, "Unhandled exception at {Path}", ctx.Request.Path);
             ctx.Response.StatusCode = 500;
             await ctx.Response.WriteAsJsonAsync(
-                ApiResponse<object>.Fail("Lỗi hệ thống, vui lòng thử lại", 500));
+                ApiResponse<object>.Fail(ex.ToString(), 500));
         }
     }
 }

@@ -319,4 +319,236 @@
     color: var(--color-border);
     text-decoration: line-through;
   }
+
+  .product-category {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .stock-info {
+    font-size: 12px;
+    color: var(--color-text-secondary);
+
+    &.low-stock {
+      color: #d97706;
+      font-weight: 500;
+    }
+  }
+
+  // ── Variant selectors ─────────────────────────────────────────────────────
+  .variant-selectors {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-8);
+    margin-top: var(--spacing-4);
+  }
+
+  .color-swatches {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .color-swatch {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    cursor: pointer;
+    transition: outline-color 0.18s ease, transform 0.15s ease;
+    padding: 0;
+
+    &:hover {
+      transform: scale(1.15);
+      outline-color: var(--color-border);
+    }
+
+    &.active {
+      outline-color: var(--color-accent);
+    }
+  }
+
+  .size-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .size-chip {
+    padding: 3px 10px;
+    font-size: 12px;
+    font-weight: 500;
+    font-family: 'Outfit', sans-serif;
+    color: var(--color-text-secondary);
+    background: transparent;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.18s ease;
+
+    &:hover {
+      border-color: var(--color-text-primary);
+      color: var(--color-text-primary);
+    }
+
+    &.active {
+      background: var(--color-text-primary);
+      color: var(--color-surface);
+      border-color: var(--color-text-primary);
+    }
+  }
+
+  .price-separator {
+    font-size: 14px;
+    color: var(--color-text-secondary);
+  }
+
+  .stock-badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 20px;
+    background: #fef3c7;
+    color: #d97706;
+
+    &.low-stock {
+      background: #fef3c7;
+      color: #d97706;
+    }
+  }
+}
+
+/* Price Filter Apply Button */
+.btn-filter-apply {
+  margin-top: var(--spacing-12);
+  width: 100%;
+  padding: 10px 16px;
+  background: var(--color-accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-button);
+  font-family: 'Outfit', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+
+  &:hover {
+    opacity: 0.88;
+  }
+}
+
+/* Skeleton Loading */
+@keyframes shimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--color-surface-secondary) 25%,
+    #e9e9e9 50%,
+    var(--color-surface-secondary) 75%
+  );
+  background-size: 800px 100%;
+  animation: shimmer 1.4s infinite linear;
+}
+
+.skeleton-card {
+  display: flex;
+  flex-direction: column;
+
+  .skeleton-image {
+    width: 100%;
+    aspect-ratio: 4/5;
+    border-radius: var(--radius-card);
+  }
+
+  .skeleton-line {
+    height: 14px;
+    border-radius: 8px;
+  }
+}
+
+/* Empty State */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-96) var(--spacing-24);
+  text-align: center;
+
+  .empty-icon {
+    font-size: 48px;
+    margin-bottom: var(--spacing-24);
+    color: var(--color-border);
+  }
+
+  .empty-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin-bottom: var(--spacing-12);
+  }
+
+  .empty-description {
+    font-size: 16px;
+    color: var(--color-text-secondary);
+    max-width: 400px;
+  }
+}
+
+/* Pagination */
+.pagination-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-8);
+  margin-top: var(--spacing-64);
+  padding-top: var(--spacing-32);
+  border-top: 1px solid var(--color-border);
+}
+
+.page-btn {
+  min-width: 40px;
+  height: 40px;
+  padding: 0 var(--spacing-12);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover:not(:disabled):not(.active) {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+  }
+
+  &.active {
+    background: var(--color-accent);
+    color: #fff;
+    border-color: var(--color-accent);
+  }
+
+  &:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+}
+
+.page-dots {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  padding: 0 var(--spacing-4);
 }

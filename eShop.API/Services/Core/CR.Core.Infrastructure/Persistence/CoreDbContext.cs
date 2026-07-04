@@ -29,7 +29,8 @@ public class CoreDbContext : ApplicationDbContext<Users>
     public DbSet<CatalogAttribute> Attributes { get; set; }
     public DbSet<AttributeValue> AttributeValues { get; set; }
     public DbSet<ProductVariantAttribute> ProductVariantAttributes { get; set; }
-    
+    public DbSet<ProductAttribute> ProductAttributes { get; set; }
+    public DbSet<CategoryAttribute> CategoryAttributes { get; set; }
     // === CART & ORDER ===
     public DbSet<Cart> Carts { get; set; }
     public DbSet<CartItem> CartItems { get; set; }
@@ -69,7 +70,6 @@ public class CoreDbContext : ApplicationDbContext<Users>
         base.OnModelCreating(mb);
         // Áp dụng tất cả IEntityTypeConfiguration trong assembly này
         // Không cần gọi từng file một — tự động scan
-        mb.HasDefaultSchema("core"); 
         mb.ApplyConfigurationsFromAssembly(typeof(CoreDbContext).Assembly);
     }
 }

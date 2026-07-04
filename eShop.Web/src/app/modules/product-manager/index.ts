@@ -3,7 +3,7 @@
  */
 
 // Models
-export { IProduct, ProductModel } from './models/product.model';
+export { IProduct, IProductVariant, IVariantAttribute, ProductModel } from './models/product.model';
 export { ProductResponseDto, ProductCreateUpdateDto } from './models/product.model';
 export { IProductFilter, ProductFilterModel } from './models/product-filter.model';
 

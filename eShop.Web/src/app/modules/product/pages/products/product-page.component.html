@@ -5,17 +5,20 @@
   </div>
 
   <div class="ecommerce-layout">
-    <!-- Sidebar: Filters and Categories -->
+    <!-- ── Sidebar: Filters ─────────────────────────────────────────────── -->
     <aside class="sidebar">
       <div class="sidebar-widget">
         <h3 class="text-card-title widget-title">Categories</h3>
         <ul class="category-list">
           <li *ngFor="let cat of categories">
-            <label class="custom-checkbox">
-              <input type="checkbox" />
+            <label class="custom-checkbox" [class.is-checked]="isCategorySelected(cat.name)">
+              <input
+                type="checkbox"
+                [checked]="isCategorySelected(cat.name)"
+                (change)="onCategoryToggle(cat.name)"
+              />
               <span class="checkmark"></span>
               <span class="label-text">{{ cat.name }}</span>
-              <span class="count">{{ cat.count }}</span>
             </label>
           </li>
         </ul>
@@ -24,53 +27,156 @@
       <div class="sidebar-widget">
         <h3 class="text-card-title widget-title">Price Range</h3>
         <div class="price-filter">
-          <input type="range" min="0" max="5000" value="5000" class="range-slider">
           <div class="price-inputs">
-            <input type="number" placeholder="Min" class="app-input input-sm">
+            <input type="number" placeholder="Min" class="app-input input-sm" [(ngModel)]="minPrice" />
             <span>—</span>
-            <input type="number" placeholder="Max" class="app-input input-sm">
+            <input type="number" placeholder="Max" class="app-input input-sm" [(ngModel)]="maxPrice" />
           </div>
+          <button class="btn-filter-apply" (click)="onPriceFilter()">Apply</button>
         </div>
       </div>
     </aside>
 
-    <!-- Main Content: Product Grid -->
+    <!-- ── Main Content ─────────────────────────────────────────────────── -->
     <main class="main-content">
       <div class="content-controls">
-        <span class="text-meta">{{ products.length }} Products</span>
-        <select class="app-input select-sm">
-          <option>Sort by: Popularity</option>
-          <option>Sort by: Newest</option>
-          <option>Sort by: Price: Low to High</option>
-          <option>Sort by: Price: High to Low</option>
+        <span class="text-meta">
+          {{ loading() ? '...' : totalCount() }} Products
+        </span>
+        <select class="app-input select-sm" [(ngModel)]="selectedSort" (ngModelChange)="onSortChange($event)">
+          <option value="name_asc">Sort by: Name A–Z</option>
+          <option value="name_desc">Sort by: Name Z–A</option>
+          <option value="price_asc">Sort by: Price Low to High</option>
+          <option value="price_desc">Sort by: Price High to Low</option>
+          <option value="createdAt_desc">Sort by: Newest</option>
         </select>
       </div>
 
-      <div class="product-grid">
-        <div class="premium-product-card" *ngFor="let product of products">
+      <!-- ── Skeleton Loading ──────────────────────────────────────────── -->
+      <div class="product-grid" *ngIf="loading()">
+        <div class="skeleton-card" *ngFor="let i of getSkeletonItems()">
+          <div class="skeleton-image shimmer"></div>
+          <div class="skeleton-line shimmer" style="width: 80%; margin-top: 16px;"></div>
+          <div class="skeleton-line shimmer" style="width: 50%; margin-top: 10px;"></div>
+          <div class="skeleton-line shimmer" style="width: 30%; margin-top: 10px;"></div>
+        </div>
+      </div>
+
+      <!-- ── Product Grid ──────────────────────────────────────────────── -->
+      <div class="product-grid" *ngIf="!loading() && hasProducts()">
+        <div class="premium-product-card" *ngFor="let product of products()">
+
+          <!-- Image area -->
           <div class="card-image-wrapper">
-            <span class="badge" *ngIf="product.badge">{{ product.badge }}</span>
-            <span class="badge badge-new" *ngIf="product.isNew">New</span>
-            
-            <img [src]="product.imageUrl" [alt]="product.name" class="product-image">
-            
+            <span class="badge" *ngIf="getTotalStock(product) === 0">Hết hàng</span>
+
+            <img
+              [src]="getProductImage(product)"
+              [alt]="product.name"
+              class="product-image"
+              loading="lazy"
+            />
+
             <div class="quick-actions">
-              <button class="icon-btn" title="Wishlist"><i class="fas fa-heart"></i>♡</button>
+              <button class="icon-btn" title="Wishlist" id="wish-{{ product.id }}">♡</button>
             </div>
-            
-            <button class="quick-add-btn">
-              Quick Add
+
+            <button
+              class="quick-add-btn"
+              [disabled]="getTotalStock(product) === 0"
+              id="quickadd-{{ product.id }}"
+            >
+              {{ getTotalStock(product) === 0 ? 'Hết hàng' : 'Thêm vào giỏ' }}
             </button>
           </div>
-          
+
+          <!-- Card metadata -->
           <div class="card-meta">
+            <span class="product-category">{{ product.categoryName }}</span>
             <h3 class="product-title">{{ product.name }}</h3>
+
+            <!-- Price row -->
             <div class="price-row">
-              <span class="current-price">${{ product.price }}</span>
-              <span class="original-price" *ngIf="product.originalPrice">${{ product.originalPrice }}</span>
+              <ng-container *ngIf="hasPriceRange(product); else singlePrice">
+                <span class="current-price">${{ getMinPrice(product) | number:'1.0-0' }}</span>
+                <span class="price-separator">–</span>
+                <span class="current-price">${{ getMaxPrice(product) | number:'1.0-0' }}</span>
+              </ng-container>
+              <ng-template #singlePrice>
+                <span class="current-price">${{ getMinPrice(product) | number:'1.0-0' }}</span>
+              </ng-template>
+
+              <span
+                class="stock-badge"
+                [class.low-stock]="getTotalStock(product) > 0 && getTotalStock(product) <= 5"
+                *ngIf="getTotalStock(product) > 0 && getTotalStock(product) <= 5"
+              >
+                Chỉ còn {{ getTotalStock(product) }}
+              </span>
+            </div>
+
+            <!-- ── Variant selectors ────────────────────────────────── -->
+            <div class="variant-selectors" *ngIf="product.variants && product.variants.length > 0">
+
+              <!-- Color swatches -->
+              <div class="color-swatches" *ngIf="getVariantColors(product).length > 0">
+                <button
+                  *ngFor="let color of getVariantColors(product)"
+                  class="color-swatch"
+                  [style.background-color]="colorToCss(color)"
+                  [title]="color"
+                  [attr.aria-label]="'Màu ' + color"
+                ></button>
+              </div>
+
+              <!-- Size chips -->
+              <div class="size-chips" *ngIf="getVariantSizes(product).length > 0">
+                <button
+                  *ngFor="let size of getVariantSizes(product)"
+                  class="size-chip"
+                  [attr.aria-label]="'Size ' + size"
+                >
+                  {{ size }}
+                </button>
+              </div>
+
             </div>
           </div>
         </div>
+      </div>
+
+      <!-- ── Empty State ───────────────────────────────────────────────── -->
+      <div class="empty-state" *ngIf="!loading() && !hasProducts()">
+        <div class="empty-icon">◻</div>
+        <h3 class="empty-title">Không tìm thấy sản phẩm</h3>
+        <p class="empty-description">Thử điều chỉnh bộ lọc hoặc tìm kiếm danh mục khác.</p>
+      </div>
+
+      <!-- ── Pagination ────────────────────────────────────────────────── -->
+      <div class="pagination-bar" *ngIf="!loading() && totalPages() > 1">
+        <button class="page-btn" [disabled]="currentPage() === 1" (click)="goToPage(currentPage() - 1)">
+          ←
+        </button>
+
+        <ng-container *ngFor="let page of getPaginationRange()">
+          <span class="page-dots" *ngIf="page === -1">…</span>
+          <button
+            class="page-btn"
+            [class.active]="page === currentPage()"
+            *ngIf="page !== -1"
+            (click)="goToPage(page)"
+          >
+            {{ page }}
+          </button>
+        </ng-container>
+
+        <button
+          class="page-btn"
+          [disabled]="currentPage() === totalPages()"
+          (click)="goToPage(currentPage() + 1)"
+        >
+          →
+        </button>
       </div>
     </main>
   </div>

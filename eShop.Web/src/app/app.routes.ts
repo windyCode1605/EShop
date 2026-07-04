@@ -3,7 +3,7 @@ import { DashboardComponent } from './modules/dashboard/pages/dashboard/dashboar
 import { ProductsComponent } from './modules/product/pages/products/products.component';
 
 export const routes: Routes = [
-  { path: '', redirectTo: '/account/login', pathMatch: 'full' },
+  { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
   { path: 'login', redirectTo: '/account/login', pathMatch: 'full' },
   { path: 'dashboard', component: DashboardComponent },
   { path: 'products', component: ProductsComponent },

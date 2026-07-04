@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using CR.Constants.Common.Database;
+using CR.EntitiesBase.Entities;
 
 namespace CR.Core.Domain.Catalog
 {
@@ -9,7 +10,7 @@ namespace CR.Core.Domain.Catalog
     /// Lưu ý: CreatedBy, ModifiedBy, DeletedBy trong DB là nvarchar(100) nên không kế thừa AuditableEntity.
     /// </summary>
     [Table("Attribute", Schema = DbSchemas.Default)]
-    public class Attribute
+    public class Attribute : AuditableEntity
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -29,17 +30,7 @@ namespace CR.Core.Domain.Catalog
 
         public int DisplayOrder { get; set; }
 
-        // Audit fields — kiểu string vì DB định nghĩa nvarchar(100)
-        public DateTime CreatedDate { get; set; }
-        [MaxLength(100)]
-        public string? CreatedBy { get; set; }
-        public DateTime? ModifiedDate { get; set; }
-        [MaxLength(100)]
-        public string? ModifiedBy { get; set; }
-        public DateTime? DeletedDate { get; set; }
-        [MaxLength(100)]
-        public string? DeletedBy { get; set; }
-        public bool Deleted { get; set; }
+        public bool IsVariantDefining { get; set; }
 
         // Navigation properties
         public virtual ICollection<AttributeValue> Values { get; set; } = new List<AttributeValue>();

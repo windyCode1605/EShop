@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,12 +11,15 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace eShop.API.Migrations
 {
     [DbContext(typeof(CoreDbContext))]
-    partial class CoreDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260702234241_EShopDB")]
+    partial class EShopDB
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
+                .HasDefaultSchema("core")
                 .HasAnnotation("ProductVersion", "9.0.13")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
@@ -205,20 +209,22 @@ namespace eShop.API.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
-                    b.Property<int?>("CreatedBy")
-                        .HasColumnType("int");
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
-                    b.Property<DateTime?>("CreatedDate")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime");
 
                     b.Property<bool>("Deleted")
                         .HasColumnType("bit");
 
-                    b.Property<int?>("DeletedBy")
-                        .HasColumnType("int");
+                    b.Property<string>("DeletedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<DateTime?>("DeletedDate")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime");
 
                     b.Property<string>("Description")
                         .HasMaxLength(500)
@@ -230,14 +236,12 @@ namespace eShop.API.Migrations
                     b.Property<bool>("IsFilterable")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("IsVariantDefining")
-                        .HasColumnType("bit");
-
-                    b.Property<int?>("ModifiedBy")
-                        .HasColumnType("int");
+                    b.Property<string>("ModifiedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<DateTime?>("ModifiedDate")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -246,10 +250,7 @@ namespace eShop.API.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Attribute", "dbo", t =>
-                        {
-                            t.HasCheckConstraint("CK_Attribute_Type", "AttributeType IN ('Text', 'Number', 'Color', 'Boolean')");
-                        });
+                    b.ToTable("Attribute", "core");
                 });
 
             modelBuilder.Entity("CR.Core.Domain.Catalog.AttributeValue", b =>
@@ -263,33 +264,14 @@ namespace eShop.API.Migrations
                     b.Property<int>("AttributeId")
                         .HasColumnType("int");
 
-                    b.Property<string>("ColorHex")
-                        .HasMaxLength(7)
-                        .HasColumnType("nvarchar(7)");
-
-                    b.Property<int?>("CreatedBy")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("CreatedDate")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime");
 
                     b.Property<bool>("Deleted")
                         .HasColumnType("bit");
 
-                    b.Property<int?>("DeletedBy")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("DeletedDate")
-                        .HasColumnType("datetime2");
-
                     b.Property<int>("DisplayOrder")
                         .HasColumnType("int");
-
-                    b.Property<int?>("ModifiedBy")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("ModifiedDate")
-                        .HasColumnType("datetime2");
 
                     b.Property<string>("Value")
                         .IsRequired()
@@ -298,8 +280,7 @@ namespace eShop.API.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AttributeId", "Value")
-                        .IsUnique();
+                    b.HasIndex("AttributeId");
 
                     b.ToTable("AttributeValue", "dbo");
                 });
@@ -355,57 +336,6 @@ namespace eShop.API.Migrations
                         .IsUnique();
 
                     b.ToTable("Category", "dbo");
-                });
-
-            modelBuilder.Entity("CR.Core.Domain.Catalog.CategoryAttribute", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("AttributeId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("CategoryId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("CreatedBy")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("CreatedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("Deleted")
-                        .HasColumnType("bit");
-
-                    b.Property<int?>("DeletedBy")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("DeletedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("DisplayOrder")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("IsRequired")
-                        .HasColumnType("bit");
-
-                    b.Property<int?>("ModifiedBy")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("ModifiedDate")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AttributeId");
-
-                    b.HasIndex("CategoryId", "AttributeId")
-                        .IsUnique();
-
-                    b.ToTable("CategoryAttribute", "dbo");
                 });
 
             modelBuilder.Entity("CR.Core.Domain.Catalog.Product", b =>
@@ -465,63 +395,6 @@ namespace eShop.API.Migrations
                         .IsUnique();
 
                     b.ToTable("Product", "dbo");
-                });
-
-            modelBuilder.Entity("CR.Core.Domain.Catalog.ProductAttribute", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("AttributeId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("AttributeValueId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("CreatedBy")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("CreatedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CustomValue")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.Property<bool>("Deleted")
-                        .HasColumnType("bit");
-
-                    b.Property<int?>("DeletedBy")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("DeletedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("ModifiedBy")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("ModifiedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("ProductId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AttributeId");
-
-                    b.HasIndex("AttributeValueId");
-
-                    b.HasIndex("ProductId", "AttributeId")
-                        .IsUnique();
-
-                    b.ToTable("ProductAttribute", "dbo", t =>
-                        {
-                            t.HasCheckConstraint("CK_PA_ValueXor", "(AttributeValueId IS NOT NULL AND CustomValue IS NULL) OR (AttributeValueId IS NULL AND CustomValue IS NOT NULL)");
-                        });
                 });
 
             modelBuilder.Entity("CR.Core.Domain.Catalog.ProductImage", b =>
@@ -656,11 +529,8 @@ namespace eShop.API.Migrations
                     b.Property<int?>("AttributeValueId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("CreatedBy")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("CreatedDate")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime");
 
                     b.Property<string>("CustomValue")
                         .HasMaxLength(255)
@@ -668,18 +538,6 @@ namespace eShop.API.Migrations
 
                     b.Property<bool>("Deleted")
                         .HasColumnType("bit");
-
-                    b.Property<int?>("DeletedBy")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("DeletedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("ModifiedBy")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("ModifiedDate")
-                        .HasColumnType("datetime2");
 
                     b.Property<int>("ProductVariantId")
                         .HasColumnType("int");
@@ -690,13 +548,9 @@ namespace eShop.API.Migrations
 
                     b.HasIndex("AttributeValueId");
 
-                    b.HasIndex("ProductVariantId", "AttributeId")
-                        .IsUnique();
+                    b.HasIndex("ProductVariantId");
 
-                    b.ToTable("ProductVariantAttribute", "dbo", t =>
-                        {
-                            t.HasCheckConstraint("CK_PVA_ValueXor", "(AttributeValueId IS NOT NULL AND CustomValue IS NULL) OR (AttributeValueId IS NULL AND CustomValue IS NOT NULL)");
-                        });
+                    b.ToTable("ProductVariantAttribute", "dbo");
                 });
 
             modelBuilder.Entity("CR.Core.Domain.Coupons.CouponUsage", b =>
@@ -1605,7 +1459,7 @@ namespace eShop.API.Migrations
                         .IsUnique()
                         .HasFilter("[ClientId] IS NOT NULL");
 
-                    b.ToTable("OpenIddictApplications", (string)null);
+                    b.ToTable("OpenIddictApplications", "core");
                 });
 
             modelBuilder.Entity("OpenIddict.EntityFrameworkCore.Models.OpenIddictEntityFrameworkCoreAuthorization", b =>
@@ -1647,7 +1501,7 @@ namespace eShop.API.Migrations
 
                     b.HasIndex("ApplicationId", "Status", "Subject", "Type");
 
-                    b.ToTable("OpenIddictAuthorizations", (string)null);
+                    b.ToTable("OpenIddictAuthorizations", "core");
                 });
 
             modelBuilder.Entity("OpenIddict.EntityFrameworkCore.Models.OpenIddictEntityFrameworkCoreScope", b =>
@@ -1689,7 +1543,7 @@ namespace eShop.API.Migrations
                         .IsUnique()
                         .HasFilter("[Name] IS NOT NULL");
 
-                    b.ToTable("OpenIddictScopes", (string)null);
+                    b.ToTable("OpenIddictScopes", "core");
                 });
 
             modelBuilder.Entity("OpenIddict.EntityFrameworkCore.Models.OpenIddictEntityFrameworkCoreToken", b =>
@@ -1750,7 +1604,7 @@ namespace eShop.API.Migrations
 
                     b.HasIndex("ApplicationId", "Status", "Subject", "Type");
 
-                    b.ToTable("OpenIddictTokens", (string)null);
+                    b.ToTable("OpenIddictTokens", "core");
                 });
 
             modelBuilder.Entity("CR.Core.Domain.Address.Addresses", b =>
@@ -1825,25 +1679,6 @@ namespace eShop.API.Migrations
                     b.Navigation("Parent");
                 });
 
-            modelBuilder.Entity("CR.Core.Domain.Catalog.CategoryAttribute", b =>
-                {
-                    b.HasOne("CR.Core.Domain.Catalog.Attribute", "Attribute")
-                        .WithMany()
-                        .HasForeignKey("AttributeId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("CR.Core.Domain.Catalog.Category", "Category")
-                        .WithMany("CategoryAttributes")
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Attribute");
-
-                    b.Navigation("Category");
-                });
-
             modelBuilder.Entity("CR.Core.Domain.Catalog.Product", b =>
                 {
                     b.HasOne("CR.Core.Domain.Catalog.Category", "Category")
@@ -1853,32 +1688,6 @@ namespace eShop.API.Migrations
                         .IsRequired();
 
                     b.Navigation("Category");
-                });
-
-            modelBuilder.Entity("CR.Core.Domain.Catalog.ProductAttribute", b =>
-                {
-                    b.HasOne("CR.Core.Domain.Catalog.Attribute", "Attribute")
-                        .WithMany()
-                        .HasForeignKey("AttributeId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("CR.Core.Domain.Catalog.AttributeValue", "AttributeValue")
-                        .WithMany()
-                        .HasForeignKey("AttributeValueId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("CR.Core.Domain.Catalog.Product", "Product")
-                        .WithMany("ProductAttributes")
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Attribute");
-
-                    b.Navigation("AttributeValue");
-
-                    b.Navigation("Product");
                 });
 
             modelBuilder.Entity("CR.Core.Domain.Catalog.ProductImage", b =>
@@ -2140,8 +1949,6 @@ namespace eShop.API.Migrations
 
             modelBuilder.Entity("CR.Core.Domain.Catalog.Category", b =>
                 {
-                    b.Navigation("CategoryAttributes");
-
                     b.Navigation("Children");
 
                     b.Navigation("Products");
@@ -2150,8 +1957,6 @@ namespace eShop.API.Migrations
             modelBuilder.Entity("CR.Core.Domain.Catalog.Product", b =>
                 {
                     b.Navigation("Images");
-
-                    b.Navigation("ProductAttributes");
 
                     b.Navigation("Reviews");
 

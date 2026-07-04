@@ -16,12 +16,12 @@ public class ProductService : ServiceBase<CoreDbContext>, IProductService
         IMapper mapper)
         : base(dbContext, logger, mapper) { }
 
-     public async Task<ProductResponseDto> CreateAsync(ProductRequestDto dto)
+    public async Task<ProductResponseDto> CreateAsync(ProductRequestDto dto)
     {
         // Validate CategoryId exists
         var categoryExists = await _dbContext.Set<Category>()
             .AnyAsync(c => c.Id == dto.CategoryId);
-        
+
         if (!categoryExists)
         {
             throw new InvalidOperationException($"Category with Id {dto.CategoryId} does not exist.");
@@ -58,6 +58,12 @@ public class ProductService : ServiceBase<CoreDbContext>, IProductService
             .Where(p => !p.Deleted)
             .Include(p => p.Category)
             .Include(p => p.Images)
+            .Include(p => p.Variants.Where(v => !v.Deleted))
+                .ThenInclude(v => v.VariantAttributes.Where(va => !va.Deleted))
+                    .ThenInclude(va => va.Attribute)
+            .Include(p => p.Variants.Where(v => !v.Deleted))
+                .ThenInclude(v => v.VariantAttributes.Where(va => !va.Deleted))
+                    .ThenInclude(va => va.AttributeValue)
             .OrderByDescending(p => p.CreatedDate);
 
         var total = await query.CountAsync();
@@ -65,6 +71,7 @@ public class ProductService : ServiceBase<CoreDbContext>, IProductService
         var items = await query
             .Skip((page - 1) * size)
             .Take(size)
+            .AsSplitQuery()
             .ToListAsync();
 
         return new PaginatedResult<ProductResponseDto>

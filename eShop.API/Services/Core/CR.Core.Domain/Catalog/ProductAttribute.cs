@@ -6,17 +6,17 @@ using CR.EntitiesBase.Entities;
 namespace CR.Core.Domain.Catalog
 {
     /// <summary>
-    /// Bảng trung gian ProductVariantAttribute — nối ProductVariant với Attribute và AttributeValue.
-    /// Cho phép mỗi variant có nhiều thuộc tính động (Color: Red, Size: XL, ...).
+    /// Bảng trung gian ProductAttribute — nối Product với Attribute và AttributeValue.
+    /// Dành cho các thuộc tính mô tả ở cấp độ Product (Material, Brand, Origin...), không tạo ra Variant.
     /// </summary>
-    [Table(nameof(ProductVariantAttribute), Schema = DbSchemas.Default)]
-    public class ProductVariantAttribute : AuditableEntity
+    [Table(nameof(ProductAttribute), Schema = DbSchemas.Default)]
+    public class ProductAttribute : AuditableEntity
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
-        public int ProductVariantId { get; set; }
+        public int ProductId { get; set; }
 
         public int AttributeId { get; set; }
 
@@ -28,7 +28,7 @@ namespace CR.Core.Domain.Catalog
         public string? CustomValue { get; set; }
 
         // Navigation properties
-        public virtual ProductVariant ProductVariant { get; set; } = null!;
+        public virtual Product Product { get; set; } = null!;
         public virtual Attribute Attribute { get; set; } = null!;
         public virtual AttributeValue? AttributeValue { get; set; }
     }

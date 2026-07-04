@@ -11,7 +11,9 @@ namespace CR.Core.Infrastructure.Persistence.Configurations
             entity.HasKey(av => av.Id);
 
             entity.Property(av => av.Value).IsRequired().HasMaxLength(100);
-            entity.Property(av => av.CreatedDate).IsRequired().HasColumnType("datetime");
+            entity.Property(av => av.ColorHex).HasMaxLength(7);
+
+            entity.HasIndex(av => new { av.AttributeId, av.Value }).IsUnique();
 
             entity.HasQueryFilter(av => !av.Deleted);
 

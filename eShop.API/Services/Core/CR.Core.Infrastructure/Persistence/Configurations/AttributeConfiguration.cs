@@ -9,18 +9,12 @@ namespace CR.Core.Infrastructure.Persistence.Configurations
     {
         public void Configure(EntityTypeBuilder<CatalogAttribute> entity)
         {
-            entity.ToTable("Attribute");
+            entity.ToTable("Attribute", schema: "dbo", t => t.HasCheckConstraint("CK_Attribute_Type", "AttributeType IN ('Text', 'Number', 'Color', 'Boolean')"));
             entity.HasKey(a => a.Id);
 
             entity.Property(a => a.Name).IsRequired().HasMaxLength(100);
             entity.Property(a => a.Description).HasMaxLength(500);
             entity.Property(a => a.AttributeType).IsRequired().HasMaxLength(20);
-            entity.Property(a => a.CreatedDate).IsRequired().HasColumnType("datetime");
-            entity.Property(a => a.CreatedBy).HasMaxLength(100);
-            entity.Property(a => a.ModifiedDate).HasColumnType("datetime");
-            entity.Property(a => a.ModifiedBy).HasMaxLength(100);
-            entity.Property(a => a.DeletedDate).HasColumnType("datetime");
-            entity.Property(a => a.DeletedBy).HasMaxLength(100);
 
             entity.HasQueryFilter(a => !a.Deleted);
 

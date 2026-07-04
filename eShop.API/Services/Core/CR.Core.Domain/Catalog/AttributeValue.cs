@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using CR.Constants.Common.Database;
+using CR.EntitiesBase.Entities;
 
 namespace CR.Core.Domain.Catalog
 {
@@ -8,7 +9,7 @@ namespace CR.Core.Domain.Catalog
     /// Bảng AttributeValue — lưu các giá trị của từng thuộc tính (ví dụ: Red, Blue, XL, XXL...).
     /// </summary>
     [Table(nameof(AttributeValue), Schema = DbSchemas.Default)]
-    public class AttributeValue
+    public class AttributeValue : AuditableEntity
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -19,11 +20,10 @@ namespace CR.Core.Domain.Catalog
         [Required, MaxLength(100)]
         public string Value { get; set; } = null!;
 
+        [MaxLength(7)]
+        public string? ColorHex { get; set; }
+
         public int DisplayOrder { get; set; }
-
-        public DateTime CreatedDate { get; set; }
-
-        public bool Deleted { get; set; }
 
         // Navigation properties
         public virtual Attribute Attribute { get; set; } = null!;

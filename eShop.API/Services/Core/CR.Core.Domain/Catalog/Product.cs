@@ -31,5 +31,6 @@ namespace CR.Core.Domain.Catalog
         public virtual ICollection<ProductImage> Images { get; set; } = new List<ProductImage>();
         public virtual ICollection<ProductVariant> Variants { get; set; } = new List<ProductVariant>();
         public virtual ICollection<Review.Reviews> Reviews { get; set; } = new List<Review.Reviews>();
+        public virtual ICollection<ProductAttribute> ProductAttributes { get; set; } = new List<ProductAttribute>();
     }
 }
