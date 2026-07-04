@@ -6,6 +6,8 @@ import { Subject, takeUntil } from 'rxjs';
 import { ProductService } from '../../../product-manager/services/product.service';
 import { IProduct, IProductVariant, ProductResponseDto } from '../../../product-manager/models/product.model';
 import { ProductFilterModel } from '../../../product-manager/models/product-filter.model';
+import { CategoryService } from '../../services/Category.service';
+import { ICategory } from '../../../../core/models/category.model';
 
 @Component({
   selector: 'app-product-page',
@@ -19,7 +21,7 @@ export class ProductPageComponent implements OnInit, OnDestroy {
 
   // ── State signals ─────────────────────────────────────────────────────────
   products = signal<IProduct[]>([]);
-  loading  = signal<boolean>(false);
+  loading = signal<boolean>(false);
   totalCount = signal<number>(0);
   totalPages = signal<number>(0);
   currentPage = signal<number>(1);
@@ -31,23 +33,19 @@ export class ProductPageComponent implements OnInit, OnDestroy {
   selectedSort = 'name_asc';
 
   // ── Category sidebar (static list; extend with API call if needed) ─────────
-  categories = [
-    { name: 'Laptops & Computers' },
-    { name: 'Smartphones & Tablets' },
-    { name: 'Audio & Headphones' },
-    { name: 'Gaming Consoles' },
-    { name: 'Wearable Tech' },
-    { name: 'Cameras & Photography' },
-  ];
+
   selectedCategories = signal<string[]>([]);
 
-  // ── Computed ──────────────────────────────────────────────────────────────
+  //  Computed 
   hasProducts = computed(() => this.products().length > 0);
 
-  constructor(private productService: ProductService) {}
+  categories = this.categoryService.categories;
+
+  constructor(private productService: ProductService, private categoryService: CategoryService) { }
 
   ngOnInit(): void {
     this.loadProducts();
+    this.categoryService.loadCategory();
   }
 
   ngOnDestroy(): void {
@@ -55,7 +53,6 @@ export class ProductPageComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  // ── Data loading ──────────────────────────────────────────────────────────
 
   loadProducts(): void {
     this.loading.set(true);
@@ -73,7 +70,8 @@ export class ProductPageComponent implements OnInit, OnDestroy {
       });
   }
 
-  // ── Filter / Sort handlers ────────────────────────────────────────────────
+
+  // ── Filter / Sort handlers 
 
   onSortChange(value: string): void {
     this.selectedSort = value;
@@ -138,7 +136,7 @@ export class ProductPageComponent implements OnInit, OnDestroy {
     return result;
   }
 
-  // ── Variant helpers ───────────────────────────────────────────────────────
+
 
   /** Lấy danh sách màu unique từ variants (ưu tiên cột Color tĩnh, fallback attribute 'Color'). */
   getVariantColors(product: IProduct): string[] {

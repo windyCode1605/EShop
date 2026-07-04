@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ProductService } from '../../services/product.service';
-import { ProductDto } from '../../../../core/models';
+import { IProduct, ProductResponseDto } from '../../../product-manager/models/product.model';
+import { ProductFilterModel } from '../../../product-manager/models/product-filter.model';
 
 @Component({
   selector: 'app-products',
@@ -85,7 +86,7 @@ import { ProductDto } from '../../../../core/models';
   ]
 })
 export class ProductsComponent implements OnInit {
-  products: ProductDto[] = [];
+  products: IProduct[] = [];
   loading = false;
   error = '';
 
@@ -98,9 +99,10 @@ export class ProductsComponent implements OnInit {
   loadProducts(): void {
     this.loading = true;
     this.error = '';
-    this.productService.getProducts().subscribe({
-      next: (data) => {
-        this.products = data;
+    const filter = new ProductFilterModel({ pageIndex: 1, pageSize: 20 });
+    this.productService.getProducts(filter).subscribe({
+      next: (data: ProductResponseDto) => {
+        this.products = data.items;
         this.loading = false;
       },
       error: (error) => {

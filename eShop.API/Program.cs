@@ -22,6 +22,9 @@ using CR.Core.ApplicationServices.PaymentModule.Abstracts;
 using CR.Core.ApplicationServices.ShipmentModule.Implements;
 using CR.Core.ApplicationServices.CartModule.Abstracts;
 using CR.Core.ApplicationServices.CartModule.Implemts;
+using CR.Core.Application.CategoryModule.Abstract;
+using CR.Core.Application.CategoryModule.Implements;
+
 
 // ===============================================
 // 0. ENVIRONMENT & CONFIGURATION LOAD
@@ -229,6 +232,7 @@ builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IShipmentService, ShipmentService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<ICartService, CartService>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
 
 // builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 
