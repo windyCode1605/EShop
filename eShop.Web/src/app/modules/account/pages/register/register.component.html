@@ -12,9 +12,15 @@
   </form>
 
   <form *ngIf="step === 'verify'" [formGroup]="verifyForm" (ngSubmit)="submitVerifyOtp()">
-    <input type="text" placeholder="Nhập OTP 6 số" formControlName="otpCode" maxlength="6" />
+    <input type="text" placeholder="Nhập OTP 6 ký tự" formControlName="otpCode" maxlength="6" style="text-transform: uppercase;" />
     <button type="submit" [disabled]="verifyForm.invalid || submitting">Xác thực OTP</button>
     <button type="button" class="secondary" (click)="backToRegister()" [disabled]="submitting">Đổi email</button>
+  </form>
+
+  <form *ngIf="step === 'set-password'" [formGroup]="setPasswordForm" (ngSubmit)="submitSetPassword()">
+    <input type="password" placeholder="Nhập mật khẩu mới" formControlName="password" />
+    <input type="password" placeholder="Xác nhận mật khẩu" formControlName="confirmPassword" />
+    <button type="submit" [disabled]="setPasswordForm.invalid || submitting">Hoàn tất đăng ký</button>
   </form>
 
   <a routerLink="../login">Đã có tài khoản? Đăng nhập</a>

@@ -73,9 +73,23 @@
               <button class="icon-btn" title="Wishlist" id="wish-{{ product.id }}">♡</button>
             </div>
 
-            <button class="quick-add-btn" [disabled]="getTotalStock(product) === 0" id="quickadd-{{ product.id }}">
-              {{ getTotalStock(product) === 0 ? 'Hết hàng' : 'Thêm vào giỏ' }}
-            </button>
+            <div class="add-to-cart-wrapper" *ngIf="getTotalStock(product) > 0">
+              <div class="quantity-control" (click)="$event.stopPropagation()">
+                <button class="qty-btn" (click)="decreaseQuantity(product, $event)">-</button>
+                <span class="qty-value">{{ getQuantity(product) }}</span>
+                <button class="qty-btn" (click)="increaseQuantity(product, $event)">+</button>
+              </div>
+              <button class="quick-add-btn" [disabled]="addingToCart()[product.id]" (click)="onAddToCart(product, $event)"
+                id="quickadd-{{ product.id }}">
+                {{ addingToCart()[product.id] ? 'Đang thêm...' : 'Thêm vào giỏ' }}
+              </button>
+            </div>
+
+            <div class="add-to-cart-wrapper" *ngIf="getTotalStock(product) === 0">
+              <button class="quick-add-btn" disabled>
+                Hết hàng
+              </button>
+            </div>
           </div>
 
           <!-- Card metadata -->
@@ -100,7 +114,7 @@
               </span>
             </div>
 
-            <!-- ── Variant selectors ────────────────────────────────── -->
+
             <div class="variant-selectors" *ngIf="product.variants && product.variants.length > 0">
 
               <!-- Color swatches -->

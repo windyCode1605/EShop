@@ -174,13 +174,7 @@ import { RouterModule } from '@angular/router';
             <h2>ESHOP.</h2>
             <p>Trang phục thường ngày được tuyển chọn kỹ lưỡng, mang lại sự tinh tế và thoải mái trong từng khoảnh khắc.</p>
           </div>
-          <div class="footer__newsletter">
-            <h3>Nhận thông tin mới nhất</h3>
-            <div class="newsletter-input">
-              <input type="email" class="app-input" placeholder="Địa chỉ email của bạn" />
-              <button class="app-button">Đăng ký</button>
-            </div>
-          </div>
+
         </div>
 
         <div class="footer__content">

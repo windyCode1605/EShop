@@ -9,6 +9,6 @@ public class VerifyRegisterOtpRequestDto : BaseRequestDto
     public string Email { get; set; } = string.Empty;
 
     [Required]
-    [RegularExpression(@"^\d{6}$")]
+    [RegularExpression(@"^[a-zA-Z0-9]{6}$")]
     public string OtpCode { get; set; } = string.Empty;
 }

@@ -83,9 +83,9 @@ public class AuthorizationController : AuthorizationControllerBase
     }
 
     [HttpPost("api/auth/verify-otp")]
-    public async Task<ActionResult<ApiResponse<string>>> VerifyRegisterOtp([FromQuery] string email, [FromQuery] string otpCode)
+    public async Task<ActionResult<ApiResponse<string>>> VerifyRegisterOtp([FromBody] CR.Core.Dtos.Auth.VerifyRegisterOtpRequestDto input)
     {
-        var result = await _userServices.VerifyRegisterOtp(email, otpCode);
+        var result = await _userServices.VerifyRegisterOtp(input.Email, input.OtpCode);
         if (result.IsFailure)
         {
             return BadRequest(ApiResponse<string>.Fail($"Verify OTP failed: {result.ErrorCode}", ErrorCode.BadRequest));

@@ -13,3 +13,11 @@ export interface VerifyRegisterOtpRequest {
 
 export type RegisterApiResponse = ApiResponse<UserDto>;
 export type VerifyRegisterOtpApiResponse = ApiResponse<string>;
+
+export interface SetPasswordRequest {
+  id: number;
+  password: string;
+  isPasswordTemp: boolean;
+}
+
+export type SetPasswordApiResponse = ApiResponse<string>;

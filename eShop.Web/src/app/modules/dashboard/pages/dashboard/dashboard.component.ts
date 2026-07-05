@@ -176,7 +176,7 @@ import { Component } from '@angular/core';
       }
 
       .zigzag-item:hover .zigzag-image img {
-        transform: scale(1.03);
+        transform: scale(1.1);
       }
 
       .zigzag-text {
@@ -211,7 +211,6 @@ import { Component } from '@angular/core';
         .editorial-image-wrapper {
           height: 50vh;
         }
-
         .zigzag-item, .zigzag-item.reverse {
           grid-template-columns: 1fr;
         }
