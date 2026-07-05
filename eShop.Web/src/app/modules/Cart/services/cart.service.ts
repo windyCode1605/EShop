@@ -28,11 +28,50 @@ export class CartService {
             request
         ).pipe(
             tap((res) => {
-                if(!res.isSuccess) 
+                if (!res.isSuccess)
                     this._totalItems.set(previousCount);
             }),
             catchError((err: HttpErrorResponse) => {
                 this._totalItems.set(previousCount);
+                return throwError(() => this.mapError(err));
+            }),
+            finalize(() => this._isSyncing.set(false))
+        );
+    }
+
+    getMyCart(): Observable<ApiResult<CartSummaryDto>> {
+        this._isSyncing.set(true);
+        return this.http.get<ApiResult<CartSummaryDto>>(`${this.baseUrl}/get-my-cart`).pipe(
+            tap((res) => {
+                if (res.isSuccess && res.value) {
+                    this._totalItems.set(res.value.totalItems);
+                }
+            }),
+            catchError((err: HttpErrorResponse) => {
+                return throwError(() => this.mapError(err));
+            }),
+            finalize(() => this._isSyncing.set(false))
+        );
+    }
+
+    updateCartItem(cartItemId: number, quantity: number): Observable<ApiResult<boolean>> {
+        this._isSyncing.set(true);
+        const payload = { cartItemId, quantity };
+        return this.http.put<ApiResult<boolean>>(`${this.baseUrl}/update-item`, payload).pipe(
+            catchError((err: HttpErrorResponse) => {
+                return throwError(() => this.mapError(err));
+            }),
+            finalize(() => this._isSyncing.set(false))
+        );
+    }
+
+    removeCartItem(cartItemId: number): Observable<ApiResult<boolean>> {
+        this._isSyncing.set(true);
+        return this.http.delete<ApiResult<boolean>>(`${this.baseUrl}/remove-item`, {
+            body: cartItemId,
+            headers: { 'Content-Type': 'application/json' }
+        }).pipe(
+            catchError((err: HttpErrorResponse) => {
                 return throwError(() => this.mapError(err));
             }),
             finalize(() => this._isSyncing.set(false))

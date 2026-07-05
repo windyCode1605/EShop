@@ -1,5 +1,15 @@
 <div class="product-page-container">
-  <div class="page-header">
+  <div class="page-header relative">
+    <!-- Nút xem giỏ hàng ở góc phải Header -->
+    <a routerLink="/cart" class="cart-icon-btn" title="Xem giỏ hàng">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/>
+        <path d="M3 6h18"/>
+        <path d="M16 10a4 4 0 0 1-8 0"/>
+      </svg>
+      <span class="cart-badge" *ngIf="cartTotalItems() > 0">{{ cartTotalItems() }}</span>
+    </a>
+
     <h1 class="text-display">The Collection</h1>
     <p class="text-body">Minimal design, maximum utility. Explore our meticulously curated selection.</p>
   </div>
@@ -162,5 +172,26 @@
         </button>
       </div>
     </main>
+  </div>
+
+  <!-- ── Toast Notifications ─────────────────────────────────────────── -->
+  <div class="toast-container" *ngIf="toasts().length > 0">
+    <div *ngFor="let toast of toasts()" class="custom-toast" [ngClass]="'toast-' + toast.type">
+      <div class="toast-content">
+        <span class="toast-icon">
+          <!-- Icon Success -->
+          <svg *ngIf="toast.type === 'success'" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-green-500"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>
+          <!-- Icon Error -->
+          <svg *ngIf="toast.type === 'error'" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-red-500"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>
+        </span>
+        <div class="toast-text-wrapper">
+          <p class="toast-text">{{ toast.text }}</p>
+          <a *ngIf="toast.type === 'success'" routerLink="/cart" class="toast-action-link">Xem giỏ hàng →</a>
+        </div>
+      </div>
+      <button class="toast-close-btn" (click)="dismissToast(toast.id)">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+      </button>
+    </div>
   </div>
 </div>

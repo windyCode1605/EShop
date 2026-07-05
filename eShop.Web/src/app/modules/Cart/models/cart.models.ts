@@ -12,20 +12,24 @@ export interface ApiResult<T> {
     value: T;
 }
 export interface CartItemDto {
-    cartItemId: number;
+    id: number;
     productVariantId: number;
+    productId: number;
     productName: string;
-    variantSKU: string;
+    sku: string;
     size?: string;
     color?: string;
     quantity: number;
     unitPrice: number;
     lineTotal: number;
-    stockQuantity: number;
     imageUrl?: string;
+    isAvailable: boolean;
+    maxQuantity: number;
 }
+
 export interface CartSummaryDto {
-    cartId: number;
+    id: number;
+    lastUpdatedAt?: string;
     items: CartItemDto[];
     totalItems: number;
     subtotal: number;

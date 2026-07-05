@@ -22,6 +22,11 @@ export const routes: Routes = [
     canActivate: [authGuard],
     loadChildren: () => import('./modules/order/order.routes').then((m) => m.ORDER_ROUTES)
   },
+  {
+    path: 'cart',
+    canActivate: [authGuard],
+    loadChildren: () => import('./modules/Cart/cart.routes').then((m) => m.CART_ROUTES)
+  },
   
   // Product Manager Module
   {

@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 import { Subject, takeUntil, finalize } from 'rxjs';
 
 import { ProductService } from '../../../product-manager/services/product.service';
@@ -19,7 +20,7 @@ interface ToastMessage {
 @Component({
   selector: 'app-product-page',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './product-page.component.html',
   styleUrls: ['./product-page.component.scss']
 })
@@ -47,6 +48,8 @@ export class ProductPageComponent implements OnInit, OnDestroy {
   /** productId -> đang gọi API add-to-cart (chống double click) */
   addingToCart = signal<Record<number | string, boolean>>({});
 
+  cartTotalItems = this.cartService.totalItems;
+
   toasts = signal<ToastMessage[]>([]);
   private toastIdCounter = 0;
 
@@ -59,6 +62,7 @@ export class ProductPageComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.loadProducts();
     this.categoryService.loadCategory();
+    this.cartService.getMyCart().subscribe(); // Fetch real initial cart count
   }
 
   ngOnDestroy(): void {

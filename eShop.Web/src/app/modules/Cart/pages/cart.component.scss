@@ -1,0 +1,15 @@
+/* Không lạm dụng bóng đổ (shadow), dùng đường viền (border) tinh tế */
+/* Sử dụng mix-blend-multiply để ảnh sản phẩm có nền trắng sẽ tiệp màu với nền xám nhạt của thumbnail box */
+.mix-blend-multiply {
+    mix-blend-mode: multiply;
+}
+
+/* Các tuỳ chỉnh input số lượng nếu muốn dùng type="number" ẩn nút mũi tên mặc định */
+input[type=number]::-webkit-inner-spin-button, 
+input[type=number]::-webkit-outer-spin-button { 
+    -webkit-appearance: none; 
+    margin: 0; 
+}
+input[type=number] {
+    -moz-appearance: textfield;
+}

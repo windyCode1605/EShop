@@ -1,0 +1,128 @@
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
+    <h1 class="text-4xl md:text-5xl font-semibold text-[#18181B] mb-12 tracking-tight font-['Geist',_'sans-serif']">
+        Giỏ hàng của bạn
+    </h1>
+
+    <!-- Loading Skeleton (Optional) -->
+    <div *ngIf="isLoading()" class="animate-pulse space-y-8">
+        <div class="h-8 bg-gray-200 rounded w-1/4"></div>
+        <div class="h-32 bg-gray-100 rounded"></div>
+        <div class="h-32 bg-gray-100 rounded"></div>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="!isLoading() && errorMessage()" class="p-4 mb-8 text-red-700 bg-red-50 border border-red-200 rounded-2xl">
+        {{ errorMessage() }}
+    </div>
+
+    <!-- Giỏ hàng rỗng (Empty State) -->
+    <div *ngIf="!isLoading() && !errorMessage() && !hasItems()" class="flex flex-col items-center justify-center py-20">
+        <!-- SVG Giỏ hàng trống -->
+        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-gray-300 mb-6">
+            <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/>
+            <path d="M3 6h18"/>
+            <path d="M16 10a4 4 0 0 1-8 0"/>
+        </svg>
+        <h2 class="text-2xl font-medium text-[#18181B] mb-2">Giỏ hàng đang trống</h2>
+        <p class="text-[#71717A] mb-8 text-center max-w-md">Có vẻ như bạn chưa thêm sản phẩm nào vào giỏ. Hãy khám phá những sản phẩm mới nhất của chúng tôi.</p>
+        <a routerLink="/products" class="px-8 py-4 bg-[#18181B] text-white rounded-[14px] hover:bg-black transition-colors font-medium">
+            Tiếp tục mua sắm
+        </a>
+    </div>
+
+    <!-- Giỏ hàng có sản phẩm -->
+    <div *ngIf="!isLoading() && hasItems()" class="lg:grid lg:grid-cols-12 lg:gap-x-16 items-start">
+        
+        <!-- Cột Trái: Danh sách sản phẩm (8 cols) -->
+        <div class="lg:col-span-8">
+            <div class="border-t border-[#E4E4E7]">
+                <div *ngFor="let item of cartItems()" class="py-8 flex flex-col sm:flex-row gap-6 border-b border-[#E4E4E7] group">
+                    <!-- Ảnh sản phẩm -->
+                    <div class="w-full sm:w-32 h-32 bg-[#F4F4F5] rounded-[16px] overflow-hidden flex-shrink-0">
+                        <img [src]="item.imageUrl || 'assets/images/placeholder.png'" 
+                             [alt]="item.productName" 
+                             class="w-full h-full object-cover mix-blend-multiply group-hover:scale-105 transition-transform duration-300">
+                    </div>
+                    
+                    <!-- Thông tin chi tiết -->
+                    <div class="flex-1 flex flex-col justify-between">
+                        <div class="flex justify-between items-start gap-4">
+                            <div>
+                                <h3 class="text-lg font-medium text-[#18181B] leading-tight">
+                                    <a [routerLink]="['/product', item.productId]" class="hover:underline">{{ item.productName }}</a>
+                                </h3>
+                                <p class="mt-1 text-sm text-[#71717A]">{{ item.color }} <span *ngIf="item.size">| {{ item.size }}</span></p>
+                                
+                                <div *ngIf="!item.isAvailable" class="mt-2 text-sm text-red-600 bg-red-50 inline-block px-2 py-1 rounded">Sản phẩm hiện không có sẵn</div>
+                            </div>
+                            <p class="text-lg font-semibold text-[#18181B] whitespace-nowrap">{{ item.unitPrice | currency:'VND':'symbol':'1.0-0' }}</p>
+                        </div>
+                        
+                        <div class="flex justify-between items-end mt-6">
+                            <!-- Bộ tăng giảm số lượng -->
+                            <div class="flex items-center border border-[#E4E4E7] rounded-full overflow-hidden w-28 h-10">
+                                <button type="button" 
+                                        (click)="decreaseQuantity(item)"
+                                        class="flex-1 h-full flex items-center justify-center text-[#71717A] hover:bg-[#F4F4F5] transition-colors"
+                                        [disabled]="item.quantity <= 1">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/></svg>
+                                </button>
+                                <span class="flex-1 text-center font-medium text-sm text-[#18181B]">{{ item.quantity }}</span>
+                                <button type="button" 
+                                        (click)="increaseQuantity(item)"
+                                        class="flex-1 h-full flex items-center justify-center text-[#71717A] hover:bg-[#F4F4F5] transition-colors"
+                                        [disabled]="item.quantity >= item.maxQuantity">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+                                </button>
+                            </div>
+                            
+                            <!-- Xoá sản phẩm -->
+                            <button type="button" 
+                                    (click)="removeItem(item)"
+                                    class="text-[#71717A] hover:text-red-600 transition-colors flex items-center gap-2 text-sm font-medium">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                                <span class="hidden sm:inline">Xoá</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cột Phải: Order Summary (4 cols) -->
+        <div class="lg:col-span-4 mt-12 lg:mt-0">
+            <div class="bg-[#F9FAFB] rounded-[24px] p-8 lg:sticky lg:top-24">
+                <h2 class="text-xl font-semibold text-[#18181B] mb-6">Tổng đơn hàng</h2>
+                
+                <div class="space-y-4 border-b border-[#E4E4E7] pb-6 mb-6">
+                    <div class="flex justify-between items-center text-[#71717A]">
+                        <span>Tạm tính ({{ cartSummary()?.totalItems }} sản phẩm)</span>
+                        <span class="text-[#18181B] font-medium">{{ subtotal() | currency:'VND':'symbol':'1.0-0' }}</span>
+                    </div>
+                    <div class="flex justify-between items-center text-[#71717A]">
+                        <span>Phí giao hàng</span>
+                        <span class="text-[#18181B] font-medium">{{ shippingFee() === 0 ? 'Miễn phí' : (shippingFee() | currency:'VND':'symbol':'1.0-0') }}</span>
+                    </div>
+                </div>
+                
+                <div class="flex justify-between items-end mb-8">
+                    <div>
+                        <p class="text-lg font-semibold text-[#18181B]">Tổng cộng</p>
+                        <p class="text-sm text-[#71717A] mt-1">Đã bao gồm thuế (nếu có)</p>
+                    </div>
+                    <p class="text-2xl font-semibold text-[#18181B]">{{ estimatedTotal() | currency:'VND':'symbol':'1.0-0' }}</p>
+                </div>
+                
+                <a routerLink="/checkout" class="w-full block text-center px-8 py-4 bg-[#18181B] text-white rounded-[14px] hover:bg-black transition-colors font-medium text-lg">
+                    Thanh toán
+                </a>
+                
+                <div class="mt-6 flex items-center justify-center gap-2 text-sm text-[#71717A]">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    Thanh toán an toàn & bảo mật
+                </div>
+            </div>
+        </div>
+        
+    </div>
+</div>
