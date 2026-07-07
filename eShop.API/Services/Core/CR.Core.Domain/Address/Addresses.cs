@@ -19,9 +19,11 @@ namespace CR.Core.Domain.Address
         [MaxLength(100)]
         public string Province { get; set; } = null!;
 
+        [Required]
         [MaxLength(256)]
         public string? ReceiverName { get; set; }
 
+        [Required]
         [MaxLength(40)]
         public string? ReceiverPhone { get; set; }
         [Required]

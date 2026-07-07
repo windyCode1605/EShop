@@ -3,19 +3,16 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 import { IProduct, ProductResponseDto, ProductCreateUpdateDto, ApiPaginatedResponse } from '../models/product.model';
 import { ProductFilterModel } from '../models/product-filter.model';
+import { environment } from '../../../my-lib/shared/enviroments/enviroment';
 
-/**
- * Product HTTP Service
- * Handles all API calls for product management
- * API: http://localhost:5178/api/Product
- */
+
 @Injectable({
   providedIn: 'root'
 })
 export class ProductHttpService {
-  private apiUrl = 'http://localhost:5178/api/Product'; // Backend API URL
+  private apiUrl = `${environment.api}/api/Product`; // Backend API URL
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   /**
    * Get all products with pagination and filtering

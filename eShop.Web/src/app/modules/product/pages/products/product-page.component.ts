@@ -86,7 +86,7 @@ export class ProductPageComponent implements OnInit, OnDestroy {
       });
   }
 
-  // ── Filter / Sort handlers (giữ nguyên) ────────────────────────────────
+
   onSortChange(value: string): void {
     this.selectedSort = value;
     const [sortBy, sortOrder] = value.split('_');
@@ -253,8 +253,8 @@ export class ProductPageComponent implements OnInit, OnDestroy {
 
     const variants = product.variants ?? [];
     // Ở trang danh sách, mặc định lấy variant đầu tiên còn hàng
-    const variant = variants.length > 0 
-      ? (variants.find(v => v.stockQuantity > 0) ?? variants[0]) 
+    const variant = variants.length > 0
+      ? (variants.find(v => v.stockQuantity > 0) ?? variants[0])
       : null;
 
     if (!variant) {

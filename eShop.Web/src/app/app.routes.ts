@@ -27,13 +27,17 @@ export const routes: Routes = [
     canActivate: [authGuard],
     loadChildren: () => import('./modules/Cart/cart.routes').then((m) => m.CART_ROUTES)
   },
-  
+
   // Product Manager Module
   {
     path: 'product-manager',
     canActivate: [authGuard],
     loadChildren: () => import('./modules/product-manager/product-manager.module').then(m => m.ProductManagerModule)
   },
-  
+  {
+    path: 'checkout',
+    canActivate: [authGuard],
+    loadChildren: () => import('./modules/checkout/checkout.routes').then((m) => m.CHECKOUT_ROUTES)
+  },
   { path: '**', redirectTo: '/dashboard' }
 ];

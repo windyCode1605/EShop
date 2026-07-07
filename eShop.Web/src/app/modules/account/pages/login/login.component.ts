@@ -1,7 +1,7 @@
 import { AfterViewInit, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { ActivatedRoute, RouterModule } from '@angular/router';
 import { AppAuthService } from '../../../../core/auth/app-auth.service';
 
 @Component({
@@ -15,13 +15,17 @@ import { AppAuthService } from '../../../../core/auth/app-auth.service';
 export class LoginPageComponent implements OnInit , AfterViewInit{
   submitting = false;
   dark = false;
+  returnUrl: string = '';
+
   constructor( 
     public authService: AppAuthService,
+    private route: ActivatedRoute
   ) { }
   @ViewChild('username', { static: false}) usernameInput!: ElementRef<HTMLInputElement>;
 
   ngOnInit(): void {
     this.authService.clear();
+    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '';
   }
   ngAfterViewInit(): void {
       setTimeout(() => this.usernameInput?.nativeElement?.focus(), 0);  // Tập trung vào trường username sau khi view đã được khởi tạo 
@@ -30,7 +34,7 @@ export class LoginPageComponent implements OnInit , AfterViewInit{
     console.log('Đang đăng nhập...');
     console.log('Thông tin đăng nhập:', this.authService.authenticateModel);
     this.submitting = true;
-    this.authService.authenticate(() => (this.submitting = false));
+    this.authService.authenticate(() => (this.submitting = false), this.returnUrl);
   }
   ToggleDarkMode(): void {
     this.dark = !this.dark;

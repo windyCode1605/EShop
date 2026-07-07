@@ -10,6 +10,6 @@ export const authGuard: CanActivateFn = (route, state) => {
     return true;
   }
 
-  // Chưa đăng nhập thì chuyển hướng về trang login
-  return router.parseUrl('/account/login');
+  // Chưa đăng nhập thì chuyển hướng về trang login kèm theo URL hiện tại (returnUrl)
+  return router.createUrlTree(['/account/login'], { queryParams: { returnUrl: state.url } });
 };

@@ -24,6 +24,9 @@ using CR.Core.ApplicationServices.CartModule.Abstracts;
 using CR.Core.ApplicationServices.CartModule.Implemts;
 using CR.Core.Application.CategoryModule.Abstract;
 using CR.Core.Application.CategoryModule.Implements;
+using Microsoft.CodeAnalysis.Operations;
+using CR.Core.ApplicationServices.AddressModule.Implements;
+using CR.Core.ApplicationServices.AddressModule.Abstracts;
 
 
 // ===============================================
@@ -233,6 +236,7 @@ builder.Services.AddScoped<IShipmentService, ShipmentService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<IAddressService, AddressService>();
 
 // builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 

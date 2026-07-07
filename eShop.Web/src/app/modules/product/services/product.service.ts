@@ -3,12 +3,13 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 import { ProductResponseDto, ApiPaginatedResponse, IProduct } from '../../product-manager/models/product.model';
 import { ProductFilterModel } from '../../product-manager/models/product-filter.model';
+import { environment } from '../../../my-lib/shared/enviroments/enviroment';
 
 @Injectable({ providedIn: 'root' })
 export class ProductService {
-  private apiUrl = 'http://localhost:5178/api/Product';
+  private apiUrl = `${environment.api}/api/Product`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   getProducts(filter: ProductFilterModel): Observable<ProductResponseDto> {
     let params = new HttpParams()
@@ -19,7 +20,7 @@ export class ProductService {
     if (filter.categoryId) params = params.set('categoryId', filter.categoryId);
     if (filter.minPrice !== undefined) params = params.set('minPrice', filter.minPrice.toString());
     if (filter.maxPrice !== undefined) params = params.set('maxPrice', filter.maxPrice.toString());
-    
+
     // params = params.set('isActive', 'true');
 
     if (filter.sortBy) params = params.set('sortBy', filter.sortBy);

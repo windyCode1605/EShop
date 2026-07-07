@@ -30,7 +30,7 @@ export class AppAuthService {
         
         this.clear()
     }
-    authenticate(finallyCallback?: () => void): void {
+    authenticate(finallyCallback?: () => void, returnUrl?: string): void {
         finallyCallback = finallyCallback || (() => { });
         this._tokenAuthService.authenticateV2(this.authenticateModel).pipe(
             catchError((err: HttpErrorResponse) => {
@@ -47,7 +47,7 @@ export class AppAuthService {
             finalize(() => {
                 finallyCallback();
             })
-        ).subscribe((result: AuthenticateResultModel) => {(this.processAuthenticateResult(result))});
+        ).subscribe((result: AuthenticateResultModel) => {(this.processAuthenticateResult(result, returnUrl))});
     }
     
 
@@ -67,7 +67,7 @@ export class AppAuthService {
     }
 
 
-    private processAuthenticateResult( authenticateResult: AuthenticateResultModel) : void {
+    private processAuthenticateResult( authenticateResult: AuthenticateResultModel, returnUrl?: string) : void {
         this.authenticateResult = authenticateResult;
         if(authenticateResult.access_token) {
             this.login(
@@ -75,7 +75,8 @@ export class AppAuthService {
                 authenticateResult.refresh_token ?? '',
                 authenticateResult.encryptedAccessToken ?? '',
                 authenticateResult.expires_in,
-                this.authenticateModel.rememberClient
+                this.authenticateModel.rememberClient,
+                returnUrl
             );
         }
         else {
@@ -88,7 +89,8 @@ export class AppAuthService {
         refreshToken: string,
         excryptedAccesToken: string, 
         expiresIn: number,
-        rememberMe?: boolean
+        rememberMe?: boolean,
+        returnUrl?: string
     ) : void { 
         const decoded = jwtDecode<{ exp?: number }>(acessToken);
         const tokenExpireDate = this.unixToDate(decoded.exp ?? 0);
@@ -108,6 +110,13 @@ export class AppAuthService {
         if(token) {
             userIfo = jwtDecode(token);
         }
+
+        // Ưu tiên returnUrl nếu có
+        if (returnUrl) {
+            this._router.navigateByUrl(returnUrl).catch(err => console.error('Navigation error:', err));
+            return;
+        }
+
         if(userIfo?.user_type === 2 || userIfo?.user_type === 1 || userIfo?.userType === 2 || userIfo?.userType === 1) {
             // Admin/Staff: redirect to product manager
             this._router.navigate(['/product-manager']).catch(err => console.error('Navigation error:', err));
