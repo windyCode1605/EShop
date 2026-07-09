@@ -1,27 +1,196 @@
-<section class="auth-page">
-  <h1>Đăng ký</h1>
+<!-- Register — Same split-screen layout with 3-step flow -->
+<section class="auth-layout" aria-label="Đăng ký tài khoản">
 
-  <p class="message success" *ngIf="successMessage">{{ successMessage }}</p>
-  <p class="message error" *ngIf="errorMessage">{{ errorMessage }}</p>
+  <!-- LEFT PANEL: Brand -->
+  <aside class="auth-panel">
+    <div class="orb orb--1"></div>
+    <div class="orb orb--2"></div>
+    <div class="orb orb--3"></div>
 
-  <form *ngIf="step === 'register'" [formGroup]="registerForm" (ngSubmit)="submitRegister()">
-    <input type="text" placeholder="Họ tên" formControlName="displayName" />
-    <input type="email" placeholder="Email" formControlName="email" />
-    <input type="text" placeholder="Mã người dùng (tuỳ chọn)" formControlName="userCode" />
-    <button type="submit" [disabled]="registerForm.invalid || submitting">Đăng ký & nhận OTP</button>
-  </form>
+    <div class="auth-panel__logo">
+      <span class="auth-panel__logo-mark">A</span>
+      <span class="auth-panel__logo-name">ATELIER</span>
+    </div>
 
-  <form *ngIf="step === 'verify'" [formGroup]="verifyForm" (ngSubmit)="submitVerifyOtp()">
-    <input type="text" placeholder="Nhập OTP 6 ký tự" formControlName="otpCode" maxlength="6" style="text-transform: uppercase;" />
-    <button type="submit" [disabled]="verifyForm.invalid || submitting">Xác thực OTP</button>
-    <button type="button" class="secondary" (click)="backToRegister()" [disabled]="submitting">Đổi email</button>
-  </form>
+    <div class="auth-panel__content">
+      <div class="auth-panel__copy">
+        <h2 class="auth-panel__headline">Tạo tài khoản<br>trong vài bước đơn giản.</h2>
+        <p class="auth-panel__sub">Chỉ mất chưa đến 2 phút để bắt đầu hành trình của bạn.</p>
+      </div>
 
-  <form *ngIf="step === 'set-password'" [formGroup]="setPasswordForm" (ngSubmit)="submitSetPassword()">
-    <input type="password" placeholder="Nhập mật khẩu mới" formControlName="password" />
-    <input type="password" placeholder="Xác nhận mật khẩu" formControlName="confirmPassword" />
-    <button type="submit" [disabled]="setPasswordForm.invalid || submitting">Hoàn tất đăng ký</button>
-  </form>
+      <!-- Step guide display -->
+      <div class="auth-panel__steps">
+        <div class="panel-step" [class.panel-step--active]="step === 'register'" [class.panel-step--done]="step !== 'register'">
+          <span class="panel-step__num">01</span>
+          <span class="panel-step__label">Thông tin cơ bản</span>
+        </div>
+        <div class="panel-step" [class.panel-step--active]="step === 'verify'" [class.panel-step--done]="step === 'set-password'">
+          <span class="panel-step__num">02</span>
+          <span class="panel-step__label">Xác thực OTP</span>
+        </div>
+        <div class="panel-step" [class.panel-step--active]="step === 'set-password'">
+          <span class="panel-step__num">03</span>
+          <span class="panel-step__label">Tạo mật khẩu</span>
+        </div>
+      </div>
+    </div>
+  </aside>
 
-  <a routerLink="../login">Đã có tài khoản? Đăng nhập</a>
+  <!-- RIGHT PANEL: Form -->
+  <main class="auth-form-panel">
+    <div class="auth-card">
+
+      <!-- Progress bar -->
+      <div class="auth-progress">
+        <div class="auth-progress__bar" [ngClass]="{
+          'auth-progress__bar--step1': step === 'register',
+          'auth-progress__bar--step2': step === 'verify',
+          'auth-progress__bar--step3': step === 'set-password'
+        }"></div>
+      </div>
+
+      <!-- Alerts -->
+      <div class="auth-alert auth-alert--success animate-fade-up" *ngIf="successMessage" role="alert">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+        {{ successMessage }}
+      </div>
+      <div class="auth-alert auth-alert--error animate-fade-up" *ngIf="errorMessage" role="alert">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        {{ errorMessage }}
+      </div>
+
+      <!-- ─── STEP 1: Register ─── -->
+      <ng-container *ngIf="step === 'register'">
+        <header class="auth-card__header animate-fade-up">
+          <p class="auth-card__eyebrow">Bước 1 / 3 — Thông tin tài khoản</p>
+          <h1 class="auth-card__title">Tạo tài khoản mới</h1>
+          <p class="auth-card__subtitle">Nhập thông tin để nhận mã xác thực qua email.</p>
+        </header>
+
+        <form [formGroup]="registerForm" (ngSubmit)="submitRegister()" class="auth-form">
+          <div class="form-field animate-fade-up stagger-1">
+            <label class="form-field__label" for="displayName">Họ và tên</label>
+            <div class="form-field__input-wrap">
+              <svg class="form-field__icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 1 0-16 0"/></svg>
+              <input id="displayName" type="text" class="form-field__input"
+                     formControlName="displayName" placeholder="Nguyễn Văn A" autocomplete="name"
+                     [class.is-error]="registerForm.controls.displayName.invalid && registerForm.controls.displayName.touched"/>
+            </div>
+            <span class="form-field__error" *ngIf="registerForm.controls.displayName.invalid && registerForm.controls.displayName.touched">
+              Vui lòng nhập họ và tên.
+            </span>
+          </div>
+
+          <div class="form-field animate-fade-up stagger-2">
+            <label class="form-field__label" for="email">Email</label>
+            <div class="form-field__input-wrap">
+              <svg class="form-field__icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+              <input id="email" type="email" class="form-field__input"
+                     formControlName="email" placeholder="email@example.com" autocomplete="email"
+                     [class.is-error]="registerForm.controls.email.invalid && registerForm.controls.email.touched"/>
+            </div>
+            <span class="form-field__error" *ngIf="registerForm.controls.email.invalid && registerForm.controls.email.touched">
+              Vui lòng nhập email hợp lệ.
+            </span>
+          </div>
+
+          <div class="form-field animate-fade-up stagger-3">
+            <label class="form-field__label" for="userCode">Mã người dùng <span class="form-field__optional">(tuỳ chọn)</span></label>
+            <div class="form-field__input-wrap">
+              <svg class="form-field__icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 20h10"/><path d="M10 20c5.5-2.5.8-6.4 3-10"/><path d="M9.5 9.4c1.1.8 1.8 2.2 2.3 3.7-2 .4-3.5.4-4.8-.3-1.2-.6-2.3-1.9-3-4.2 2.8-.5 4.4 0 5.5.8z"/><path d="M14.1 6a7 7 0 0 0-1.1 4c1.9-.1 3.3-.6 4.3-1.4 1-1 1.6-2.3 1.7-4.6-2.7.1-4 1-4.9 2z"/></svg>
+              <input id="userCode" type="text" class="form-field__input"
+                     formControlName="userCode" placeholder="Để trống để tự động tạo"/>
+            </div>
+          </div>
+
+          <button type="submit" class="auth-submit animate-fade-up stagger-4"
+                  [disabled]="registerForm.invalid || submitting">
+            <span *ngIf="!submitting">Đăng ký &amp; nhận OTP</span>
+            <span *ngIf="submitting" class="spinner-ring" aria-hidden="true"></span>
+          </button>
+        </form>
+      </ng-container>
+
+      <!-- ─── STEP 2: Verify OTP ─── -->
+      <ng-container *ngIf="step === 'verify'">
+        <header class="auth-card__header animate-fade-up">
+          <p class="auth-card__eyebrow">Bước 2 / 3 — Xác thực</p>
+          <h1 class="auth-card__title">Nhập mã OTP</h1>
+          <p class="auth-card__subtitle">Mã 6 ký tự đã được gửi đến email của bạn.</p>
+        </header>
+
+        <form [formGroup]="verifyForm" (ngSubmit)="submitVerifyOtp()" class="auth-form">
+          <div class="form-field animate-fade-up stagger-1">
+            <label class="form-field__label" for="otpCode">Mã xác thực</label>
+            <div class="form-field__input-wrap">
+              <svg class="form-field__icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <input id="otpCode" type="text" class="form-field__input otp-input"
+                     formControlName="otpCode" placeholder="A1B2C3" maxlength="6"
+                     style="text-transform: uppercase; letter-spacing: 0.25em; font-size: 18px; font-weight: 600;"/>
+            </div>
+            <span class="form-field__error" *ngIf="verifyForm.controls.otpCode.invalid && verifyForm.controls.otpCode.touched">
+              Mã OTP phải có đúng 6 ký tự.
+            </span>
+          </div>
+
+          <button type="submit" class="auth-submit animate-fade-up stagger-2"
+                  [disabled]="verifyForm.invalid || submitting">
+            <span *ngIf="!submitting">Xác thực OTP</span>
+            <span *ngIf="submitting" class="spinner-ring" aria-hidden="true"></span>
+          </button>
+
+          <button type="button" class="auth-back-btn animate-fade-up stagger-3"
+                  (click)="backToRegister()" [disabled]="submitting">
+            ← Đổi email khác
+          </button>
+        </form>
+      </ng-container>
+
+      <!-- ─── STEP 3: Set Password ─── -->
+      <ng-container *ngIf="step === 'set-password'">
+        <header class="auth-card__header animate-fade-up">
+          <p class="auth-card__eyebrow">Bước 3 / 3 — Hoàn tất</p>
+          <h1 class="auth-card__title">Tạo mật khẩu</h1>
+          <p class="auth-card__subtitle">Đặt mật khẩu bảo mật cho tài khoản của bạn.</p>
+        </header>
+
+        <form [formGroup]="setPasswordForm" (ngSubmit)="submitSetPassword()" class="auth-form">
+          <div class="form-field animate-fade-up stagger-1">
+            <label class="form-field__label" for="password">Mật khẩu mới</label>
+            <div class="form-field__input-wrap">
+              <svg class="form-field__icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <input id="password" type="password" class="form-field__input"
+                     formControlName="password" placeholder="Tối thiểu 6 ký tự" autocomplete="new-password"/>
+            </div>
+            <span class="form-field__error" *ngIf="setPasswordForm.controls.password.invalid && setPasswordForm.controls.password.touched">
+              Mật khẩu phải có ít nhất 6 ký tự.
+            </span>
+          </div>
+
+          <div class="form-field animate-fade-up stagger-2">
+            <label class="form-field__label" for="confirmPassword">Xác nhận mật khẩu</label>
+            <div class="form-field__input-wrap">
+              <svg class="form-field__icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 12 2 2 4-4"/><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <input id="confirmPassword" type="password" class="form-field__input"
+                     formControlName="confirmPassword" placeholder="Nhập lại mật khẩu" autocomplete="new-password"/>
+            </div>
+          </div>
+
+          <button type="submit" class="auth-submit animate-fade-up stagger-3"
+                  [disabled]="setPasswordForm.invalid || submitting">
+            <span *ngIf="!submitting">Hoàn tất đăng ký</span>
+            <span *ngIf="submitting" class="spinner-ring" aria-hidden="true"></span>
+          </button>
+        </form>
+      </ng-container>
+
+      <!-- Footer -->
+      <footer class="auth-card__footer">
+        <span>Đã có tài khoản?</span>
+        <a routerLink="../login" class="auth-card__footer-link">Đăng nhập</a>
+      </footer>
+
+    </div>
+  </main>
+
 </section>

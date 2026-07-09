@@ -4,23 +4,15 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CartService } from '../../../Cart/services/cart.service';
 import { Router } from '@angular/router';
 import { AddressService } from '../../services/Address.service';
-
-
-interface Address {
-  id: number;
-  receiverName: string;
-  receiverPhone: string;
-  street: string;
-  city: string;
-  province: string;
-  isDefault: boolean;
-}
+import { Address } from '../../models/Address.model';
+import { OrderService, CreateOrderRequest } from '../../../order/services/order.service';
 
 @Component({
   selector: 'app-checkout-page',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
-  templateUrl: './checkout-page.component.html'
+  templateUrl: './checkout-page.component.html',
+  styleUrls: ['./checkout-page.component.scss']
 })
 export class CheckoutPageComponent implements OnInit {
   private fb = inject(FormBuilder);
@@ -28,16 +20,17 @@ export class CheckoutPageComponent implements OnInit {
   private router = inject(Router);
 
   constructor(
-    private addressService: AddressService
+    private addressService: AddressService,
+    private orderService: OrderService
   ) { }
 
-
-  currentStep = signal<1 | 2>(1); // Quản lý luồng Wizard
+  currentStep = signal<1 | 2>(1);
   cartSummary = signal<any>(null);
   isLoading = signal(false);
 
-  // State Địa chỉ
+  // State Địa chỉ - lấy trực tiếp từ Signal của Service
   savedAddresses = this.addressService.savedAddresses;
+  addressLoading$ = this.addressService.loading$;
 
   selectedAddressId = signal<number | null>(null);
   isAddingNewAddress = signal<boolean>(false);
@@ -50,8 +43,6 @@ export class CheckoutPageComponent implements OnInit {
     const subtotal = this.cartSummary()?.subtotal || 0;
     return subtotal + this.shippingFee();
   });
-
-
 
   // Form nhập địa chỉ mới
   addressForm = this.fb.group({
@@ -76,18 +67,22 @@ export class CheckoutPageComponent implements OnInit {
       }
     });
 
-    this.addressService.loadAddress().subscribe(() => {
-      const addresses = this.savedAddresses();
-      if (addresses.length > 0) {
-        const defaultAddr = addresses.find(a => a.isDefault) || addresses[0];
-        this.selectAddress(defaultAddr.id);
-      } else {
+    this.addressService.loadAddress().subscribe({
+      next: () => {
+        const addresses = this.savedAddresses();
+        if (addresses.length > 0) {
+          const defaultAddr = addresses.find((a: Address) => a.isDefault) || addresses[0];
+          this.selectAddress(defaultAddr.id);
+        } else {
+          this.isAddingNewAddress.set(true);
+        }
+      },
+      error: () => {
+        // Nếu lỗi load, mở form thêm địa chỉ mới để user vẫn tiếp tục được
         this.isAddingNewAddress.set(true);
       }
     });
   }
-
-
 
   selectAddress(id: number) {
     this.selectedAddressId.set(id);
@@ -99,18 +94,17 @@ export class CheckoutPageComponent implements OnInit {
     this.isAddingNewAddress.set(true);
     this.selectedAddressId.set(null);
     this.shippingFee.set(0);
+    this.addressForm.reset();
   }
 
   calculateShipping() {
     let province = '';
 
     if (this.isAddingNewAddress()) {
-      if (this.addressForm.valid) {
-        province = this.addressForm.get('province')?.value || '';
-      }
+      province = this.addressForm.get('province')?.value || '';
     } else {
       const selectedId = this.selectedAddressId();
-      const addr = this.savedAddresses().find(a => a.id === selectedId);
+      const addr = this.savedAddresses().find((a: Address) => a.id === selectedId);
       if (addr) {
         province = addr.province;
       }
@@ -132,17 +126,14 @@ export class CheckoutPageComponent implements OnInit {
   }
 
   onAddressFormChange() {
-    if (this.addressForm.valid) {
-      this.calculateShipping();
-    }
+    // Tính phí ngay khi nhập tỉnh, không cần form valid hoàn toàn
+    this.calculateShipping();
   }
 
   // Wizard Navigation
   nextStep() {
-    // Validate Step 1
     if (this.isAddingNewAddress() && this.addressForm.invalid) {
       this.addressForm.markAllAsTouched();
-      alert('Vui lòng điền đầy đủ thông tin địa chỉ mới!');
       return;
     }
 
@@ -156,11 +147,17 @@ export class CheckoutPageComponent implements OnInit {
       return;
     }
 
-    this.currentStep.set(2); // Chuyển sang Bước 2
+    if (this.isAddingNewAddress()) {
+      // Khi chọn tạo địa chỉ mới, ta không lưu vào DB vội,
+      // mà gom hết data lại để gửi 1 lần lúc Place Order với addressId = 0.
+      this.currentStep.set(2);
+    } else {
+      this.currentStep.set(2);
+    }
   }
 
   prevStep() {
-    this.currentStep.set(1); // Quay lại Bước 1
+    this.currentStep.set(1);
   }
 
   placeOrder() {
@@ -171,26 +168,67 @@ export class CheckoutPageComponent implements OnInit {
 
     this.isLoading.set(true);
 
-    const payload: any = {
-      paymentMethod: this.paymentForm.get('paymentMethod')?.value,
-      shippingProvider: this.paymentForm.get('shippingProvider')?.value,
-      note: this.paymentForm.get('note')?.value
-    };
+    const isNewAddr = this.isAddingNewAddress();
+    const addressData = isNewAddr ? this.addressForm.value : {};
+    
+    let receiverName = '';
+    let receiverPhone = '';
+    let street = '';
+    let city = '';
+    let province = '';
 
-    if (this.isAddingNewAddress()) {
-      Object.assign(payload, this.addressForm.value);
+    if (isNewAddr) {
+      receiverName = addressData.receiverName || '';
+      receiverPhone = addressData.receiverPhone || '';
+      street = addressData.street || '';
+      city = addressData.city || '';
+      province = addressData.province || '';
     } else {
-      payload.addressId = this.selectedAddressId();
+      const selectedId = this.selectedAddressId();
+      const savedAddr = this.savedAddresses().find((a: Address) => a.id === selectedId);
+      if (savedAddr) {
+        receiverName = savedAddr.receiverName;
+        receiverPhone = savedAddr.receiverPhone;
+        street = savedAddr.street;
+        city = savedAddr.city;
+        province = savedAddr.province;
+      }
     }
 
-    console.log('--- MOCK CALL API CREATE ORDER ---');
-    console.log('Payload:', payload);
+    const payload: CreateOrderRequest = {
+      addressId: isNewAddr ? 0 : (this.selectedAddressId() || 0),
+      receiverName,
+      receiverPhone,
+      street,
+      city,
+      province,
+      paymentMethod: this.paymentForm.get('paymentMethod')?.value || 'COD',
+      shippingProvider: this.paymentForm.get('shippingProvider')?.value || 'GHN',
+      couponCode: '', // Currently no coupon input in UI, set empty
+      note: this.paymentForm.get('note')?.value || ''
+    };
 
-    setTimeout(() => {
-      this.isLoading.set(false);
-      alert(`Đặt hàng thành công!\nPayload: ${JSON.stringify(payload)}`);
-      // this.router.navigate(['/checkout/success']);
-    }, 1500);
+    console.log('--- CALL API CREATE ORDER ---', payload);
+
+    this.orderService.createOrder(payload).subscribe({
+      next: (res) => {
+        this.isLoading.set(false);
+        if (res.isSuccess || res.value) {
+          alert('Đặt hàng thành công!');
+          // Redirect to success or tracking page later
+          const orderId = res.value?.id || res.data?.id;
+          if (orderId) {
+             this.router.navigate(['/order', orderId]);
+          }
+        } else {
+          alert('Có lỗi xảy ra: ' + res.otherData);
+        }
+      },
+      error: (err) => {
+        this.isLoading.set(false);
+        console.error(err);
+        alert('Lỗi kết nối khi gọi API tạo đơn hàng!');
+      }
+    });
   }
 }
-

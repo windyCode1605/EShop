@@ -3,7 +3,7 @@ import { OrderPageComponent } from './pages/order-page/order-page.component';
 
 export const ORDER_ROUTES: Routes = [
   {
-    path: '',
+    path: ':id',
     component: OrderPageComponent
   }
 ];

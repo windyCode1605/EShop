@@ -1,160 +1,138 @@
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
-    <h1 class="text-4xl md:text-5xl font-semibold text-[#18181B] mb-12 tracking-tight font-['Geist',_'sans-serif']">
-        Giỏ hàng của bạn
-    </h1>
+<!-- Cart Page — Quiet Luxury Editorial redesign -->
+<div class="cart-shell">
+  <div class="cart-container">
 
-    <!-- Loading Skeleton (Optional) -->
-    <div *ngIf="isLoading()" class="animate-pulse space-y-8">
-        <div class="h-8 bg-gray-200 rounded w-1/4"></div>
-        <div class="h-32 bg-gray-100 rounded"></div>
-        <div class="h-32 bg-gray-100 rounded"></div>
+    <!-- Page Title -->
+    <header class="cart-header animate-fade-up">
+      <h1 class="cart-header__title">Giỏ hàng</h1>
+      <span class="cart-header__count" *ngIf="hasItems()">{{ cartSummary()?.totalItems }} sản phẩm</span>
+    </header>
+
+    <!-- Loading Skeleton -->
+    <div *ngIf="isLoading()" class="cart-skeleton">
+      <div class="skeleton-row shimmer" *ngFor="let i of [1,2,3]">
+        <div class="skeleton-img shimmer"></div>
+        <div class="skeleton-lines">
+          <div class="skeleton-line shimmer" style="width: 60%"></div>
+          <div class="skeleton-line shimmer" style="width: 35%"></div>
+        </div>
+      </div>
     </div>
 
     <!-- Error State -->
-    <div *ngIf="!isLoading() && errorMessage()"
-        class="p-4 mb-8 text-red-700 bg-red-50 border border-red-200 rounded-2xl">
-        {{ errorMessage() }}
+    <div *ngIf="!isLoading() && errorMessage()" class="cart-error">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      {{ errorMessage() }}
     </div>
 
-    <!-- Giỏ hàng rỗng (Empty State) -->
-    <div *ngIf="!isLoading() && !errorMessage() && !hasItems()" class="flex flex-col items-center justify-center py-20">
-        <!-- SVG Giỏ hàng trống -->
-        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
-            class="text-gray-300 mb-6">
-            <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
-            <path d="M3 6h18" />
-            <path d="M16 10a4 4 0 0 1-8 0" />
+    <!-- Empty State -->
+    <div *ngIf="!isLoading() && !errorMessage() && !hasItems()" class="cart-empty animate-fade-up">
+      <div class="cart-empty__graphic">
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/>
+          <path d="M3 6h18"/>
+          <path d="M16 10a4 4 0 0 1-8 0"/>
         </svg>
-        <h2 class="text-2xl font-medium text-[#18181B] mb-2">Giỏ hàng đang trống</h2>
-        <p class="text-[#71717A] mb-8 text-center max-w-md">Có vẻ như bạn chưa thêm sản phẩm nào vào giỏ. Hãy khám phá
-            những sản phẩm mới nhất của chúng tôi.</p>
-        <a routerLink="/products"
-            class="px-8 py-4 bg-[#2563EB] text-white rounded-[14px] hover:bg-[#1D4ED8] transition-colors font-medium">
-            Tiếp tục mua sắm
-        </a>
+      </div>
+      <h2 class="cart-empty__title">Giỏ hàng trống</h2>
+      <p class="cart-empty__desc">Bạn chưa thêm sản phẩm nào. Hãy khám phá bộ sưu tập của chúng tôi.</p>
+      <a routerLink="/product" class="cart-empty__cta">Khám phá sản phẩm</a>
     </div>
 
-    <!-- Giỏ hàng có sản phẩm -->
-    <div *ngIf="!isLoading() && hasItems()" class="lg:grid lg:grid-cols-12 lg:gap-x-16 items-start">
+    <!-- Cart with Items -->
+    <div *ngIf="!isLoading() && hasItems()" class="cart-layout">
 
-        <!-- Cột Trái: Danh sách sản phẩm (8 cols) -->
-        <div class="lg:col-span-8">
-            <div class="border-t border-[#E4E4E7]">
-                <div *ngFor="let item of cartItems()"
-                    class="py-8 flex flex-col sm:flex-row gap-6 border-b border-[#E4E4E7] group">
-                    <!-- Ảnh sản phẩm -->
-                    <div class="w-full sm:w-32 h-32 bg-[#F4F4F5] rounded-[16px] overflow-hidden flex-shrink-0">
-                        <img [src]="item.imageUrl || 'assets/images/placeholder.png'" [alt]="item.productName"
-                            class="w-full h-full object-cover mix-blend-multiply group-hover:scale-105 transition-transform duration-300">
-                    </div>
-
-                    <!-- Thông tin chi tiết -->
-                    <div class="flex-1 flex flex-col justify-between">
-                        <div class="flex justify-between items-start gap-4">
-                            <div>
-                                <h3 class="text-lg font-medium text-[#18181B] leading-tight">
-                                    <a [routerLink]="['/product', item.productId]" class="hover:underline">{{
-                                        item.productName }}</a>
-                                </h3>
-                                <p class="mt-1 text-sm text-[#71717A]">{{ item.color }} <span *ngIf="item.size">| {{
-                                        item.size }}</span></p>
-
-                                <div *ngIf="!item.isAvailable"
-                                    class="mt-2 text-sm text-red-600 bg-red-50 inline-block px-2 py-1 rounded">Sản phẩm
-                                    hiện không có sẵn</div>
-                            </div>
-                            <p class="text-lg font-semibold text-[#18181B] whitespace-nowrap">{{ item.unitPrice |
-                                currency:'VND':'symbol':'1.0-0' }}</p>
-                        </div>
-
-                        <div class="flex justify-between items-end mt-6">
-                            <!-- Bộ tăng giảm số lượng -->
-                            <div
-                                class="flex items-center border border-[#E4E4E7] rounded-full overflow-hidden w-28 h-10">
-                                <button type="button" (click)="decreaseQuantity(item)"
-                                    class="flex-1 h-full flex items-center justify-center text-[#71717A] hover:bg-[#F4F4F5] transition-colors"
-                                    [disabled]="item.quantity <= 1">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
-                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round">
-                                        <path d="M5 12h14" />
-                                    </svg>
-                                </button>
-                                <span class="flex-1 text-center font-medium text-sm text-[#18181B]">{{ item.quantity
-                                    }}</span>
-                                <button type="button" (click)="increaseQuantity(item)"
-                                    class="flex-1 h-full flex items-center justify-center text-[#71717A] hover:bg-[#F4F4F5] transition-colors"
-                                    [disabled]="item.quantity >= item.maxQuantity">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
-                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round">
-                                        <path d="M5 12h14" />
-                                        <path d="M12 5v14" />
-                                    </svg>
-                                </button>
-                            </div>
-
-                            <!-- Xoá sản phẩm -->
-                            <button type="button" (click)="removeItem(item)"
-                                class="text-[#71717A] hover:text-red-600 transition-colors flex items-center gap-2 text-sm font-medium">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
-                                    fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
-                                    stroke-linejoin="round">
-                                    <path d="M3 6h18" />
-                                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-                                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-                                </svg>
-                                <span class="hidden sm:inline">Xoá</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+      <!-- LEFT: Item List -->
+      <div class="cart-items">
+        <div class="cart-items__header">
+          <span class="cart-items__col-label">Sản phẩm</span>
+          <span class="cart-items__col-label cart-items__col-label--right">Tổng</span>
         </div>
 
+        <div class="cart-item" *ngFor="let item of cartItems()">
+          <!-- Product Image -->
+          <div class="cart-item__image-wrap">
+            <img
+              [src]="item.imageUrl || 'assets/images/placeholder.png'"
+              [alt]="item.productName"
+              class="cart-item__image"
+            />
+          </div>
 
-        <div class="lg:col-span-4 mt-12 lg:mt-0">
-            <div class="bg-[#F9FAFB] rounded-[24px] p-8 lg:sticky lg:top-24">
-                <h2 class="text-xl font-semibold text-[#18181B] mb-6">Tổng đơn hàng</h2>
-
-                <div class="space-y-4 border-b border-[#E4E4E7] pb-6 mb-6">
-                    <div class="flex justify-between items-center text-[#71717A]">
-                        <span>Tạm tính ({{ cartSummary()?.totalItems }} sản phẩm)</span>
-                        <span class="text-[#18181B] font-medium">{{ subtotal() | currency:'VND':'symbol':'1.0-0'
-                            }}</span>
-                    </div>
-                    <div class="flex justify-between items-center text-[#71717A]">
-                        <span>Phí giao hàng</span>
-                        <span class="text-[#18181B] font-medium">{{ shippingFee() === 0 ? 'Miễn phí' : (shippingFee() |
-                            currency:'VND':'symbol':'1.0-0') }}</span>
-                    </div>
-                </div>
-
-                <div class="flex justify-between items-end mb-8">
-                    <div>
-                        <p class="text-lg font-semibold text-[#18181B]">Tổng cộng</p>
-                        <p class="text-sm text-[#71717A] mt-1">Đã bao gồm thuế (nếu có)</p>
-                    </div>
-                    <p class="text-2xl font-semibold text-[#18181B]">{{ estimatedTotal() |
-                        currency:'VND':'symbol':'1.0-0' }}</p>
-                </div>
-
-                <a routerLink="/checkout"
-                    class="w-full block text-center px-8 py-4 bg-[#2563EB] text-white rounded-[14px] hover:bg-[#1D4ED8] transition-colors font-medium text-lg">
-                    Thanh toán
-                </a>
-
-                <div class="mt-6 flex items-center justify-center gap-2 text-sm text-[#71717A]">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                        <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
-                        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                    </svg>
-                    Thanh toán an toàn & bảo mật
-                </div>
+          <!-- Info -->
+          <div class="cart-item__info">
+            <div class="cart-item__meta">
+              <a [routerLink]="['/product', item.productId]" class="cart-item__name">{{ item.productName }}</a>
+              <p class="cart-item__variant" *ngIf="item.color || item.size">
+                <span *ngIf="item.color">{{ item.color }}</span>
+                <span *ngIf="item.color && item.size"> · </span>
+                <span *ngIf="item.size">{{ item.size }}</span>
+              </p>
+              <div class="cart-item__unavailable" *ngIf="!item.isAvailable">Không còn hàng</div>
             </div>
+
+            <div class="cart-item__controls">
+              <!-- Qty control -->
+              <div class="qty-control">
+                <button type="button" class="qty-control__btn" (click)="decreaseQuantity(item)" [disabled]="item.quantity <= 1">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/></svg>
+                </button>
+                <span class="qty-control__val">{{ item.quantity }}</span>
+                <button type="button" class="qty-control__btn" (click)="increaseQuantity(item)" [disabled]="item.quantity >= item.maxQuantity">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+                </button>
+              </div>
+
+              <!-- Remove -->
+              <button type="button" class="cart-item__remove" (click)="removeItem(item)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Price -->
+          <div class="cart-item__price">
+            {{ item.unitPrice | currency:'VND':'symbol':'1.0-0' }}
+          </div>
         </div>
+      </div>
+
+      <!-- RIGHT: Order Summary -->
+      <div class="cart-summary">
+        <div class="summary-card">
+          <h2 class="summary-card__title">Tổng đơn hàng</h2>
+
+          <div class="summary-lines">
+            <div class="summary-line">
+              <span>Tạm tính <span class="summary-line__count">({{ cartSummary()?.totalItems }})</span></span>
+              <span>{{ subtotal() | currency:'VND':'symbol':'1.0-0' }}</span>
+            </div>
+            <div class="summary-line">
+              <span>Phí giao hàng</span>
+              <span class="summary-line__free" *ngIf="shippingFee() === 0">Miễn phí</span>
+              <span *ngIf="shippingFee() > 0">{{ shippingFee() | currency:'VND':'symbol':'1.0-0' }}</span>
+            </div>
+          </div>
+
+          <div class="summary-divider"></div>
+
+          <div class="summary-total">
+            <div class="summary-total__label">
+              <p class="summary-total__text">Tổng cộng</p>
+              <p class="summary-total__note">Đã bao gồm thuế</p>
+            </div>
+            <p class="summary-total__amount">{{ estimatedTotal() | currency:'VND':'symbol':'1.0-0' }}</p>
+          </div>
+
+          <a routerLink="/checkout" class="summary-cta">Tiến hành thanh toán</a>
+
+          <div class="summary-secure">
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            Thanh toán an toàn & bảo mật
+          </div>
+        </div>
+      </div>
 
     </div>
+  </div>
 </div>

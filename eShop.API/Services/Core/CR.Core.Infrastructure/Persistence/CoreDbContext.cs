@@ -19,8 +19,8 @@ using Microsoft.Extensions.DependencyInjection; // GetService<T>()
 
 public class CoreDbContext : ApplicationDbContext<Users>
 {
-    public CoreDbContext(DbContextOptions<CoreDbContext> options) : base(options){}
-    
+    public CoreDbContext(DbContextOptions<CoreDbContext> options) : base(options) { }
+
     // === CATALOG ===
     public DbSet<Category> Categories { get; set; }
     public DbSet<Product> Products { get; set; }
@@ -37,31 +37,31 @@ public class CoreDbContext : ApplicationDbContext<Users>
     public DbSet<Order> Orders { get; set; }
     public DbSet<OrderItem> OrderItems { get; set; }
     public DbSet<OrderRefund> OrderRefunds { get; set; }
-    
+
     // === PAYMENT & LOGISTICS ===
     public DbSet<Payments> Payments { get; set; }
     public DbSet<Shipment> Shipments { get; set; }
-    
+
     // === PROMOTION ===
     public DbSet<Coupons> Coupons { get; set; }
     public DbSet<CouponUsage> CouponUsages { get; set; }
-    
+
     // === USER & AUTHENTICATION ===
     public DbSet<Users> Users { get; set; }
     public DbSet<NotificationToken> NotificationTokens { get; set; }
     public DbSet<AuthOtp> AuthOtps { get; set; }
     public DbSet<SendOtp> SendOtps { get; set; }
-    
+
     // === USER PROFILE & PERMISSION ===
     public DbSet<UserProfile> UserProfiles { get; set; }
     public DbSet<Role> Roles { get; set; }
     public DbSet<UserRole> UserRoles { get; set; }
     public DbSet<RolePermission> RolePermissions { get; set; }
-    
+
     // === REVIEW & ADDRESS ===
     public DbSet<Reviews> Reviews { get; set; }
     public DbSet<Addresses> Addresses { get; set; }
-    
+
     // === SYSTEM ===
     public DbSet<SysVar> SysVars { get; set; }
 

@@ -1,205 +1,265 @@
-<div class="max-w-[1280px] mx-auto px-4 py-8">
-  <div class="flex items-center justify-between mb-8">
-    <h1 class="text-3xl font-semibold text-[#18181B]">Thanh toán</h1>
-    
-    <!-- Stepper -->
-    <div class="flex items-center gap-4 text-sm font-medium">
-      <div class="flex items-center gap-2" [ngClass]="currentStep() === 1 ? 'text-[#2563EB]' : 'text-[#71717A]'">
-        <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs" 
-              [ngClass]="currentStep() === 1 ? 'bg-[#2563EB] text-white' : 'bg-[#E4E4E7]'">1</span>
-        Giao hàng
-      </div>
-      <div class="w-8 h-[1px] bg-[#E4E4E7]"></div>
-      <div class="flex items-center gap-2" [ngClass]="currentStep() === 2 ? 'text-[#2563EB]' : 'text-[#71717A]'">
-        <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs"
-              [ngClass]="currentStep() === 2 ? 'bg-[#2563EB] text-white' : 'bg-[#E4E4E7]'">2</span>
-        Thanh toán
-      </div>
-    </div>
-  </div>
+<!-- Checkout Page — Premium redesign -->
+<div class="checkout-shell">
 
-  <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-    <!-- Cột trái: Thông tin & Thanh toán -->
-    <div class="lg:col-span-8 space-y-8">
-      
-      <!-- ================= BƯỚC 1: GIAO HÀNG ================= -->
+  <!-- ─── PAGE HEADER ─── -->
+  <header class="checkout-header">
+    <div class="checkout-header__brand">
+      <span class="checkout-header__logo-mark">A</span>
+      <span class="checkout-header__logo-name">ATELIER</span>
+    </div>
+
+    <!-- Animated Stepper -->
+    <nav class="checkout-stepper" aria-label="Các bước thanh toán">
+      <div class="stepper-item" [class.stepper-item--active]="currentStep() === 1" [class.stepper-item--done]="currentStep() > 1">
+        <span class="stepper-item__circle">
+          <svg *ngIf="currentStep() > 1" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5L20 7"/></svg>
+          <span *ngIf="currentStep() <= 1">1</span>
+        </span>
+        <span class="stepper-item__label">Giao hàng</span>
+      </div>
+      <div class="stepper-connector" [class.stepper-connector--active]="currentStep() > 1"></div>
+      <div class="stepper-item" [class.stepper-item--active]="currentStep() === 2">
+        <span class="stepper-item__circle">2</span>
+        <span class="stepper-item__label">Thanh toán</span>
+      </div>
+    </nav>
+  </header>
+
+  <!-- ─── BODY ─── -->
+  <div class="checkout-body">
+
+    <!-- LEFT: Form sections -->
+    <div class="checkout-main">
+
+      <!-- ═══ STEP 1: GIAO HÀNG ═══ -->
       <ng-container *ngIf="currentStep() === 1">
-        <!-- Block: Thông tin giao hàng -->
-        <div class="bg-white p-6 rounded-[24px] border border-[#E4E4E7]">
-          <div class="flex justify-between items-center mb-6">
-            <h2 class="text-xl font-semibold">Thông tin nhận hàng</h2>
-            <button *ngIf="!isAddingNewAddress()" (click)="toggleAddNewAddress()" 
-                    class="text-sm font-medium text-[#18181B] hover:underline flex items-center gap-1">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+
+        <!-- Thông tin nhận hàng -->
+        <section class="checkout-section animate-fade-up">
+          <div class="checkout-section__head">
+            <h2 class="checkout-section__title">Thông tin nhận hàng</h2>
+            <button *ngIf="!isAddingNewAddress()" (click)="toggleAddNewAddress()"
+                    class="checkout-add-btn" type="button">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
               Thêm địa chỉ mới
             </button>
           </div>
-          
-          <!-- Danh sách địa chỉ đã lưu -->
-          <div *ngIf="!isAddingNewAddress()" class="space-y-4">
-            <div *ngFor="let addr of savedAddresses()" 
-                (click)="selectAddress(addr.id)"
-                class="p-4 rounded-[16px] border cursor-pointer transition-colors"
-                [ngClass]="selectedAddressId() === addr.id ? 'border-[#18181B] bg-[#F9FAFB]' : 'border-[#E4E4E7] hover:border-[#A1A1AA]'">
-              
-              <div class="flex justify-between items-start mb-2">
-                <div class="flex items-center gap-2">
-                  <span class="font-medium text-[#18181B]">{{ addr.receiverName }}</span>
-                  <span class="text-[#71717A]">|</span>
-                  <span class="text-[#71717A]">{{ addr.receiverPhone }}</span>
+
+          <!-- Saved address list -->
+          <div *ngIf="!isAddingNewAddress()" class="address-list">
+            <label *ngFor="let addr of savedAddresses()"
+                   class="address-card"
+                   [class.address-card--selected]="selectedAddressId() === addr.id"
+                   (click)="selectAddress(addr.id)">
+              <span class="address-card__radio">
+                <span class="address-card__radio-dot" *ngIf="selectedAddressId() === addr.id"></span>
+              </span>
+              <div class="address-card__content">
+                <div class="address-card__top">
+                  <span class="address-card__name">{{ addr.receiverName }}</span>
+                  <span class="address-card__sep">·</span>
+                  <span class="address-card__phone">{{ addr.receiverPhone }}</span>
+                  <span *ngIf="addr.isDefault" class="address-card__badge">Mặc định</span>
                 </div>
-                <span *ngIf="addr.isDefault" class="text-xs font-medium px-2 py-1 bg-[#2563EB] text-white rounded-full">Mặc định</span>
+                <p class="address-card__detail">{{ addr.street }}, {{ addr.city }}, {{ addr.province }}</p>
               </div>
-              
-              <p class="text-sm text-[#71717A]">{{ addr.street }}</p>
-              <p class="text-sm text-[#71717A]">{{ addr.city }}, {{ addr.province }}</p>
-            </div>
+            </label>
           </div>
 
-          <!-- Form nhập địa chỉ mới -->
-          <form *ngIf="isAddingNewAddress()" [formGroup]="addressForm" (input)="onAddressFormChange()" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="md:col-span-2 flex justify-between mb-2">
-              <span class="text-sm text-[#71717A]">Nhập thông tin địa chỉ mới bên dưới</span>
-              <button *ngIf="savedAddresses().length > 0" type="button" (click)="selectAddress(savedAddresses()[0].id)" class="text-sm text-blue-600 hover:underline">Hủy thêm mới</button>
+          <!-- New address form -->
+          <form *ngIf="isAddingNewAddress()" [formGroup]="addressForm" (input)="onAddressFormChange()" class="address-form">
+            <div class="address-form__note">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+              <span>Điền thông tin địa chỉ giao hàng mới</span>
+              <button *ngIf="savedAddresses().length > 0" type="button"
+                      (click)="selectAddress(savedAddresses()[0].id)" class="address-form__cancel">
+                Huỷ
+              </button>
             </div>
 
-            <div class="md:col-span-2">
-              <label class="block text-sm mb-2 text-[#71717A]">Họ và tên người nhận *</label>
-              <input type="text" formControlName="receiverName" 
-                    class="w-full px-4 py-3 rounded-[16px] border border-[#E4E4E7] focus:border-[#18181B] outline-none">
-            </div>
-
-            <div class="md:col-span-2">
-              <label class="block text-sm mb-2 text-[#71717A]">Số điện thoại *</label>
-              <input type="text" formControlName="receiverPhone" 
-                    class="w-full px-4 py-3 rounded-[16px] border border-[#E4E4E7] focus:border-[#18181B] outline-none">
-            </div>
-
-            <div class="md:col-span-2">
-              <label class="block text-sm mb-2 text-[#71717A]">Số nhà, tên đường (Street) *</label>
-              <input type="text" formControlName="street" 
-                    class="w-full px-4 py-3 rounded-[16px] border border-[#E4E4E7] focus:border-[#18181B] outline-none">
-            </div>
-
-            <div>
-              <label class="block text-sm mb-2 text-[#71717A]">Thành phố (City) *</label>
-              <input type="text" formControlName="city" 
-                    class="w-full px-4 py-3 rounded-[16px] border border-[#E4E4E7] focus:border-[#18181B] outline-none">
-            </div>
-
-            <div>
-              <label class="block text-sm mb-2 text-[#71717A]">Tỉnh/Quận (Province) *</label>
-              <input type="text" formControlName="province" (blur)="calculateShipping()"
-                    class="w-full px-4 py-3 rounded-[16px] border border-[#E4E4E7] focus:border-[#18181B] outline-none"
-                    placeholder="Ví dụ: Hồ Chí Minh, Hà Nội...">
+            <div class="form-grid">
+              <div class="form-group form-group--full">
+                <label class="form-group__label">Họ và tên người nhận *</label>
+                <input type="text" formControlName="receiverName" class="form-group__input"
+                       [class.form-group__input--error]="addressForm.get('receiverName')?.invalid && addressForm.get('receiverName')?.touched"
+                       placeholder="Nguyễn Văn A">
+              </div>
+              <div class="form-group form-group--full">
+                <label class="form-group__label">Số điện thoại *</label>
+                <input type="text" formControlName="receiverPhone" class="form-group__input"
+                       [class.form-group__input--error]="addressForm.get('receiverPhone')?.invalid && addressForm.get('receiverPhone')?.touched"
+                       placeholder="09xxxxxxxx">
+              </div>
+              <div class="form-group form-group--full">
+                <label class="form-group__label">Số nhà, tên đường *</label>
+                <input type="text" formControlName="street" class="form-group__input"
+                       [class.form-group__input--error]="addressForm.get('street')?.invalid && addressForm.get('street')?.touched"
+                       placeholder="123 Đường Lê Lợi">
+              </div>
+              <div class="form-group">
+                <label class="form-group__label">Thành phố *</label>
+                <input type="text" formControlName="city" class="form-group__input"
+                       [class.form-group__input--error]="addressForm.get('city')?.invalid && addressForm.get('city')?.touched"
+                       placeholder="Quận 1">
+              </div>
+              <div class="form-group">
+                <label class="form-group__label">Tỉnh / Quận *</label>
+                <input type="text" formControlName="province" (blur)="calculateShipping()" class="form-group__input"
+                       [class.form-group__input--error]="addressForm.get('province')?.invalid && addressForm.get('province')?.touched"
+                       placeholder="Hồ Chí Minh, Hà Nội...">
+              </div>
             </div>
           </form>
-        </div>
+        </section>
 
+        <!-- Đơn vị vận chuyển -->
         <form [formGroup]="paymentForm">
-          <!-- Vận chuyển -->
-          <div class="bg-white p-6 rounded-[24px] border border-[#E4E4E7] mt-8">
-              <h2 class="text-xl font-semibold mb-6">Đơn vị vận chuyển</h2>
-              <div class="space-y-3">
-                  <label class="flex justify-between items-center p-4 border border-[#18181B] bg-[#F9FAFB] rounded-[16px] cursor-pointer">
-                      <div class="flex items-center gap-3">
-                        <input type="radio" formControlName="shippingProvider" value="GHN" class="w-4 h-4 text-[#18181B]"> 
-                        <span class="font-medium text-[#18181B]">Giao hàng Nhanh (GHN)</span>
-                      </div>
-                  </label>
-                  <!-- Hiển thị phí phụ thuộc vào tỉnh thành đã chọn -->
-                  <p class="text-sm text-[#71717A] mt-3 ml-1" *ngIf="shippingFee() > 0">
-                    Phí giao hàng: <span class="font-medium text-[#18181B]">{{ shippingFee() | currency:'VND':'symbol':'1.0-0' }}</span>
-                  </p>
-                  <p class="text-sm text-amber-600 mt-3 ml-1" *ngIf="shippingFee() === 0">
-                    Vui lòng chọn hoặc nhập đầy đủ địa chỉ để tính phí vận chuyển.
-                  </p>
-              </div>
-          </div>
+          <section class="checkout-section animate-fade-up stagger-1">
+            <div class="checkout-section__head">
+              <h2 class="checkout-section__title">Đơn vị vận chuyển</h2>
+            </div>
+            <div class="shipping-options">
+              <label class="shipping-option"
+                     [class.shipping-option--selected]="paymentForm.get('shippingProvider')?.value === 'GHN'">
+                <input type="radio" formControlName="shippingProvider" value="GHN" class="shipping-option__radio">
+                <div class="shipping-option__content">
+                  <div class="shipping-option__provider">
+                    <span class="shipping-option__name">Giao hàng Nhanh</span>
+                    <span class="shipping-option__tag">GHN</span>
+                  </div>
+                  <span class="shipping-option__fee" *ngIf="shippingFee() > 0">
+                    {{ shippingFee() | currency:'VND':'symbol':'1.0-0' }}
+                  </span>
+                </div>
+              </label>
+            </div>
+            <p class="shipping-note" *ngIf="shippingFee() === 0">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+              Nhập tỉnh/thành để tính phí vận chuyển.
+            </p>
+          </section>
         </form>
+
       </ng-container>
 
-
-      <!-- ================= BƯỚC 2: THANH TOÁN ================= -->
+      <!-- ═══ STEP 2: THANH TOÁN ═══ -->
       <ng-container *ngIf="currentStep() === 2">
         <form [formGroup]="paymentForm">
-          <!-- Thanh toán -->
-          <div class="bg-white p-6 rounded-[24px] border border-[#E4E4E7]">
-              <h2 class="text-xl font-semibold mb-6">Phương thức thanh toán</h2>
-              <div class="space-y-3">
-                  <label class="flex items-center gap-3 p-4 border rounded-[16px] cursor-pointer transition-colors"
-                        [ngClass]="paymentForm.get('paymentMethod')?.value === 'COD' ? 'border-[#18181B] bg-[#F9FAFB]' : 'border-[#E4E4E7]'">
-                      <input type="radio" formControlName="paymentMethod" value="COD" class="w-4 h-4 text-[#18181B]"> 
-                      <span class="font-medium text-[#18181B]">Thanh toán khi nhận hàng (COD)</span>
-                  </label>
-                  <label class="flex items-center gap-3 p-4 border border-[#E4E4E7] rounded-[16px] cursor-not-allowed opacity-50">
-                      <input type="radio" formControlName="paymentMethod" value="VNPAY" [attr.disabled]="true" class="w-4 h-4 text-[#18181B] pointer-events-none"> 
-                      <span class="font-medium text-[#18181B]">VNPay (Bảo trì)</span>
-                  </label>
-              </div>
+          <section class="checkout-section animate-fade-up">
+            <div class="checkout-section__head">
+              <h2 class="checkout-section__title">Phương thức thanh toán</h2>
+            </div>
+            <div class="payment-options">
+              <label class="payment-option"
+                     [class.payment-option--selected]="paymentForm.get('paymentMethod')?.value === 'COD'">
+                <input type="radio" formControlName="paymentMethod" value="COD" class="payment-option__radio">
+                <div class="payment-option__icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                </div>
+                <div class="payment-option__info">
+                  <span class="payment-option__name">Thanh toán khi nhận hàng</span>
+                  <span class="payment-option__desc">COD — Trả tiền mặt khi hàng đến tay</span>
+                </div>
+              </label>
 
-              <!-- Ghi chú -->
-              <div class="mt-6">
-                <label class="block text-sm mb-2 text-[#71717A]">Ghi chú cho đơn hàng</label>
-                <textarea formControlName="note" rows="3"
-                          class="w-full px-4 py-3 rounded-[16px] border border-[#E4E4E7] focus:border-[#18181B] outline-none"
-                          placeholder="Ví dụ: Giao giờ hành chính"></textarea>
-              </div>
-          </div>
+              <label class="payment-option payment-option--disabled">
+                <input type="radio" formControlName="paymentMethod" value="VNPAY" [disabled]="true" class="payment-option__radio">
+                <div class="payment-option__icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+                </div>
+                <div class="payment-option__info">
+                  <span class="payment-option__name">VNPay</span>
+                  <span class="payment-option__desc">Đang bảo trì — Sẽ sớm hoạt động</span>
+                </div>
+                <span class="payment-option__maintenance">Bảo trì</span>
+              </label>
+            </div>
+
+            <div class="checkout-note-field">
+              <label class="form-group__label">Ghi chú cho đơn hàng</label>
+              <textarea formControlName="note" rows="3" class="form-group__textarea"
+                        placeholder="Ví dụ: Giao giờ hành chính, gọi điện trước khi giao..."></textarea>
+            </div>
+          </section>
         </form>
       </ng-container>
 
     </div>
 
-    <!-- Cột phải: Summary -->
-    <div class="lg:col-span-4">
-      <div class="bg-[#F9FAFB] p-8 rounded-[24px] lg:sticky lg:top-24 border border-[#E4E4E7]">
-        <h2 class="text-xl font-semibold text-[#18181B] mb-6">Tổng đơn hàng</h2>
-        
-        <div class="space-y-4 border-b border-[#E4E4E7] pb-6 mb-6">
-            <div class="flex justify-between items-center text-[#71717A]">
-                <span>Tạm tính ({{ cartSummary()?.totalItems || 0 }} sản phẩm)</span>
-                <span class="text-[#18181B] font-medium">{{ cartSummary()?.subtotal | currency:'VND':'symbol':'1.0-0' }}</span>
-            </div>
-            <div class="flex justify-between items-center text-[#71717A]">
-                <span>Phí giao hàng</span>
-                <span class="text-[#18181B] font-medium">{{ shippingFee() === 0 ? '---' : (shippingFee() | currency:'VND':'symbol':'1.0-0') }}</span>
-            </div>
+    <!-- RIGHT: Order summary -->
+    <aside class="checkout-summary">
+      <div class="summary-card">
+        <h2 class="summary-card__title">Tổng đơn hàng</h2>
+
+        <!-- Line items -->
+        <div class="summary-lines">
+          <div class="summary-line">
+            <span class="summary-line__label">Tạm tính ({{ cartSummary()?.totalItems || 0 }} sản phẩm)</span>
+            <span class="summary-line__value">{{ cartSummary()?.subtotal | currency:'VND':'symbol':'1.0-0' }}</span>
+          </div>
+          <div class="summary-line">
+            <span class="summary-line__label">Phí giao hàng</span>
+            <span class="summary-line__value" [class.summary-line__value--muted]="shippingFee() === 0">
+              {{ shippingFee() === 0 ? '---' : (shippingFee() | currency:'VND':'symbol':'1.0-0') }}
+            </span>
+          </div>
         </div>
 
-        <div class="flex justify-between items-end mb-8">
-            <div>
-              <p class="text-lg font-semibold text-[#18181B]">Tổng cộng</p>
-              <p class="text-sm text-[#71717A] mt-1">Đã bao gồm thuế</p>
-            </div>
-            <p class="text-2xl font-semibold text-[#18181B]">{{ estimatedTotal() | currency:'VND':'symbol':'1.0-0' }}</p>
+        <div class="summary-divider"></div>
+
+        <div class="summary-total">
+          <div class="summary-total__left">
+            <span class="summary-total__label">Tổng cộng</span>
+            <span class="summary-total__note">Đã bao gồm thuế VAT</span>
+          </div>
+          <span class="summary-total__amount">{{ estimatedTotal() | currency:'VND':'symbol':'1.0-0' }}</span>
         </div>
-        
-        <!-- Nút Điều Hướng -->
+
+        <div class="summary-divider"></div>
+
+        <!-- CTA Buttons -->
         <ng-container *ngIf="currentStep() === 1">
-          <button 
-             (click)="nextStep()" 
-             class="w-full block text-center px-8 py-4 bg-[#2563EB] text-white rounded-[14px] hover:bg-[#1D4ED8] transition-colors font-medium text-lg">
-            Tiếp tục đến phương thức thanh toán
+          <button (click)="nextStep()"
+                  [disabled]="(addressLoading$ | async)"
+                  class="summary-cta summary-cta--primary">
+            <span *ngIf="!(addressLoading$ | async)">Tiếp tục</span>
+            <span *ngIf="(addressLoading$ | async)" class="spinner-ring-dark" aria-hidden="true"></span>
+            <svg *ngIf="!(addressLoading$ | async)" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
           </button>
+          <p *ngIf="shippingFee() === 0" class="summary-cta-hint">
+            Vui lòng điền địa chỉ hợp lệ để tiếp tục.
+          </p>
         </ng-container>
 
         <ng-container *ngIf="currentStep() === 2">
-          <button 
-             (click)="placeOrder()" 
-             [disabled]="isLoading() || shippingFee() === 0"
-             class="w-full block text-center px-8 py-4 bg-[#2563EB] text-white rounded-[14px] hover:bg-[#1D4ED8] transition-colors font-medium text-lg disabled:opacity-50 disabled:cursor-not-allowed mb-3">
-            {{ isLoading() ? 'Đang xử lý...' : 'Xác nhận đặt hàng' }}
+          <button (click)="placeOrder()"
+                  [disabled]="isLoading() || shippingFee() === 0"
+                  class="summary-cta summary-cta--primary">
+            <span *ngIf="!isLoading()">Xác nhận đặt hàng</span>
+            <span *ngIf="isLoading()" class="spinner-ring-dark" aria-hidden="true"></span>
           </button>
-          <button 
-             (click)="prevStep()" 
-             class="w-full block text-center px-8 py-4 bg-transparent text-[#2563EB] rounded-[14px] hover:bg-gray-100 transition-colors font-medium text-lg border border-[#E4E4E7]">
-            Quay lại bước giao hàng
+          <button (click)="prevStep()" class="summary-cta summary-cta--ghost">
+            ← Quay lại giao hàng
           </button>
         </ng-container>
-        
-        <p *ngIf="shippingFee() === 0 && currentStep() === 1" class="text-xs text-red-500 text-center mt-3">Vui lòng cung cấp địa chỉ hợp lệ để tiếp tục.</p>
+
+        <!-- Trust badges -->
+        <div class="trust-badges">
+          <div class="trust-badge">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            <span>Thanh toán bảo mật</span>
+          </div>
+          <div class="trust-badge">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+            <span>Theo dõi đơn hàng</span>
+          </div>
+          <div class="trust-badge">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+            <span>Đổi trả 30 ngày</span>
+          </div>
+        </div>
       </div>
-    </div>
+    </aside>
+
   </div>
 </div>
