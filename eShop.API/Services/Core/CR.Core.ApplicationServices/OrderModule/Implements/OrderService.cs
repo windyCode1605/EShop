@@ -1,5 +1,4 @@
 using CR.ApplicationBase.Common;
-using CR.Constants;
 using CR.Constants.Discount;
 using CR.Constants.ErrorCodes;
 using CR.Constants.Payment;
@@ -15,8 +14,8 @@ using CR.DtoBase;
 using CR.InfrastructureBase;
 using CR.Utils.DataUtils;
 using Microsoft.EntityFrameworkCore;
-using CR.Core.Dtos.Shipment;
 using CR.Constants.Orders;
+
 
 namespace CR.Core.ApplicationServices.OrderModule.Implements;
 
@@ -378,65 +377,79 @@ public class OrderService : CoreServiceBase, IOrderService
         });
     }
 
-    public async Task<Result> UpdateOrderStatus(int orderId, string newStatus)
+    public async Task<Result> UpdateOrderStatus(int orderId, UpdateOrderStatusDto input)
     {
-        var order = await _dbContext.Orders.FirstOrDefaultAsync(o => o.Id == orderId && !o.Deleted);
+        var validTransitions = new Dictionary<string, string[]>
+        {
+            {OrderStatusConst.Pending, [ OrderStatusConst.Confirmed, OrderStatusConst.Processing, OrderStatusConst.Cancelled]},
+            { OrderStatusConst.Confirmed, [ OrderStatusConst.Processing, OrderStatusConst.Cancelled]},
+            { OrderStatusConst.Processing, [ OrderStatusConst.Shipping, OrderStatusConst.Cancelled]},
+            { OrderStatusConst.Shipping, [ OrderStatusConst.Delivered, OrderStatusConst.Returned]}
+        };
+        var order = await _dbContext.Orders
+            .Include(o => o.Payments)
+            .FirstOrDefaultAsync(o => o.Id == orderId && !o.Deleted);
         if (order == null)
             return Result.Failure(ErrorCode.OrderNotFound, this.GetCurrentMethodInfo());
 
         if (OrderStatusConst.TerminalStatuses.Contains(order.Status))
-            return Result.Failure(ErrorCode.OrderCannotBeCancelled, this.GetCurrentMethodInfo(), $"Đơn hàng hiện tại ở trạng thái '{order.Status}' nên không thể cập nhật nữa.");
+            return Result.Failure(ErrorCode.OrderCannotBeCancelled, this.GetCurrentMethodInfo(),
+                $"Đơn hàng hiện tại ở trạng thái '{order.Status}' nên không thể cập nhật nữa.");
 
-        order.Status = newStatus;
-        order.ModifiedDate = DateTimeUtils.GetDate();
+        if (!validTransitions.ContainsKey(order.Status) || !validTransitions[order.Status].Contains(input.NewStatus))
+            return Result.Failure(ErrorCode.BadRequest, this.GetCurrentMethodInfo(), $"Không thể chuyển trạng thái từ '{order.Status}' sang '{input.NewStatus}'");
 
-        if (newStatus == OrderStatusConst.Cancelled)
+        if (input.NewStatus == OrderStatusConst.Cancelled)
+            return await CancelOrder(orderId, input.Reason);
+
+        using var transaction = await _dbContext.Database.BeginTransactionAsync();
+        try
         {
-            // Explicitly load navigation properties needed for cancellation
-            await _dbContext.Entry(order).Collection(o => o.OrderItems).Query().Include(oi => oi.ProductVariant).LoadAsync();
-            await _dbContext.Entry(order).Collection(o => o.Payments).LoadAsync();
+            order.Status = input.NewStatus;
+            order.ModifiedDate = DateTimeUtils.GetDate();
 
-            foreach (var item in order.OrderItems)
+            if (input.NewStatus == OrderStatusConst.Shipping)
             {
-                var variant = item.ProductVariant;
-                if (variant != null)
+                if (string.IsNullOrWhiteSpace(input.TrackingNumber) || string.IsNullOrWhiteSpace(input.ShippingProvider))
+                    return Result.Failure(ErrorCode.BadRequest, this.GetCurrentMethodInfo(), "Bắt buộc phải nhập mã vận đơn và đơn vị vận chuyển");
+                var shipment = await _dbContext.Shipments.FirstOrDefaultAsync(s => s.OrderId == orderId && !s.Deleted);
+                if (shipment != null)
                 {
-                    variant.StockQuantity += item.Quantity;
+                    shipment.Status = ShipmentStatus.InTransit.ToString();
+                    shipment.TrackingNumber = input.TrackingNumber;
+                    shipment.ShippingProvider = input.ShippingProvider;
+                    shipment.ModifiedDate = DateTimeUtils.GetDate();
                 }
             }
-
-            var couponUsage = await _dbContext.CouponUsages.Include(cu => cu.Coupon).FirstOrDefaultAsync(cu => cu.OrderId == orderId);
-            if (couponUsage != null)
+            else if (input.NewStatus == OrderStatusConst.Delivered)
             {
-                couponUsage.Coupon.UsedCount = Math.Max(0, couponUsage.Coupon.UsedCount - 1);
-                _dbContext.CouponUsages.Remove(couponUsage);
+                var shipment = await _dbContext.Shipments.FirstOrDefaultAsync(s => s.OrderId == orderId && !s.Deleted);
+                if (shipment != null)
+                {
+                    shipment.Status = ShipmentStatus.InTransit.ToString();
+                    shipment.ModifiedDate = DateTimeUtils.GetDate();
+                    shipment.ActualDelivery = DateTimeUtils.GetDate();
+                }
+                var payment = order.Payments?.FirstOrDefault();
+                if (payment != null && payment.Status == PaymentStatus.Pending.ToString())
+                {
+                    payment.Status = PaymentStatus.Success.ToString();
+                    payment.PaidAt = DateTimeUtils.GetDate();
+                }
             }
-
-            var payment = order.Payments.FirstOrDefault();
-            if (payment != null)
-            {
-                payment.Status = payment.Status == PaymentStatus.Success ? PaymentStatus.Refunded : PaymentStatus.Failed;
-            }
+            await _dbContext.SaveChangesAsync();
+            await transaction.CommitAsync();
+            return Result.Success();
         }
-        else if (newStatus == OrderStatusConst.Shipping)
+        catch (Exception ex)
         {
-            var shipment = await _dbContext.Shipments.FirstOrDefaultAsync(s => s.OrderId == orderId && !s.Deleted);
-            if (shipment != null) shipment.Status = ShipmentStatus.InTransit.ToString();
+            await transaction.RollbackAsync();
+            _logger.LogError(ex, "Lỗi Database/System khi cập nhật trạng thái đơn hàng {OrderCode}", order.OrderCode);
+            return Result.Failure(ErrorCode.UnknownError, this.GetCurrentMethodInfo(), "Hệ thống gặp sự cố khi cập nhật đơn hàng.");
         }
-        else if (newStatus == OrderStatusConst.Delivered)
-        {
-            var shipment = await _dbContext.Shipments.FirstOrDefaultAsync(s => s.OrderId == orderId && !s.Deleted);
-            if (shipment != null)
-            {
-                shipment.Status = ShipmentStatus.Delivered.ToString();
-                shipment.ActualDelivery = DateTimeUtils.GetDate();
-            }
-        }
-        await _dbContext.SaveChangesAsync();
-        return Result.Success();
     }
 
-    // ── MAPPER ─────────────────────────────────────────────────────────────────
+    // ── MAPPER 
     private static OrderDto MapToDto(Order order) => new()
     {
         Id = order.Id,

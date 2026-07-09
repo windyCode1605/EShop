@@ -209,5 +209,29 @@ namespace CR.Core.ApplicationServices.AuthenticationModule.Implements
             await _dbContext.SaveChangesAsync();
             return Result.Success();
         }
+
+        public async Task<Result<bool>> AssignRoleToUser(int userId, int roleId)
+        {
+            var user = await _dbContext.Users.FindAsync(userId);
+            if (user == null)
+                return Result<bool>.Failure(ErrorCode.UserNotFound, this.GetCurrentMethodInfo());
+
+            var role = await _dbContext.Roles.FindAsync(roleId);
+            if (role == null)
+                return Result<bool>.Failure(ErrorCode.RoleNotFound, this.GetCurrentMethodInfo());
+            var isRoleExist = await _dbContext.UserRoles
+                .AnyAsync(ur => ur.UserId == userId && ur.RoleId == roleId && !ur.Deleted);
+            if (isRoleExist)
+                return Result<bool>.Failure(ErrorCode.BadRequest, "User đã tồn tại quyền này");
+            var userRole = new UserRole
+            {
+                UserId = userId,
+                RoleId = roleId
+            };
+            _dbContext.UserRoles.Add(userRole);
+            await _dbContext.SaveChangesAsync();
+
+            return Result<bool>.Success(true);
+        }
     }
 }

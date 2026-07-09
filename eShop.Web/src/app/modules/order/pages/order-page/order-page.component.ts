@@ -18,7 +18,7 @@ export class OrderPageComponent implements OnInit {
   isLoading = signal<boolean>(true);
   hasError = signal<boolean>(false);
 
-  // Status flow order to determine timeline progress
+
   private statusFlow = ['Pending', 'Processing', 'Shipped', 'Delivered'];
 
   ngOnInit() {
@@ -73,10 +73,10 @@ export class OrderPageComponent implements OnInit {
   isStatusPast(stepStatus: string): boolean {
     const currentStatus = this.order()?.status;
     if (!currentStatus || currentStatus === 'Cancelled') return false;
-    
+
     const currentIndex = this.statusFlow.indexOf(currentStatus);
     const stepIndex = this.statusFlow.indexOf(stepStatus);
-    
+
     return currentIndex > stepIndex;
   }
 }

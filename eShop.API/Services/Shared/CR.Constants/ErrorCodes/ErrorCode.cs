@@ -56,5 +56,8 @@ namespace CR.Constants.ErrorCodes
         public const int ShipmentNotFound = 10002; // Thông tin vận chuyển không tồn tại
 
         public const int ProductVariantNotFound = 11000; // Variant không tồn tại
+
+
+        public const int RoleNotFound = 12001;
     }
 }

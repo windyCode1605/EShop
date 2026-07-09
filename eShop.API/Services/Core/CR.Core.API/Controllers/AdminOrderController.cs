@@ -20,7 +20,7 @@ public class AdminOrderController : ControllerBase
     /// <summary>Cập nhật trạng thái đơn hàng thủ công (Admin).</summary>
     [HttpPatch("{orderId:int}/status")]
     public async Task<IActionResult> UpdateStatus(
-        [FromRoute] int    orderId,
-        [FromQuery] string newStatus)
-        => Ok(await _orderService.UpdateOrderStatus(orderId, newStatus));
+        [FromRoute] int orderId,
+        [FromBody] UpdateOrderStatusDto input)
+        => Ok(await _orderService.UpdateOrderStatus(orderId, input));
 }

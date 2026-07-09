@@ -482,8 +482,15 @@ public class AuthorizationController : AuthorizationControllerBase
             .SetClaim(Claims.Name, user.Profile?.FullName ?? string.Empty) // Lấy từ Profile
             .SetClaim(UserClaimTypes.UserType, (int)user.UserType)
             .SetClaim(UserClaimTypes.UserId, user.Id);
+        if (user.UserRoles != null && user.UserRoles.Any())
+        {
+            foreach (var userRole in user.UserRoles)
+            {
+                if (userRole.Role != null)
+                    identity.AddClaim(new Claim(Claims.Role, userRole.Role.Name));
+            }
+        }
 
-        // ĐÃ XÓA: Toàn bộ logic kiểm tra và gán TenantId ở đây vì kiến trúc là Single-Tenant
     }
 
     // <summary> 

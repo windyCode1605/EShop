@@ -19,5 +19,6 @@ namespace CR.Core.ApplicationServices.AuthenticationModule.Abstracts
         /// <param name="userId"></param>
         Task<Result> LoginInfor(int userId);
 
+        Task<Result<bool>> AssignRoleToUser(int userId, int roleId);
     }
 }
