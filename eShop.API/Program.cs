@@ -220,6 +220,22 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("ApiUser", policy => policy.RequireAuthenticatedUser());
 });
 
+// Configure Distributed Cache
+var redisConnectionString = builder.Configuration.GetConnectionString("Redis");
+if (!string.IsNullOrEmpty(redisConnectionString))
+{
+    builder.Services.AddStackExchangeRedisCache(options =>
+    {
+        options.Configuration = redisConnectionString;
+        options.InstanceName = "eShop_";
+    });
+}
+else
+{
+    // Fallback if Redis is not configured
+    builder.Services.AddDistributedMemoryCache();
+}
+
 // ===============================================
 // 6. DEPENDENCY INJECTION (DI) 
 // ===============================================
@@ -227,6 +243,12 @@ builder.Services.AddAuthorization(options =>
 builder.Services.AddSingleton<IMapErrorCode, MapErrorCode>();
 builder.Services.AddSingleton<LocalizationBase>();
 builder.Services.AddSingleton<ILocalization>(sp => sp.GetRequiredService<LocalizationBase>());
+
+// Authorization Cache
+builder.Services.AddScoped<CR.Core.ApplicationServices.AuthenticationModule.Abstracts.IPermissionCacheService, CR.Core.ApplicationServices.AuthenticationModule.Implements.PermissionCacheService>();
+builder.Services.AddScoped<CR.Core.ApplicationServices.AuthenticationModule.Abstracts.IRoleService, CR.Core.ApplicationServices.AuthenticationModule.Implements.RoleService>();
+builder.Services.AddSingleton<Microsoft.AspNetCore.Authorization.IAuthorizationPolicyProvider, CR.Core.API.Authorization.PermissionPolicyProvider>();
+builder.Services.AddScoped<Microsoft.AspNetCore.Authorization.IAuthorizationHandler, CR.Core.API.Authorization.PermissionAuthorizationHandler>();
 
 // Application Services (Giải quyết lỗi IOrderService)
 // BẠN KHAI BÁO CÁC SERVICE CÒN THIẾU TẠI ĐÂY

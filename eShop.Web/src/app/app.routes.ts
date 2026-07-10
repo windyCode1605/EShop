@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { DashboardComponent } from './modules/dashboard/pages/dashboard/dashboard.component';
 import { ProductsComponent } from './modules/product/pages/products/products.component';
 import { authGuard } from './core/guards/auth.guard';
+import { roleGuard } from './core/guards/role.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
@@ -28,7 +29,7 @@ export const routes: Routes = [
     loadChildren: () => import('./modules/Cart/cart.routes').then((m) => m.CART_ROUTES)
   },
 
-  // Product Manager Module
+
   {
     path: 'product-manager',
     canActivate: [authGuard],
@@ -39,5 +40,24 @@ export const routes: Routes = [
     canActivate: [authGuard],
     loadChildren: () => import('./modules/checkout/checkout.routes').then((m) => m.CHECKOUT_ROUTES)
   },
+  {
+    path: 'admin',
+    canActivate: [authGuard, roleGuard], // Tạm thời comment lại để xem demo
+    data: { roles: ['Admin'] },
+    loadComponent: () => import('./modules/admin/layout/admin-layout.component').then((m) => m.AdminLayoutComponent),
+    children: [
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+      {
+        path: 'dashboard',
+        loadComponent: () => import('./modules/admin/pages/admin-dashboard/admin-dashboard.component').then((m) => m.AdminDashboardComponent)
+      },
+      {
+        path: 'orders',
+        loadComponent: () => import('./modules/admin/pages/admin-orders/admin-orders.component').then((m) => m.AdminOrdersComponent)
+      }
+    ]
+  },
   { path: '**', redirectTo: '/dashboard' }
 ];
+
+// Trigger reload

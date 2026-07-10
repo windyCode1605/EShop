@@ -27,7 +27,11 @@ namespace CR.Core.ApplicationServices.AuthenticationModule.Implements
         {
             _logger.LogInformation("{MethodName}: id={Id}", nameof(FindUserAuthorizationById), id);
             
-            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == id && !u.Deleted && u.Status == (int)UserStatus.ACTIVE) 
+            var user = await _dbContext.Users
+                           .Include(u => u.Profile)
+                           .Include(u => u.UserRoles)
+                               .ThenInclude(ur => ur.Role)
+                           .FirstOrDefaultAsync(u => u.Id == id && !u.Deleted && u.Status == (int)UserStatus.ACTIVE) 
                        ?? throw new UserFriendlyException(ErrorCode.UserNotFound);
             
             if (new int[] { (int)UserStatus.TEMP, (int)UserStatus.LOCK }.Contains(user.Status))
@@ -52,7 +56,11 @@ namespace CR.Core.ApplicationServices.AuthenticationModule.Implements
             
             var now = DateTime.UtcNow;
             
-            var user = await _dbContext.Users.FirstOrDefaultAsync(u => 
+            var user = await _dbContext.Users
+                            .Include(u => u.Profile)
+                            .Include(u => u.UserRoles)
+                                .ThenInclude(ur => ur.Role)
+                            .FirstOrDefaultAsync(u => 
                             (u.Username == username || u.Email == username) 
                             && !u.Deleted 
                             && u.Status == (int)UserStatus.ACTIVE) 

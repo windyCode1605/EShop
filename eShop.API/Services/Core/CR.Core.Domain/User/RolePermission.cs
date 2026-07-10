@@ -15,11 +15,14 @@ namespace CR.Core.Domain.User
         public  Role Role { get; set; } = null!;
         
         [Required]
-        [MaxLength(128)]
+        [MaxLength(255)]
         [Unicode(false)]
         public string PermissionKey { get ; set ; } = null!;
         public DateTime? CreatedDate { get ; set ; }
         public int? CreatedBy { get ; set ; }
         int IRolePermission<int>.Role { get ; set ; }
+
+        [ForeignKey(nameof(PermissionKey))]
+        public Permission Permission { get; set; } = null!;
     }
 }

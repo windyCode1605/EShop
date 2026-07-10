@@ -1,0 +1,152 @@
+<div class="admin-orders">
+      <header class="page-header">
+        <div>
+          <h1 class="page-title">Orders</h1>
+          <p class="page-sub">Manage and process customer orders.</p>
+        </div>
+      </header>
+
+      <!-- Filters -->
+      <div class="filters-bar">
+        <div class="search-input">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" x2="16.65" y1="21" y2="16.65"/></svg>
+          <input type="text" placeholder="Search by Order ID or phone..." />
+        </div>
+        <button class="filter-btn active">All</button>
+        <button class="filter-btn">Pending</button>
+        <button class="filter-btn">Processing</button>
+        <button class="filter-btn">Shipped</button>
+        <button class="filter-btn">Delivered</button>
+      </div>
+
+      <!-- Table -->
+      <div class="orders-table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>Date</th>
+              <th>Customer</th>
+              <th>Total</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Row 1 -->
+            <tr>
+              <td><span class="order-id">#ORD-9021</span></td>
+              <td><span class="order-date">Oct 24, 2025</span></td>
+              <td>
+                <div class="customer-name">Alex Nguyen</div>
+                <div class="customer-contact">0987654321</div>
+              </td>
+              <td><span class="order-total">$145.00</span></td>
+              <td><span class="badge badge--pending">Pending</span></td>
+              <td>
+                <button class="btn-update" (click)="openModal('ORD-9021', 'Pending')">
+                  Update
+                </button>
+              </td>
+            </tr>
+            <!-- Row 2 -->
+            <tr>
+              <td><span class="order-id">#ORD-9020</span></td>
+              <td><span class="order-date">Oct 24, 2025</span></td>
+              <td>
+                <div class="customer-name">Sarah Tran</div>
+                <div class="customer-contact">0912345678</div>
+              </td>
+              <td><span class="order-total">$850.00</span></td>
+              <td><span class="badge badge--processing">Processing</span></td>
+              <td>
+                <button class="btn-update" (click)="openModal('ORD-9020', 'Processing')">
+                  Update
+                </button>
+              </td>
+            </tr>
+            <!-- Row 3 -->
+            <tr>
+              <td><span class="order-id">#ORD-9019</span></td>
+              <td><span class="order-date">Oct 23, 2025</span></td>
+              <td>
+                <div class="customer-name">Minh Pham</div>
+                <div class="customer-contact">0909112233</div>
+              </td>
+              <td><span class="order-total">$299.00</span></td>
+              <td><span class="badge badge--shipped">Shipped</span></td>
+              <td>
+                <button class="btn-update" (click)="openModal('ORD-9019', 'Shipped')">
+                  Update
+                </button>
+              </td>
+            </tr>
+            <!-- Row 4 -->
+            <tr>
+              <td><span class="order-id">#ORD-9018</span></td>
+              <td><span class="order-date">Oct 22, 2025</span></td>
+              <td>
+                <div class="customer-name">John Doe</div>
+                <div class="customer-contact">0933445566</div>
+              </td>
+              <td><span class="order-total">$1,200.00</span></td>
+              <td><span class="badge badge--delivered">Delivered</span></td>
+              <td>
+                <button class="btn-update" (click)="openModal('ORD-9018', 'Delivered')">
+                  Update
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Modal Popup -->
+      <div class="modal-overlay" [class.is-open]="isModalOpen" (click)="closeModal()">
+        <div class="modal-panel" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h2 class="modal-title">Update Order #{{selectedOrderId}}</h2>
+            <button class="close-btn" (click)="closeModal()">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+          
+          <div class="modal-body">
+            <div class="form-group">
+              <label class="form-label">Order Status</label>
+              <select class="form-select" [value]="selectedStatus" (change)="onStatusChange($event)">
+                <option value="Pending">Pending</option>
+                <option value="Processing">Processing</option>
+                <option value="Shipped">Shipped</option>
+                <option value="Delivered">Delivered</option>
+                <option value="Cancelled">Cancelled</option>
+              </select>
+            </div>
+
+            <!-- Conditional Fields for Shipped status -->
+            <div *ngIf="selectedStatus === 'Shipped'">
+              <div class="form-group">
+                <label class="form-label">Shipping Provider</label>
+                <select class="form-select">
+                  <option value="">Select a provider...</option>
+                  <option value="GHN">Giao Hàng Nhanh</option>
+                  <option value="GHTK">Giao Hàng Tiết Kiệm</option>
+                  <option value="VNPost">VNPost</option>
+                  <option value="J&T">J&T Express</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Tracking Number</label>
+                <input type="text" class="form-input" placeholder="e.g. GHN123456789" />
+              </div>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button class="btn-cancel" (click)="closeModal()">Cancel</button>
+            <button class="btn-save" (click)="saveStatus()">Save Changes</button>
+          </div>
+        </div>
+      </div>
+
+    </div>

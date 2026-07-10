@@ -1,0 +1,120 @@
+<main class="main-content">
+      <header class="page-header">
+          <div>
+            <h1 class="page-title">Dashboard</h1>
+            <p class="page-sub">Overview of your store's performance today.</p>
+          </div>
+          <div class="header-actions">
+            <button class="btn-secondary">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+              Export Report
+            </button>
+            <button class="btn-secondary">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              Last 30 Days
+            </button>
+          </div>
+        </header>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+          <!-- Stat 1 -->
+          <div class="stat-card">
+            <div class="stat-card__header">
+              <h3 class="stat-card__title">Total Revenue</h3>
+              <div class="stat-card__icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              </div>
+            </div>
+            <p class="stat-card__value">$45,231.89</p>
+            <div class="stat-card__meta">
+              <span class="trend-up">+20.1%</span>
+              <span class="meta-text">from last month</span>
+            </div>
+          </div>
+          <!-- Stat 2 -->
+          <div class="stat-card">
+            <div class="stat-card__header">
+              <h3 class="stat-card__title">Orders</h3>
+              <div class="stat-card__icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
+              </div>
+            </div>
+            <p class="stat-card__value">+573</p>
+            <div class="stat-card__meta">
+              <span class="trend-up">+12.5%</span>
+              <span class="meta-text">from last month</span>
+            </div>
+          </div>
+          <!-- Stat 3 -->
+          <div class="stat-card">
+            <div class="stat-card__header">
+              <h3 class="stat-card__title">New Customers</h3>
+              <div class="stat-card__icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></svg>
+              </div>
+            </div>
+            <p class="stat-card__value">+124</p>
+            <div class="stat-card__meta">
+              <span class="trend-down">-4.2%</span>
+              <span class="meta-text">from last month</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="dashboard-layout">
+          <!-- Chart -->
+          <div class="chart-section">
+            <div class="section-header-small">
+              <h3 class="section-title-small">Revenue Overview</h3>
+            </div>
+            <div echarts [options]="chartOptions" class="chart-container"></div>
+          </div>
+
+          <!-- Top Products -->
+          <div class="top-products">
+            <div class="section-header-small">
+              <h3 class="section-title-small">Top Selling</h3>
+            </div>
+            <div class="product-list">
+              <!-- Item 1 -->
+              <div class="product-item">
+                <img src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=200" alt="Product" class="product-img">
+                <div class="product-info">
+                  <h4 class="product-name">Acoustic Hi-Fi Headphones</h4>
+                  <p class="product-sales">324 sales</p>
+                </div>
+                <div class="product-price">$299</div>
+              </div>
+              <!-- Item 2 -->
+              <div class="product-item">
+                <img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=200" alt="Product" class="product-img">
+                <div class="product-info">
+                  <h4 class="product-name">Minimalist Watch</h4>
+                  <p class="product-sales">256 sales</p>
+                </div>
+                <div class="product-price">$189</div>
+              </div>
+              <!-- Item 3 -->
+              <div class="product-item">
+                <img src="https://images.unsplash.com/photo-1491553895911-0055eca6402d?auto=format&fit=crop&q=80&w=200" alt="Product" class="product-img">
+                <div class="product-info">
+                  <h4 class="product-name">Leather Backpack</h4>
+                  <p class="product-sales">188 sales</p>
+                </div>
+                <div class="product-price">$145</div>
+              </div>
+              <!-- Item 4 -->
+              <div class="product-item">
+                <img src="https://images.unsplash.com/photo-1581539250439-c96689b516dd?auto=format&fit=crop&q=80&w=200" alt="Product" class="product-img">
+                <div class="product-info">
+                  <h4 class="product-name">Lounge Chair</h4>
+                  <p class="product-sales">112 sales</p>
+                </div>
+                <div class="product-price">$850</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </main>

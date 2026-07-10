@@ -1,0 +1,217 @@
+/* ─────────────────────────────────────────────────────────
+       ADMIN DASHBOARD — Industrial Minimalist
+    ───────────────────────────────────────────────────────── */
+    .main-content {
+      flex: 1;
+      padding: 48px 64px;
+      overflow-y: auto;
+    }
+
+    .page-header {
+      margin-bottom: 48px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+
+    .page-title {
+      font-size: 32px;
+      font-weight: 600;
+      letter-spacing: -1px;
+      margin: 0 0 8px;
+    }
+
+    .page-sub {
+      font-size: 14px;
+      color: #71717A;
+      margin: 0;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 12px;
+    }
+
+    .btn-secondary {
+      padding: 10px 16px;
+      border: 1px solid #E4E4E7;
+      background: #FFFFFF;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      color: #18181B;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: background 150ms ease;
+    }
+
+    .btn-secondary:hover {
+      background: #F4F4F5;
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+
+    .stat-card {
+      background: #FFFFFF;
+      border: 1px solid #E4E4E7;
+      border-radius: 16px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      transition: transform 150ms ease;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-2px);
+    }
+
+    .stat-card__header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .stat-card__title {
+      font-size: 14px;
+      font-weight: 500;
+      color: #71717A;
+      margin: 0;
+    }
+
+    .stat-card__icon {
+      color: #71717A;
+    }
+
+    .stat-card__value {
+      font-size: 36px;
+      font-weight: 600;
+      letter-spacing: -1px;
+      color: #18181B;
+      margin: 0;
+    }
+
+    .stat-card__meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+    }
+
+    .trend-up {
+      color: #10B981;
+      font-weight: 500;
+      background: rgba(16, 185, 129, 0.1);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .trend-down {
+      color: #EF4444;
+      font-weight: 500;
+      background: rgba(239, 68, 68, 0.1);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .meta-text {
+      color: #71717A;
+    }
+
+    /* Layout Grid */
+    .dashboard-layout {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 24px;
+    }
+
+    /* Chart Section */
+    .chart-section {
+      background: #FFFFFF;
+      border: 1px solid #E4E4E7;
+      border-radius: 16px;
+      padding: 24px;
+    }
+
+    .section-header-small {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    .section-title-small {
+      font-size: 16px;
+      font-weight: 600;
+      margin: 0;
+    }
+
+    .chart-container {
+      height: 320px;
+      width: 100%;
+    }
+
+    /* Top Products Section */
+    .top-products {
+      background: #FFFFFF;
+      border: 1px solid #E4E4E7;
+      border-radius: 16px;
+      padding: 24px;
+    }
+
+    .product-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .product-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #F4F4F5;
+    }
+
+    .product-item:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .product-img {
+      width: 48px;
+      height: 48px;
+      border-radius: 8px;
+      object-fit: cover;
+      background: #F4F4F5;
+    }
+
+    .product-info {
+      flex: 1;
+    }
+
+    .product-name {
+      font-size: 14px;
+      font-weight: 500;
+      margin: 0 0 4px;
+    }
+
+    .product-sales {
+      font-size: 13px;
+      color: #71717A;
+      margin: 0;
+    }
+
+    .product-price {
+      font-size: 14px;
+      font-weight: 600;
+      color: #18181B;
+    }

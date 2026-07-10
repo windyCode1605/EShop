@@ -27,7 +27,7 @@ export class AppAuthService {
         private _router: Router,
         private _appSessionService: AppSessionService
     ) {
-        
+
         this.clear()
     }
     authenticate(finallyCallback?: () => void, returnUrl?: string): void {
@@ -35,21 +35,22 @@ export class AppAuthService {
         this._tokenAuthService.authenticateV2(this.authenticateModel).pipe(
             catchError((err: HttpErrorResponse) => {
                 const errorMessage = this.getAuthErrorMessage(err);
-                this.messageService.add({ 
-                    severity: 'error', 
+                this.messageService.add({
+                    severity: 'error',
                     summary: 'Authentication Failed',
-                    life: 5000, 
-                    detail: errorMessage });
-                    console.error('Authentication error:', err);
+                    life: 5000,
+                    detail: errorMessage
+                });
+                console.error('Authentication error:', err);
                 if (finallyCallback) finallyCallback();
                 return throwError(() => err);
             }),
             finalize(() => {
                 finallyCallback();
             })
-        ).subscribe((result: AuthenticateResultModel) => {(this.processAuthenticateResult(result, returnUrl))});
+        ).subscribe((result: AuthenticateResultModel) => { (this.processAuthenticateResult(result, returnUrl)) });
     }
-    
+
 
     clear() {
         this.authenticateModel = new AuthenticateModel();
@@ -67,9 +68,9 @@ export class AppAuthService {
     }
 
 
-    private processAuthenticateResult( authenticateResult: AuthenticateResultModel, returnUrl?: string) : void {
+    private processAuthenticateResult(authenticateResult: AuthenticateResultModel, returnUrl?: string): void {
         this.authenticateResult = authenticateResult;
-        if(authenticateResult.access_token) {
+        if (authenticateResult.access_token) {
             this.login(
                 authenticateResult.access_token,
                 authenticateResult.refresh_token ?? '',
@@ -84,14 +85,14 @@ export class AppAuthService {
         }
     }
 
-    private login( 
-        acessToken: string, 
+    private login(
+        acessToken: string,
         refreshToken: string,
-        excryptedAccesToken: string, 
+        excryptedAccesToken: string,
         expiresIn: number,
         rememberMe?: boolean,
         returnUrl?: string
-    ) : void { 
+    ): void {
         const decoded = jwtDecode<{ exp?: number }>(acessToken);
         const tokenExpireDate = this.unixToDate(decoded.exp ?? 0);
         this._tokenService.setToken(acessToken, tokenExpireDate);
@@ -105,9 +106,9 @@ export class AppAuthService {
             }
         );
         const token = this._tokenService.getToken();
-        let userIfo : any;
+        let userIfo: any;
 
-        if(token) {
+        if (token) {
             userIfo = jwtDecode(token);
         }
 
@@ -117,12 +118,12 @@ export class AppAuthService {
             return;
         }
 
-        if(userIfo?.user_type === 2 || userIfo?.user_type === 1 || userIfo?.userType === 2 || userIfo?.userType === 1) {
-            // Admin/Staff: redirect to product manager
-            this._router.navigate(['/product-manager']).catch(err => console.error('Navigation error:', err));
+
+        const role = this._tokenService.getUserRole();
+        if (role === 'Admin' || userIfo?.user_type === 2 || userIfo?.user_type === 1 || userIfo?.userType === 2 || userIfo?.userType === 1) {
+            this._router.navigate(['/admin/dashboard']).catch(err => console.error('Navigation error:', err));
         } else {
-            // Customer: redirect to customer product page
-            this._router.navigate(['/product']).catch(err => console.error('Navigation error:', err));
+            this._router.navigate(['/dashboard']).catch(err => console.error('Navigation error:', err));
         }
     }
     /// <summary>

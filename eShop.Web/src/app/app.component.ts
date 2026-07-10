@@ -9,20 +9,20 @@ import { filter } from 'rxjs/operators';
   standalone: true,
   imports: [RouterModule, NavbarComponent, CommonModule],
   template: `
-    <app-navbar *ngIf="!isAuthPage"></app-navbar>
+    <app-navbar *ngIf="!hideNavbar"></app-navbar>
     <router-outlet></router-outlet>
   `,
   styles: [],
 })
 export class AppComponent {
   title = 'eShop.Web';
-  isAuthPage = false;
+  hideNavbar = false;
 
   constructor(private router: Router) {
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe((event: any) => {
-      this.isAuthPage = event.url.includes('/account/') || event.url === '/login';
+      this.hideNavbar = event.url.includes('/account/') || event.url === '/login' || event.url.includes('/admin');
     });
   }
 }

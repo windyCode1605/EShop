@@ -24,10 +24,13 @@ namespace CR.Core.Domain.Permission
         /// <see cref="PermissionConfig"/> 
         /// </summary>
         [Required]
-        [MaxLength(128)]
+        [MaxLength(255)]
         [Unicode(false)]
         public string PermissionKey { get ; set ; } = null!;
         public DateTime? CreatedDate { get ; set ; }
         public int? CreatedBy { get ; set ; }
+
+        [ForeignKey(nameof(PermissionKey))]
+        public CR.Core.Domain.User.Permission Permission { get; set; } = null!;
     }
 }

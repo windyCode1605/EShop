@@ -1,0 +1,341 @@
+/* ─────────────────────────────────────────────────────────
+       ADMIN ORDERS — Industrial Minimalist
+    ───────────────────────────────────────────────────────── */
+    .admin-orders {
+      padding: 48px 64px;
+      font-family: 'Geist', 'Inter', sans-serif;
+      color: #18181B;
+    }
+
+    /* Header */
+    .page-header {
+      margin-bottom: 48px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+
+    .page-title {
+      font-size: 32px;
+      font-weight: 600;
+      letter-spacing: -1px;
+      margin: 0 0 8px;
+    }
+
+    .page-sub {
+      font-size: 14px;
+      color: #71717A;
+      margin: 0;
+    }
+
+    /* Filters Bar */
+    .filters-bar {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 32px;
+      align-items: center;
+    }
+
+    .search-input {
+      flex: 1;
+      max-width: 320px;
+      position: relative;
+    }
+
+    .search-input input {
+      width: 100%;
+      padding: 10px 16px 10px 40px;
+      border: 1px solid #E4E4E7;
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 150ms ease;
+    }
+
+    .search-input input:focus {
+      border-color: #18181B;
+    }
+
+    .search-input svg {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #71717A;
+    }
+
+    .filter-btn {
+      padding: 10px 16px;
+      background: #FFFFFF;
+      border: 1px solid #E4E4E7;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      color: #71717A;
+      cursor: pointer;
+      transition: all 150ms ease;
+    }
+
+    .filter-btn:hover {
+      background: #F4F4F5;
+      color: #18181B;
+    }
+
+    .filter-btn.active {
+      background: #18181B;
+      color: #FFFFFF;
+      border-color: #18181B;
+    }
+
+    /* Table */
+    .orders-table-wrapper {
+      background: #FFFFFF;
+      border: 1px solid #E4E4E7;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    th {
+      font-size: 12px;
+      font-weight: 500;
+      color: #71717A;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 16px 24px;
+      border-bottom: 1px solid #E4E4E7;
+      background: #FAFAFA;
+    }
+
+    td {
+      padding: 20px 24px;
+      border-bottom: 1px solid #F4F4F5;
+      font-size: 14px;
+      vertical-align: middle;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr:hover td {
+      background: #FAFAFA;
+    }
+
+    .order-id {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 500;
+      color: #18181B;
+    }
+
+    .order-date {
+      color: #71717A;
+      font-size: 13px;
+    }
+
+    .customer-name {
+      font-weight: 500;
+      margin-bottom: 2px;
+    }
+
+    .customer-contact {
+      font-size: 13px;
+      color: #71717A;
+    }
+
+    .order-total {
+      font-weight: 600;
+    }
+
+    /* Status Badges */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 10px;
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .badge--pending {
+      background: rgba(245, 158, 11, 0.1);
+      color: #D97706;
+    }
+
+    .badge--processing {
+      background: rgba(59, 130, 246, 0.1);
+      color: #2563EB;
+    }
+
+    .badge--shipped {
+      background: rgba(139, 92, 246, 0.1);
+      color: #7C3AED;
+    }
+
+    .badge--delivered {
+      background: rgba(16, 185, 129, 0.1);
+      color: #059669;
+    }
+
+    .badge--cancelled {
+      background: rgba(239, 68, 68, 0.1);
+      color: #DC2626;
+    }
+
+    .btn-update {
+      padding: 8px 16px;
+      background: #FFFFFF;
+      border: 1px solid #E4E4E7;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      color: #18181B;
+      cursor: pointer;
+      transition: all 150ms ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-update:hover {
+      background: #F4F4F5;
+    }
+
+    /* ─── MODAL (Update Status Popup) ─── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(24, 24, 27, 0.4);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 250ms ease;
+    }
+
+    .modal-overlay.is-open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-panel {
+      width: 100%;
+      max-width: 440px;
+      background: #FFFFFF;
+      border-radius: 16px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+      transform: scale(0.95) translateY(10px);
+      transition: transform 300ms cubic-bezier(0.22, 1, 0.36, 1);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .modal-overlay.is-open .modal-panel {
+      transform: scale(1) translateY(0);
+    }
+
+    .modal-header {
+      padding: 24px 32px;
+      border-bottom: 1px solid #E4E4E7;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin: 0;
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      color: #71717A;
+      cursor: pointer;
+      padding: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      transition: background 150ms;
+    }
+    
+    .close-btn:hover { background: #F4F4F5; color: #18181B; }
+
+    .modal-body {
+      padding: 32px;
+      flex: 1;
+      overflow-y: auto;
+      max-height: 60vh;
+    }
+
+    .form-group {
+      margin-bottom: 24px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: #18181B;
+      margin-bottom: 8px;
+    }
+
+    .form-select, .form-input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1px solid #E4E4E7;
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+      background: #FFFFFF;
+      font-family: inherit;
+    }
+    
+    .form-select:focus, .form-input:focus { border-color: #18181B; }
+
+    .modal-footer {
+      padding: 20px 32px;
+      border-top: 1px solid #E4E4E7;
+      background: #FAFAFA;
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+    }
+
+    .btn-cancel {
+      padding: 10px 20px;
+      background: #FFFFFF;
+      border: 1px solid #E4E4E7;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 150ms;
+    }
+    
+    .btn-cancel:hover { background: #F4F4F5; }
+
+    .btn-save {
+      padding: 10px 24px;
+      background: #18181B;
+      color: #FFFFFF;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 150ms;
+    }
+    
+    .btn-save:hover { background: #27272A; }

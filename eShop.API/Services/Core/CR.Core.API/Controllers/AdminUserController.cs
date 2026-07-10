@@ -26,5 +26,12 @@ namespace CR.Core.API.Controllers
 
             return Ok(ApiResponse<bool>.Ok(true, "Cấp quyền thành công"));
         }
+
+        [HttpGet("test-permission")]
+        [Authorize(Policy = "Permission:AdminUser_Read")]
+        public IActionResult TestPermission()
+        {
+            return Ok(ApiResponse<string>.Ok("Bạn đã qua được chốt kiểm tra quyền!", "Success"));
+        }
     }
 }

@@ -450,6 +450,7 @@ public class AuthorizationController : AuthorizationControllerBase
             case Claims.Name:
             case Claims.Email:
             case Claims.Role:
+            case UserClaimTypes.RoleId:
                 yield return Destinations.AccessToken;
                 if (claim.Subject?.HasScope(Scopes.Profile) == true ||
                     claim.Subject?.HasScope(Scopes.Email) == true ||
@@ -487,7 +488,10 @@ public class AuthorizationController : AuthorizationControllerBase
             foreach (var userRole in user.UserRoles)
             {
                 if (userRole.Role != null)
+                {
                     identity.AddClaim(new Claim(Claims.Role, userRole.Role.Name));
+                    identity.AddClaim(new Claim(UserClaimTypes.RoleId, userRole.RoleId.ToString()));
+                }
             }
         }
 

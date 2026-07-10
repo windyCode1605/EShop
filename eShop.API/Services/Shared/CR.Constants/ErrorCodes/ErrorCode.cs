@@ -59,5 +59,8 @@ namespace CR.Constants.ErrorCodes
 
 
         public const int RoleNotFound = 12001;
+        public const int UserHasNoRoleAssigned = 12002; // User tồn tại nhưng chưa được gán Role nào
+        public const int InvalidInput = 12003;          // Input không hợp lệ (ví dụ: PermissionKey không tồn tại trong catalog)
+        public const int PermissionKeyInvalid = 12004;  // PermissionKey không tồn tại trong Permission catalog
     }
 }

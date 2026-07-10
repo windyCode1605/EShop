@@ -1,72 +1,49 @@
-# Hướng Dẫn Thiết Kế Nghiệp Vụ Quản Lý Admin
+# Implement Permission Domain and Database Schema Configuration
 
-Tài liệu này là bản **hướng dẫn thiết kế kiến trúc và nghiệp vụ (Business Logic Design Guide)** cho hệ thống Admin của eShop. Tài liệu chỉ đóng vai trò định hướng thiết kế, không tự động can thiệp hay sửa đổi bất kỳ mã nguồn nào trong dự án. 
+Thêm Domain Model, Entity Framework Configuration và tích hợp schema cơ sở dữ liệu cho tính năng phân quyền (Permissions & RolePermissions) dựa trên tài liệu SQL được cung cấp.
 
-Bạn có thể dựa vào tài liệu này để tự triển khai mã nguồn hoặc phân chia công việc cho team.
+## User Review Required
 
----
+> [!IMPORTANT]
+> The EF Core Migration `AddRolePermissions` will be created. I will embed your custom T-SQL script directly into the `Up()` method of the migration so that it runs exactly as you specified (creating tables with `IF NOT EXISTS` and inserting seed data). Please confirm if this is the desired approach, hoặc bạn muốn tự chạy script trên SSMS rồi mình chỉ cần update EF Core Models?
 
-## 1. Tổng quan Kiến trúc Admin (Admin Architecture Overview)
-
-Theo tài liệu thiết kế hệ thống, chức năng quản trị (Admin) chia thành 8 phân hệ chính:
-1. **Dashboard & Analytics:** Thống kê tổng quan, biểu đồ doanh thu.
-2. **Product Management:** Quản lý sản phẩm, hình ảnh, trạng thái.
-3. **Category Management:** Quản lý danh mục sản phẩm.
-4. **Order Management:** Quản lý đơn hàng, vận chuyển, hoàn tiền.
-5. **Customer Management:** Quản lý người dùng, phân quyền.
-6. **Inventory Management:** Quản lý tồn kho, cảnh báo hết hàng.
-7. **Coupon Management:** Quản lý mã giảm giá.
-8. **Review Management:** Quản lý đánh giá từ khách hàng.
-
-> [!TIP]
-> **Khuyến nghị thiết kế (Design Pattern):**
-> - Đối với API: Nên giữ kiến trúc **Application Services** hiện hành. Các chức năng của Admin có thể gộp chung vào Service hiện tại (ví dụ: `IProductService`) nhưng cần tách biệt **Endpoint (Controller)** thành khu vực `/api/admin/...` và gắn cờ `[Authorize(Roles = "Admin")]`.
-> - DTOs: Nên tách biệt các DTO dùng cho Admin (ví dụ: `ProductAdminResponseDto`) để tránh rò rỉ dữ liệu nhạy cảm ra ngoài (khách hàng không cần thấy lịch sử nhập giá, tồn kho thực tế).
+## Proposed Changes
 
 ---
 
-## 2. Chi tiết Thiết kế từng Phân hệ (Module Design)
+### Domain Layer (eShop.API\Services\Core\CR.Core.Domain\User)
 
-### 2.1. Phân hệ Thống kê (Analytics / Dashboard)
-Nghiệp vụ:
-- **GetDashboardSummary:** Lấy số liệu tổng quan (Tổng doanh thu, số lượng đơn hàng, số khách hàng đăng ký mới).
-- **GetRevenueChart:** Lấy dữ liệu dạng chuỗi thời gian (Time-series) để vẽ biểu đồ doanh thu (theo Ngày/Tuần/Tháng).
-- **GetTopSellingProducts:** Lấy danh sách sản phẩm bán chạy nhất trong một khoảng thời gian.
+#### [NEW] [Permission.cs](file:///d:/PROJECT/EShop/eShop.API/Services/Core/CR.Core.Domain/User/Permission.cs)
+- Create new `Permission` class mapped to `[dbo].[Permission]`.
+- Properties: `PermissionKey` (PK), `DisplayName`, `PermissionGroup`, `Description`, `CreatedDate`, `CreatedBy`.
+- Collection navigation to `RolePermission`.
 
-### 2.2. Phân hệ Sản phẩm (Product Management)
-Nghiệp vụ:
-- **Create/Update Product:** Ngoài các trường cơ bản, Admin cần cập nhật `BasePrice`, `CostPrice` (giá vốn), `Status` (Draft, Published, Hidden).
-- **Soft Delete:** Không xóa cứng (Hard Delete) dữ liệu trong database, thay vào đó cập nhật trường `IsDeleted = true`.
-- **Image Gallery:** Quản lý thêm/xóa nhiều ảnh cho một sản phẩm.
-
-### 2.3. Phân hệ Đơn hàng (Order Management)
-Nghiệp vụ:
-- **Filter & Search:** Lọc đơn hàng theo trạng thái (Pending, Processing, Shipped, Delivered, Cancelled), khoảng ngày, và tìm theo số điện thoại khách hàng.
-- **Order Processing:** Admin chuyển trạng thái đơn hàng. Nếu chuyển sang `Shipped`, cần bắt buộc điền `TrackingNumber` (Mã vận đơn) và `ShippingProvider` (Đơn vị vận chuyển).
-- **Refund Logic:** Nếu đơn hàng đã thanh toán bị hủy, hệ thống cần ghi nhận trạng thái `Refunded` (Hoàn tiền).
-
-### 2.4. Phân hệ Người dùng (Customer Management)
-Nghiệp vụ:
-- **Get All Users:** Lấy danh sách toàn bộ khách hàng, có phân trang.
-- **Toggle User Status:** Admin có quyền Khóa (Ban) hoặc Mở khóa tài khoản. Khi Khóa cần cung cấp lý do (`Reason`).
-- **User Activity:** Xem chi tiết một khách hàng: Tổng số tiền đã tiêu, danh sách đơn hàng đã mua, lần đăng nhập cuối cùng.
-
-### 2.5. Phân hệ Tồn kho (Inventory Management)
-Nghiệp vụ:
-- **Stock Adjustment:** Nhập/Xuất kho thủ công bằng tay (ví dụ: hàng hư hỏng, kiểm kê kho). Yêu cầu lưu lại lịch sử thay đổi kho (`StockHistory`).
-- **Low Stock Alert:** API trả về danh sách các sản phẩm có số lượng tồn kho thấp hơn mức cho phép (ví dụ: < 10) để Admin có kế hoạch nhập thêm hàng.
-
-### 2.6. Phân hệ Đánh giá (Review Management)
-Nghiệp vụ:
-- **Moderate Reviews:** Admin xem tất cả đánh giá, có thể Ẩn/Xóa (Hide) các đánh giá vi phạm tiêu chuẩn cộng đồng.
-- **Reply to Review:** Admin gửi phản hồi (Reply) lại đánh giá của khách hàng.
+#### [MODIFY] [RolePermission.cs](file:///d:/PROJECT/EShop/eShop.API/Services/Core/CR.Core.Domain/User/RolePermission.cs)
+- Update to include foreign key configuration to `Permission`.
+- Add `public Permission Permission { get; set; }` navigation property.
 
 ---
 
-## 3. Các Ràng buộc Hệ thống (System Constraints & Open Decisions)
+### Infrastructure Layer (eShop.API\Services\Core\CR.Core.Infrastructure\Persistence)
 
-> [!WARNING]
-> Khi tiến hành code, hãy cân nhắc các vấn đề sau:
-> 1. **Role & Permission:** Đảm bảo `AuthenticationModule` đã hỗ trợ Role (ví dụ claim `Role = "Admin"`). Nếu chưa, bạn cần thiết kế lại JWT Token để chứa Role.
-> 2. **Audit Logging:** Các thao tác nhạy cảm (Xóa sản phẩm, Khóa người dùng, Hủy đơn hàng) nên được ghi log lại (Ai làm? Làm lúc nào? Dữ liệu cũ là gì?) vào bảng `AuditLogs`.
-> 3. **Concurrency:** Khi Admin cập nhật số lượng tồn kho (Inventory) cùng lúc khách hàng đang đặt hàng (Order), cần sử dụng Database Transaction hoặc Optimistic Concurrency Control để tránh sai lệch dữ liệu.
+#### [NEW] [PermissionConfiguration.cs](file:///d:/PROJECT/EShop/eShop.API/Services/Core/CR.Core.Infrastructure/Persistence/Configurations/PermissionConfiguration.cs)
+- Implement `IEntityTypeConfiguration<Permission>`.
+- Configure primary key (`PermissionKey`).
+
+#### [NEW] [RolePermissionConfiguration.cs](file:///d:/PROJECT/EShop/eShop.API/Services/Core/CR.Core.Infrastructure/Persistence/Configurations/RolePermissionConfiguration.cs)
+- Configure the relationship `HasOne(x => x.Permission).WithMany().HasForeignKey(x => x.PermissionKey).OnDelete(DeleteBehavior.Cascade)`.
+
+#### [MODIFY] [CoreDbContext.cs](file:///d:/PROJECT/EShop/eShop.API/Services/Core/CR.Core.Infrastructure/Persistence/CoreDbContext.cs)
+- Add `public DbSet<Permission> Permissions { get; set; }`.
+
+---
+
+## Verification Plan
+
+### Automated Tests
+- Run `dotnet build` to ensure no compile errors in Domain and Infrastructure layers.
+- Run `dotnet ef migrations add AddPermissionSchema` to generate the migration.
+
+### Manual Verification
+- Verify the generated migration file contains the correct custom SQL script in the `Up()` method.
+- Run `dotnet ef database update` and check the SQL Server database to ensure the `Permission` table is created and data is seeded.

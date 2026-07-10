@@ -11,5 +11,6 @@ namespace CR.Constants.Core.Users
 
         public const string AuthorizationId = "oi_au_id";
         public const string TokenId = "oi_tkn_id";
+        public const string RoleId = "role_id";
     }
 }

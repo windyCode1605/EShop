@@ -15,7 +15,7 @@ export class TokenService {
         this._cookieService.set('refresh_token', refreshToken, undefined, '/');
     }
 
-    getToken(): string {
+    getToken(): string | null {
         return this._cookieService.get('access_token');
     }
 
@@ -26,5 +26,18 @@ export class TokenService {
     clearAllCookie(): void {
         this._cookieService.delete('access_token', '/');
         this._cookieService.delete('refresh_token', '/');
+    }
+    getUserRole(): string {
+        const token = this.getToken();
+        if (!token) return '';
+
+        try {
+            // Decode JWT token payload (phần thứ 2 của token)
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            return payload.role ||
+                payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] || 'Customer';
+        } catch (e) {
+            return '';
+        }
     }
 }
