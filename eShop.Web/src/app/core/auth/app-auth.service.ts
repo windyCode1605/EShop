@@ -2,16 +2,13 @@ import { Injectable } from "@angular/core";
 import { HttpErrorResponse } from "@angular/common/http";
 import { AuthenticateModel, AuthenticateResultModel } from "../service-proxies/service-proxies";
 import { AuthService } from "../services/auth.service";
-import { environment } from "../../my-lib/shared/enviroments/enviroment";
 import { MessageService } from 'primeng/api';
 import { catchError, finalize, throwError } from "rxjs";
 import { jwtDecode } from 'jwt-decode';
 import { TokenService } from "../service-proxies/token.service";
 import { Router } from "@angular/router";
 import { AppSessionService } from "../session/app-session.service";
-
-
-
+import { PermissionStore } from "../stores/permission.store";
 
 @Injectable({
     providedIn: 'any'
@@ -20,16 +17,18 @@ export class AppAuthService {
     authenticateModel!: AuthenticateModel;
     authenticateResult: AuthenticateResultModel | null = null;
     rememberMe: boolean = false;
+
     constructor(
         private _tokenAuthService: AuthService,
         private _tokenService: TokenService,
         private messageService: MessageService,
         private _router: Router,
-        private _appSessionService: AppSessionService
+        private _appSessionService: AppSessionService,
+        private _permissionStore: PermissionStore
     ) {
-
-        this.clear()
+        this.clear();
     }
+
     authenticate(finallyCallback?: () => void, returnUrl?: string): void {
         finallyCallback = finallyCallback || (() => { });
         this._tokenAuthService.authenticateV2(this.authenticateModel).pipe(
@@ -37,7 +36,7 @@ export class AppAuthService {
                 const errorMessage = this.getAuthErrorMessage(err);
                 this.messageService.add({
                     severity: 'error',
-                    summary: 'Authentication Failed',
+                    summary: 'Đăng nhập thất bại',
                     life: 5000,
                     detail: errorMessage
                 });
@@ -48,9 +47,10 @@ export class AppAuthService {
             finalize(() => {
                 finallyCallback();
             })
-        ).subscribe((result: AuthenticateResultModel) => { (this.processAuthenticateResult(result, returnUrl)) });
+        ).subscribe((result: AuthenticateResultModel) => {
+            this.processAuthenticateResult(result, returnUrl);
+        });
     }
-
 
     clear() {
         this.authenticateModel = new AuthenticateModel();
@@ -59,14 +59,21 @@ export class AppAuthService {
         this.rememberMe = false;
     }
 
+    /** Đăng xuất — xóa token, clear store, về trang login */
+    logout(): void {
+        this._tokenService.clearAllCookie();
+        this._permissionStore.clear();
+        this._appSessionService.setUser(null);
+        this._router.navigate(['/account/login']);
+    }
+
     private getAuthErrorMessage(err: HttpErrorResponse): string {
-        if (err.status === 400 && err.error && err.error.error === 'invalid_grant') return 'Tên đăng nhập hoặc mật khẩu không đúng.';
+        if (err.status === 400 && err.error?.error === 'invalid_grant') return 'Tên đăng nhập hoặc mật khẩu không đúng.';
         if (err.status === 401) return 'Tài khoản hoặc mật khẩu không đúng.';
         if (err.status === 429) return 'Quá nhiều lần thử đăng nhập. Vui lòng thử lại sau.';
         if (err.status === 0) return 'Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối mạng.';
         return 'Đã xảy ra lỗi khi đăng nhập. Vui lòng thử lại.';
     }
-
 
     private processAuthenticateResult(authenticateResult: AuthenticateResultModel, returnUrl?: string): void {
         this.authenticateResult = authenticateResult;
@@ -79,53 +86,49 @@ export class AppAuthService {
                 this.authenticateModel.rememberClient,
                 returnUrl
             );
-        }
-        else {
+        } else {
             this._router.navigate(['account/login']);
         }
     }
 
     private login(
-        acessToken: string,
+        accessToken: string,
         refreshToken: string,
-        excryptedAccesToken: string,
+        encryptedAccessToken: string,
         expiresIn: number,
         rememberMe?: boolean,
         returnUrl?: string
     ): void {
-        const decoded = jwtDecode<{ exp?: number }>(acessToken);
+        const decoded = jwtDecode<{ exp?: number }>(accessToken);
         const tokenExpireDate = this.unixToDate(decoded.exp ?? 0);
-        this._tokenService.setToken(acessToken, tokenExpireDate);
+
+
+        this._tokenService.setToken(accessToken, tokenExpireDate);
         this._tokenService.setRefreshToken(refreshToken);
-        this._appSessionService.init().then(
-            () => {
 
-            },
-            (err: any) => {
-                console.error(err);
-            }
-        );
-        const token = this._tokenService.getToken();
-        let userIfo: any;
+        Promise.all([
+            this._appSessionService.init(),
+            this._permissionStore.load()
+        ]).then(() => {
+            this.navigateAfterLogin(returnUrl);
+        }).catch(err => {
+            console.error('[AppAuthService] Lỗi khi tải thông tin sau đăng nhập:', err);
+            this.navigateAfterLogin(returnUrl);
+        });
+    }
 
-        if (token) {
-            userIfo = jwtDecode(token);
-        }
-
-        // Ưu tiên returnUrl nếu có
+    private navigateAfterLogin(returnUrl?: string): void {
         if (returnUrl) {
             this._router.navigateByUrl(returnUrl).catch(err => console.error('Navigation error:', err));
             return;
         }
-
-
-        const role = this._tokenService.getUserRole();
-        if (role === 'Admin' || userIfo?.user_type === 2 || userIfo?.user_type === 1 || userIfo?.userType === 2 || userIfo?.userType === 1) {
+        if (this._tokenService.isAdmin()) {
             this._router.navigate(['/admin/dashboard']).catch(err => console.error('Navigation error:', err));
         } else {
             this._router.navigate(['/dashboard']).catch(err => console.error('Navigation error:', err));
         }
     }
+
     /// <summary>
     /// Hàm này chuyển đổi thời gian từ định dạng unix timestamp (số giây kể từ 1/1/1970) sang đối tượng Date của JavaScript.
     /// </summary>

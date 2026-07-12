@@ -112,7 +112,6 @@ public class RoleService : CoreServiceBase, IRoleService
         if (!roleExists)
             return Result<bool>.Failure(ErrorCode.RoleNotFound, this.GetCurrentMethodInfo(), $"Role {roleId} không tồn tại");
 
-        // Kiểm tra tất cả permissionKeys có tồn tại trong catalog không
         var validKeys = await _dbContext.Permissions
             .Where(p => permissionKeys.Contains(p.PermissionKey))
             .Select(p => p.PermissionKey)
@@ -123,13 +122,12 @@ public class RoleService : CoreServiceBase, IRoleService
             return Result<bool>.Failure(ErrorCode.PermissionKeyInvalid, this.GetCurrentMethodInfo(),
                 $"PermissionKey không hợp lệ: {string.Join(", ", invalidKeys)}");
 
-        // Xóa toàn bộ permissions cũ của Role
-        var existing = await _dbContext.RolePermissions
-            .Where(rp => rp.RoleId == roleId)
-            .ToListAsync();
-        _dbContext.RolePermissions.RemoveRange(existing);
 
-        // Thêm danh sách permissions mới
+        await _dbContext.RolePermissions
+        .Where(rp => rp.RoleId == roleId)
+        .ExecuteDeleteAsync();
+
+
         var newMappings = permissionKeys.Select(key => new CR.Core.Domain.User.RolePermission
         {
             RoleId = roleId,

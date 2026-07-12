@@ -37,11 +37,25 @@ namespace CR.Core.ApplicationServices.AuthenticationModule.Implements
                 var claims = new List<Claim>
                 {
                     new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-                    new Claim(JwtRegisteredClaimNames.Email, user.Email), // Đã cập nhật theo Entity mới
+                    new Claim(JwtRegisteredClaimNames.Email, user.Email),
                     new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                     new Claim(UserClaimTypes.UserType, ((int)user.UserType).ToString()),
-                    new Claim(ClaimTypes.Role, user.UserType.ToString())
                 };
+
+                // Thêm dynamic Roles từ bảng UserRoles (nếu user có gán Role thì dùng, không thì fallback về UserType)
+                if (user.UserRoles != null && user.UserRoles.Any(ur => !ur.Deleted && ur.Role != null))
+                {
+                    foreach (var userRole in user.UserRoles.Where(ur => !ur.Deleted && ur.Role != null))
+                    {
+                        claims.Add(new Claim(ClaimTypes.Role, userRole.Role!.Name));
+                        claims.Add(new Claim(UserClaimTypes.RoleId, userRole.RoleId.ToString()));
+                    }
+                }
+                else
+                {
+                    // Fallback: dùng UserType khi user chưa được gán Role động nào
+                    claims.Add(new Claim(ClaimTypes.Role, user.UserType.ToString()));
+                }
 
                 // Lấy FullName từ bảng Profile (Lưu ý: Khi gọi hàm này, phải Include(u => u.Profile) ở query)
                 if (user.Profile != null && !string.IsNullOrEmpty(user.Profile.FullName))

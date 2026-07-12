@@ -324,21 +324,26 @@ public class OrderService : CoreServiceBase, IOrderService
     public async Task<Result<PageResult<OrderDto>>> GetMyOrders(FilterOrderPagingDto input)
     {
         var userID = _httpContext.GetCurrentUserId();
-        var query = _dbContext.Orders
+        
+        // 1. Base Query chỉ dùng để lọc (Không Include bảng con)
+        var baseQuery = _dbContext.Orders
             .AsNoTracking()
+            .Where(o => o.UserId == userID && !o.Deleted && (string.IsNullOrEmpty(input.Status) 
+            || o.Status == input.Status));
+
+        // 2. Đếm tổng số lượng dựa trên Base Query (Rất nhanh)
+        var totalItems = await baseQuery.CountAsync();
+
+        // 3. Fetch dữ liệu thật: Kế thừa Base Query, thêm Include, OrderBy và Paging
+        var orders = await baseQuery
             .Include(o => o.OrderItems)
             .Include(o => o.Payments)
             .Include(o => o.Shipments)
             .AsSplitQuery()
-            .Where(o => o.UserId == userID && !o.Deleted && (string.IsNullOrEmpty(input.Status) || o.Status == input.Status))
-            .OrderByDescending(o => o.CreatedDate);
+            .OrderByDescending(o => o.CreatedDate)
+            .Paging(input)
+            .ToListAsync();
 
-        var totalItems = await query.CountAsync();
-
-        // EF Core lấy data về bộ nhớ trước (ToListAsync)
-        var orders = await query.Paging(input).ToListAsync();
-
-        // Map DTO trên RAM thay vì bắt EF dịch hàm MapToDto sang SQL
         var itemsDto = orders.Select(MapToDto).ToList();
 
         return Result<PageResult<OrderDto>>.Success(new PageResult<OrderDto>
@@ -350,24 +355,27 @@ public class OrderService : CoreServiceBase, IOrderService
 
     public async Task<Result<PageResult<OrderDto>>> GetAllOrders(FilterOrderPagingDto input)
     {
-        var query = _dbContext.Orders
+        // 1. Base Query chỉ dùng để lọc
+        var baseQuery = _dbContext.Orders
             .AsNoTracking()
+            .Where(o =>
+                !o.Deleted &&
+                (string.IsNullOrEmpty(input.Status) || o.Status == input.Status) &&
+                (string.IsNullOrEmpty(input.Keyword) || o.OrderCode.Contains(input.Keyword) || o.ShippingAddress.Contains(input.Keyword)));
+
+        // 2. Đếm tổng số lượng (Nhanh và không bị Timeout)
+        var totalItems = await baseQuery.CountAsync();
+
+        // 3. Fetch dữ liệu thật (Chỉ Include cho những record của trang hiện tại nhờ Paging)
+        var orders = await baseQuery
             .Include(o => o.OrderItems)
             .Include(o => o.Payments)
             .Include(o => o.Shipments)
             .AsSplitQuery()
-            .Where(o =>
-                !o.Deleted &&
-                (string.IsNullOrEmpty(input.Status) || o.Status == input.Status) &&
-                (string.IsNullOrEmpty(input.Keyword) || o.OrderCode.Contains(input.Keyword) || o.ShippingAddress.Contains(input.Keyword)))
-            .OrderByDescending(o => o.CreatedDate);
+            .OrderByDescending(o => o.CreatedDate)
+            .Paging(input)
+            .ToListAsync();
 
-        var totalItems = await query.CountAsync();
-
-        // Fetch data trước
-        var orders = await query.Paging(input).ToListAsync();
-
-        // Map sang Dto trong RAM
         var itemsDto = orders.Select(MapToDto).ToList();
 
         return Result<PageResult<OrderDto>>.Success(new PageResult<OrderDto>

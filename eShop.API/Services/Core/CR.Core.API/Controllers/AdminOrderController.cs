@@ -14,6 +14,7 @@ public class AdminOrderController : ControllerBase
 
     /// <summary>Danh sách tất cả đơn hàng (Admin).</summary>
     [HttpGet]
+    [Authorize(Policy = "Permission:Sales.Orders.View")]
     public async Task<IActionResult> GetAll([FromQuery] FilterOrderPagingDto input)
         => Ok(await _orderService.GetAllOrders(input));
 

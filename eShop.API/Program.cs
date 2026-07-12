@@ -1,15 +1,12 @@
 using CR.Core.Infrastructure.Persistence.Seeders;
 using CR.Core.ApplicationServices.Configs;
 using CR.Core.ApplicationServices.OrderModule.Abstracts;
-using CR.Core.ApplicationServices.OrderModule.Implements; // Giả định namespace chứa OrderService
-using CR.Core.Domain.Catalog;
+using CR.Core.ApplicationServices.OrderModule.Implements;
 using CR.ApplicationBase.Localization;
 using CR.WebAPIBase.Filters;
 using CR.WebAPIBase.Middlewares;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.Google;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 using OpenIddict.Abstractions;
 using DotNetEnv;
@@ -24,7 +21,6 @@ using CR.Core.ApplicationServices.CartModule.Abstracts;
 using CR.Core.ApplicationServices.CartModule.Implemts;
 using CR.Core.Application.CategoryModule.Abstract;
 using CR.Core.Application.CategoryModule.Implements;
-using Microsoft.CodeAnalysis.Operations;
 using CR.Core.ApplicationServices.AddressModule.Implements;
 using CR.Core.ApplicationServices.AddressModule.Abstracts;
 
