@@ -28,26 +28,26 @@ export class AppSessionService {
         private readonly tokenService: TokenService,
         private readonly http: HttpClient
     ) {
-        
+
     }
-    get User() : UserProfile | null {
-        return this._user$.value;   
+    get User(): UserProfile | null {
+        return this._user$.value;
     }
-    get UserId() : number | null {
-        return this._user$.value ? this._user$.value.userId : null; // Trả về userId nếu có, ngược lại trả về null
+    get UserId(): number | null {
+        return this._user$.value ? this._user$.value.userId : null;
     }
-    setUser(value: UserProfile | null) : void {
+    setUser(value: UserProfile | null): void {
         this._user$.next(value);
     }
     getUserByToken(): Observable<any> {
         return this.http
-            .get<{data : any}>(`${this.apiUrl}/core/user/find-by-user`)
+            .get<{ data: any }>(`${this.apiUrl}/core/user/find-by-user`)
     }
     private fetchUserProfile(): Observable<UserProfile> {
         return this.http
-            .get<{data : any}>(`${this.apiUrl}/core/user/find-by-user`)
+            .get<{ data: any }>(`${this.apiUrl}/core/user/find-by-user`)
             .pipe(
-                map(({ data : u }) => ({
+                map(({ data: u }) => ({
                     userId: u.id,
                     username: u.username,
                     email: u.email,
@@ -62,19 +62,16 @@ export class AppSessionService {
     // Hàm này được gọi khi ứng dụng khởi động để kiểm tra xem có token hợp lệ nào không 
     // và nếu có thì lấy thông tin người dùng tương ứng.
     async init(): Promise<boolean> {
-        if ( !this.tokenService.getToken()) 
-        {
+        if (!this.tokenService.getToken()) {
             this.setUser(null);
             return false;
         }
-        try 
-        {
+        try {
             const profile = await firstValueFrom(this.fetchUserProfile());
             this.setUser(profile);
             return true;
         }
-        catch 
-        {
+        catch {
             this.setUser(null);
             return false;
         }

@@ -1,0 +1,245 @@
+<div class="page">
+
+      <!-- Page Header -->
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Sản phẩm</h1>
+          <p class="page-subtitle">Quản lý danh sách, biến thể và thuộc tính sản phẩm</p>
+        </div>
+        <button class="btn btn-primary" (click)="openCreateForm()" id="btn-add-product">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h14"/><path d="M12 5v14"/>
+          </svg>
+          Thêm sản phẩm
+        </button>
+      </div>
+
+      <!-- Stats Row -->
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-label">Tổng sản phẩm</div>
+          <div class="stat-value">{{ totalCount() }}</div>
+          <div class="stat-sub">{{ activeCount() }} đang hoạt động</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Tổng biến thể</div>
+          <div class="stat-value">{{ totalVariants() }}</div>
+          <div class="stat-sub">Trên tất cả sản phẩm</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Sắp hết hàng</div>
+          <div class="stat-value" style="color:#EF4444">{{ lowStockCount() }}</div>
+          <div class="stat-sub">Tồn kho dưới 10</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Đã ẩn</div>
+          <div class="stat-value">{{ inactiveCount() }}</div>
+          <div class="stat-sub">Không hiển thị</div>
+        </div>
+      </div>
+
+      <!-- Toolbar -->
+      <div class="toolbar">
+        <div class="search-wrap">
+          <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+          </svg>
+          <input id="product-search" class="search-input" type="text"
+                 [(ngModel)]="searchKeyword"
+                 (ngModelChange)="onSearch($event)"
+                 placeholder="Tìm theo tên, SKU...">
+        </div>
+
+        <select class="filter-select" [(ngModel)]="filter.categoryId"
+                (ngModelChange)="applyFilter()" id="filter-category">
+          <option [value]="undefined">Tất cả danh mục</option>
+          <option *ngFor="let cat of categories()" [value]="cat.categoryId">{{ cat.categoryName }}</option>
+        </select>
+
+        <select class="filter-select" [(ngModel)]="filter.isActive"
+                (ngModelChange)="applyFilter()" id="filter-status">
+          <option [value]="undefined">Tất cả trạng thái</option>
+          <option [value]="true">Hoạt động</option>
+          <option [value]="false">Đã ẩn</option>
+        </select>
+
+        <select class="filter-select" [(ngModel)]="sortValue"
+                (ngModelChange)="onSortChange($event)" id="filter-sort">
+          <option value="name_asc">Tên A → Z</option>
+          <option value="name_desc">Tên Z → A</option>
+          <option value="price_asc">Giá tăng dần</option>
+          <option value="price_desc">Giá giảm dần</option>
+          <option value="createdAt_desc">Mới nhất</option>
+          <option value="createdAt_asc">Cũ nhất</option>
+        </select>
+      </div>
+
+      <!-- Table -->
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:320px">Sản phẩm</th>
+              <th class="sortable" (click)="sort('categoryName')">Danh mục</th>
+              <th class="sortable" (click)="sort('price')">Giá bán</th>
+              <th class="sortable" (click)="sort('stock')">Tồn kho</th>
+              <th>Biến thể</th>
+              <th>Trạng thái</th>
+              <th style="width:100px">Thao tác</th>
+            </tr>
+          </thead>
+          <tbody>
+
+            <!-- Skeleton rows -->
+            <ng-container *ngIf="loading()">
+              <tr class="skeleton-row" *ngFor="let s of skeletons">
+                <td>
+                  <div class="product-cell">
+                    <div class="skeleton" style="width:44px;height:44px;border-radius:10px"></div>
+                    <div>
+                      <div class="skeleton" style="width:160px;height:14px;margin-bottom:6px"></div>
+                      <div class="skeleton" style="width:80px;height:12px"></div>
+                    </div>
+                  </div>
+                </td>
+                <td><div class="skeleton" style="width:80px;height:14px"></div></td>
+                <td><div class="skeleton" style="width:90px;height:14px"></div></td>
+                <td><div class="skeleton" style="width:40px;height:14px"></div></td>
+                <td><div class="skeleton" style="width:24px;height:14px"></div></td>
+                <td><div class="skeleton" style="width:72px;height:24px;border-radius:99px"></div></td>
+                <td></td>
+              </tr>
+            </ng-container>
+
+            <!-- Data rows -->
+            <ng-container *ngIf="!loading()">
+              <tr *ngFor="let p of products(); let i = index" [id]="'product-row-'+p.id" [style.animation-delay]="(i * 0.05) + 's'">
+                <td>
+                  <div class="product-cell">
+                    <img class="product-thumb"
+                         [src]="getProductImage(p)"
+                         [alt]="p.name"
+                         loading="lazy">
+                    <div>
+                      <div class="product-name">{{ p.name }}</div>
+                      <div class="product-sku" *ngIf="p.sku">{{ p.sku }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td style="font-size:14px;color:#71717A">{{ p.categoryName }}</td>
+                <td class="price-cell">{{ p.price | currency:'VND':'symbol':'1.0-0' }}</td>
+                <td>
+                  <span class="stock-cell" [class.stock-low]="p.stock < 10">{{ p.stock }}</span>
+                </td>
+                <td style="font-size:14px;color:#71717A">{{ p.variants.length }}</td>
+                <td>
+                  <span class="badge" [class.badge-active]="p.isActive" [class.badge-inactive]="!p.isActive">
+                    {{ p.isActive ? 'Hoạt động' : 'Đã ẩn' }}
+                  </span>
+                </td>
+                <td>
+                  <div class="actions-cell">
+                    <button class="btn-icon" (click)="openEditForm(p)" [id]="'btn-edit-product-'+p.id" aria-label="Chỉnh sửa">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                           fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
+                      </svg>
+                    </button>
+                    <button class="btn-icon danger" (click)="confirmDelete(p)" [id]="'btn-delete-product-'+p.id" aria-label="Xóa">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                           fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
+                        <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+                      </svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+
+              <!-- Empty state -->
+              <tr *ngIf="products().length === 0">
+                <td colspan="7">
+                  <div class="empty-state">
+                    <div class="empty-icon">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 24 24"
+                           fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/>
+                      </svg>
+                    </div>
+                    <p class="empty-title">Chưa có sản phẩm nào</p>
+                    <p class="empty-desc">Bắt đầu bằng cách thêm sản phẩm đầu tiên vào danh sách</p>
+                    <button class="btn btn-primary" (click)="openCreateForm()" id="btn-empty-add-product">
+                      + Thêm sản phẩm
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </ng-container>
+          </tbody>
+        </table>
+
+        <!-- Pagination -->
+        <div class="pagination" *ngIf="totalPages() > 1 && !loading()">
+          <div class="pagination-info">
+            Hiển thị {{ paginationFrom() }}–{{ paginationTo() }} trong {{ totalCount() }} sản phẩm
+          </div>
+          <div class="pagination-controls">
+            <button class="page-btn" (click)="goToPage(currentPage() - 1)"
+                    [disabled]="currentPage() <= 1" id="btn-prev-page" aria-label="Trang trước">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                   fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m15 18-6-6 6-6"/>
+              </svg>
+            </button>
+            <ng-container *ngFor="let p of paginationRange()">
+              <span class="page-ellipsis" *ngIf="p === -1">...</span>
+              <button *ngIf="p !== -1" class="page-btn" [class.active]="p === currentPage()"
+                      (click)="goToPage(p)" [id]="'btn-page-'+p">{{ p }}</button>
+            </ng-container>
+            <button class="page-btn" (click)="goToPage(currentPage() + 1)"
+                    [disabled]="currentPage() >= totalPages()" id="btn-next-page" aria-label="Trang sau">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                   fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m9 18 6-6-6-6"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Product Form Drawer -->
+    <app-product-form
+      [visible]="formVisible()"
+      [product]="selectedProduct()"
+      [categories]="categories()"
+      (closed)="closeForm()"
+      (saved)="onFormSaved($event)">
+    </app-product-form>
+
+    <!-- Confirm Delete Dialog -->
+    <app-confirm-dialog
+      [visible]="confirmVisible()"
+      [title]="'Xóa sản phẩm'"
+      [message]="'Xóa sản phẩm ' + deleteTarget()?.name + ' sẽ xóa tất cả biến thể, hình ảnh liên quan. Hành động này không thể hoàn tác.'"
+      [confirmLabel]="'Xóa sản phẩm'"
+      (confirmed)="onDeleteConfirmed()"
+      (cancelled)="cancelDelete()">
+    </app-confirm-dialog>
+
+    <!-- Toast Notifications -->
+    <div class="toast-container" aria-live="polite">
+      <div class="toast" [class]="t.type" *ngFor="let t of toasts()">
+        <svg *ngIf="t.type === 'success'" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 6 9 17l-5-5"/>
+        </svg>
+        <svg *ngIf="t.type === 'error'" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/>
+        </svg>
+        {{ t.message }}
+      </div>
+    </div>

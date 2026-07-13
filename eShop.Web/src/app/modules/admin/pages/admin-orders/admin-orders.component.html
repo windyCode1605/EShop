@@ -1,152 +1,201 @@
 <div class="admin-orders">
-      <header class="page-header">
-        <div>
-          <h1 class="page-title">Orders</h1>
-          <p class="page-sub">Manage and process customer orders.</p>
-        </div>
-      </header>
-
-      <!-- Filters -->
-      <div class="filters-bar">
-        <div class="search-input">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" x2="16.65" y1="21" y2="16.65"/></svg>
-          <input type="text" placeholder="Search by Order ID or phone..." />
-        </div>
-        <button class="filter-btn active">All</button>
-        <button class="filter-btn">Pending</button>
-        <button class="filter-btn">Processing</button>
-        <button class="filter-btn">Shipped</button>
-        <button class="filter-btn">Delivered</button>
-      </div>
-
-      <!-- Table -->
-      <div class="orders-table-wrapper">
-        <table>
-          <thead>
-            <tr>
-              <th>Order ID</th>
-              <th>Date</th>
-              <th>Customer</th>
-              <th>Total</th>
-              <th>Status</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            <!-- Row 1 -->
-            <tr>
-              <td><span class="order-id">#ORD-9021</span></td>
-              <td><span class="order-date">Oct 24, 2025</span></td>
-              <td>
-                <div class="customer-name">Alex Nguyen</div>
-                <div class="customer-contact">0987654321</div>
-              </td>
-              <td><span class="order-total">$145.00</span></td>
-              <td><span class="badge badge--pending">Pending</span></td>
-              <td>
-                <button class="btn-update" (click)="openModal('ORD-9021', 'Pending')">
-                  Update
-                </button>
-              </td>
-            </tr>
-            <!-- Row 2 -->
-            <tr>
-              <td><span class="order-id">#ORD-9020</span></td>
-              <td><span class="order-date">Oct 24, 2025</span></td>
-              <td>
-                <div class="customer-name">Sarah Tran</div>
-                <div class="customer-contact">0912345678</div>
-              </td>
-              <td><span class="order-total">$850.00</span></td>
-              <td><span class="badge badge--processing">Processing</span></td>
-              <td>
-                <button class="btn-update" (click)="openModal('ORD-9020', 'Processing')">
-                  Update
-                </button>
-              </td>
-            </tr>
-            <!-- Row 3 -->
-            <tr>
-              <td><span class="order-id">#ORD-9019</span></td>
-              <td><span class="order-date">Oct 23, 2025</span></td>
-              <td>
-                <div class="customer-name">Minh Pham</div>
-                <div class="customer-contact">0909112233</div>
-              </td>
-              <td><span class="order-total">$299.00</span></td>
-              <td><span class="badge badge--shipped">Shipped</span></td>
-              <td>
-                <button class="btn-update" (click)="openModal('ORD-9019', 'Shipped')">
-                  Update
-                </button>
-              </td>
-            </tr>
-            <!-- Row 4 -->
-            <tr>
-              <td><span class="order-id">#ORD-9018</span></td>
-              <td><span class="order-date">Oct 22, 2025</span></td>
-              <td>
-                <div class="customer-name">John Doe</div>
-                <div class="customer-contact">0933445566</div>
-              </td>
-              <td><span class="order-total">$1,200.00</span></td>
-              <td><span class="badge badge--delivered">Delivered</span></td>
-              <td>
-                <button class="btn-update" (click)="openModal('ORD-9018', 'Delivered')">
-                  Update
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <!-- Modal Popup -->
-      <div class="modal-overlay" [class.is-open]="isModalOpen" (click)="closeModal()">
-        <div class="modal-panel" (click)="$event.stopPropagation()">
-          <div class="modal-header">
-            <h2 class="modal-title">Update Order #{{selectedOrderId}}</h2>
-            <button class="close-btn" (click)="closeModal()">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-            </button>
-          </div>
-          
-          <div class="modal-body">
-            <div class="form-group">
-              <label class="form-label">Order Status</label>
-              <select class="form-select" [value]="selectedStatus" (change)="onStatusChange($event)">
-                <option value="Pending">Pending</option>
-                <option value="Processing">Processing</option>
-                <option value="Shipped">Shipped</option>
-                <option value="Delivered">Delivered</option>
-                <option value="Cancelled">Cancelled</option>
-              </select>
-            </div>
-
-            <!-- Conditional Fields for Shipped status -->
-            <div *ngIf="selectedStatus === 'Shipped'">
-              <div class="form-group">
-                <label class="form-label">Shipping Provider</label>
-                <select class="form-select">
-                  <option value="">Select a provider...</option>
-                  <option value="GHN">Giao Hàng Nhanh</option>
-                  <option value="GHTK">Giao Hàng Tiết Kiệm</option>
-                  <option value="VNPost">VNPost</option>
-                  <option value="J&T">J&T Express</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label class="form-label">Tracking Number</label>
-                <input type="text" class="form-input" placeholder="e.g. GHN123456789" />
-              </div>
-            </div>
-          </div>
-
-          <div class="modal-footer">
-            <button class="btn-cancel" (click)="closeModal()">Cancel</button>
-            <button class="btn-save" (click)="saveStatus()">Save Changes</button>
-          </div>
-        </div>
-      </div>
-
+  <header class="page-header">
+    <div>
+      <h1 class="page-title">Orders</h1>
+      <p class="page-sub">Manage and process customer orders.</p>
     </div>
+  </header>
+
+  <!-- Filters -->
+  <div class="filters-bar">
+    <div class="search-input">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8" />
+        <line x1="21" x2="16.65" y1="21" y2="16.65" />
+      </svg>
+      <input type="text" placeholder="Search by Order ID or phone..." />
+    </div>
+    <button class="filter-btn active">All</button>
+    <button class="filter-btn">Pending</button>
+    <button class="filter-btn">Processing</button>
+    <button class="filter-btn">Shipped</button>
+    <button class="filter-btn">Delivered</button>
+  </div>
+
+  <!-- Table -->
+  <div class="orders-table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Order ID</th>
+          <th>Date</th>
+          <th>Customer</th>
+          <th>Total</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (order of OrderService.Orders(); track order.id) {
+        <!-- Dòng chính (Master Row) -->
+        <tr [class.is-expanded]="expandedOrderId() === order.id" class="master-row">
+          <td>
+            <button class="btn-expand-id" (click)="toggleExpand(order.id)">
+              <span class="order-id">#{{ order.orderCode }}</span>
+              <svg [class.rotate-180]="expandedOrderId() === order.id" xmlns="http://www.w3.org/2000/svg" width="16"
+                height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" class="chevron-icon">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </button>
+          </td>
+          <td><span class="order-date">{{ order.createdDate | date:'MMM dd, yyyy HH:mm' }}</span></td>
+          <td>
+            <div class="customer-name">{{ order.shipment?.receiverName || 'Unknown' }}</div>
+            <div class="customer-contact">{{ order.shipment?.receiverPhone }}</div>
+          </td>
+          <td><span class="order-total">{{ order.totalAmount | currency:'VND' }}</span></td>
+          <td><span class="badge" [class]="'badge--' + (order.status | lowercase)">{{ order.status }}</span></td>
+          <td>
+            <button class="btn-update" (click)="openModal(order.id, order.orderCode, order.status)">
+              Update
+            </button>
+          </td>
+        </tr>
+
+        <!-- Dòng chi tiết (Detail Row - Expandable) -->
+        @if (expandedOrderId() === order.id) {
+        <tr class="detail-row">
+          <td colspan="6" class="p-0">
+            <div class="detail-container">
+              <!-- Cột 1: Thông tin Item -->
+              <div class="detail-section items-section">
+                <h3 class="detail-title">Order Items</h3>
+                <div class="item-list">
+                  @for (item of order.items; track item.id) {
+                  <div class="order-item">
+                    <div class="item-info">
+                      <span class="item-name">{{ item.productName }}</span>
+                      <span class="item-sku">SKU: {{ item.variantSKU }}</span>
+                    </div>
+                    <div class="item-price-calc">
+                      <span class="qty">{{ item.quantity }} × {{ item.unitPrice | currency:'VND' }}</span>
+                      <span class="line-total">{{ item.lineTotal | currency:'VND' }}</span>
+                    </div>
+                  </div>
+                  } @empty {
+                  <div class="empty-text">No items found.</div>
+                  }
+                </div>
+              </div>
+
+              <!-- Cột 2: Thanh toán & Vận chuyển -->
+              <div class="detail-section meta-section">
+                <div class="meta-block">
+                  <h3 class="detail-title">Payment Information</h3>
+                  <div class="meta-grid">
+                    <span class="meta-label">Method:</span>
+                    <span class="meta-value">{{ order.payment?.method || order.paymentMethod }}</span>
+                    <span class="meta-label">Status:</span>
+                    <span class="meta-value">
+                      <span class="payment-status" [class.success]="order.payment?.status === 'Paid'">{{
+                        order.payment?.status || 'Pending' }}</span>
+                    </span>
+                    <span class="meta-label">Paid At:</span>
+                    <span class="meta-value">{{ (order.payment?.paidAt | date:'short') || 'Not paid yet' }}</span>
+                  </div>
+                </div>
+
+                <div class="meta-block">
+                  <h3 class="detail-title">Shipping Details</h3>
+                  <div class="meta-grid">
+                    <span class="meta-label">Provider:</span>
+                    <span class="meta-value">{{ order.shipment?.shippingProvider || 'Standard' }}</span>
+                    <span class="meta-label">Tracking:</span>
+                    <span class="meta-value tracking-num">{{ order.shipment?.trackingNumber || 'N/A' }}</span>
+                    <span class="meta-label">Address:</span>
+                    <span class="meta-value address-text">{{ order.shippingAddress }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </td>
+        </tr>
+        }
+        } @empty {
+        <tr>
+          <td colspan="6" class="text-center empty-state">No orders found.</td>
+        </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Modal Popup -->
+  <div class="modal-overlay" [class.is-open]="isModalOpen" (click)="closeModal()">
+    <div class="modal-panel" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2 class="modal-title">Update Order #{{selectedOrderCode}}</h2>
+        <button class="close-btn" (click)="closeModal()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div *ngIf="errorMessage" class="error-banner" style="color: #ef4444; background: #fee2e2; border: 1px solid #f87171; padding: 10px 12px; border-radius: 8px; margin-bottom: 16px; font-size: 14px; line-height: 1.5; white-space: pre-wrap;">
+          {{ errorMessage }}
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Order Status</label>
+          <select class="form-select" [(ngModel)]="selectedStatus" (change)="onStatusChange($event)">
+            <option value="PENDING" [disabled]="!availableNextStatuses.includes('PENDING')">Pending</option>
+            <option value="CONFIRMED" [disabled]="!availableNextStatuses.includes('CONFIRMED')">Confirmed</option>
+            <option value="PROCESSING" [disabled]="!availableNextStatuses.includes('PROCESSING')">Processing</option>
+            <option value="SHIPPING" [disabled]="!availableNextStatuses.includes('SHIPPING')">Shipped</option>
+            <option value="DELIVERED" [disabled]="!availableNextStatuses.includes('DELIVERED')">Delivered</option>
+            <option value="RETURNED" [disabled]="!availableNextStatuses.includes('RETURNED')">Returned</option>
+            <option value="CANCELLED" [disabled]="!availableNextStatuses.includes('CANCELLED')">Cancelled</option>
+          </select>
+        </div>
+
+        <div *ngIf="selectedStatus === 'SHIPPING'">
+          <div class="form-group">
+            <label class="form-label">Shipping Provider</label>
+            <select class="form-select" [(ngModel)]="shippingProvider">
+              <option value="">Select a provider...</option>
+              <option value="GHN">Giao Hàng Nhanh</option>
+              <option value="GHTK">Giao Hàng Tiết Kiệm</option>
+              <option value="VNPost">VNPost</option>
+              <option value="J&T">J&T Express</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tracking Number</label>
+            <input type="text" class="form-input" [(ngModel)]="trackingNumber" placeholder="e.g. GHN123456789" />
+          </div>
+        </div>
+
+        <div *ngIf="selectedStatus === 'CANCELLED'">
+          <div class="form-group">
+            <label class="form-label">Reason</label>
+            <textarea class="form-input" [(ngModel)]="reason" placeholder="Lý do hủy đơn..." rows="3"
+              style="resize:vertical"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-cancel" (click)="closeModal()" [disabled]="isSaving">Cancel</button>
+        <button class="btn-save" (click)="saveStatus()" [disabled]="isSaving || selectedStatus === currentStatus">
+          {{ isSaving ? 'Saving...' : 'Save Changes' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

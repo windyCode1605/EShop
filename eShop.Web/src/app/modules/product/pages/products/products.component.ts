@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { ProductService } from '../../services/product.service';
 import { IProduct, ProductResponseDto } from '../../../product-manager/models/product.model';
 import { ProductFilterModel } from '../../../product-manager/models/product-filter.model';
-import { CartService } from '../../../Cart/services/cart.service';
+import { CartService } from '../../../cart/services/cart.service';
 import { TokenService } from '../../../../core/service-proxies/token.service';
 
 @Component({

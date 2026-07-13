@@ -220,14 +220,14 @@
         <!-- CTA Buttons -->
         <ng-container *ngIf="currentStep() === 1">
           <button (click)="nextStep()"
-                  [disabled]="(addressLoading$ | async)"
+                  [disabled]="(addressLoading$ | async) || (!isAddingNewAddress() && shippingFee() === 0)"
                   class="summary-cta summary-cta--primary">
             <span *ngIf="!(addressLoading$ | async)">Tiếp tục</span>
             <span *ngIf="(addressLoading$ | async)" class="spinner-ring-dark" aria-hidden="true"></span>
             <svg *ngIf="!(addressLoading$ | async)" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
           </button>
-          <p *ngIf="shippingFee() === 0" class="summary-cta-hint">
-            Vui lòng điền địa chỉ hợp lệ để tiếp tục.
+          <p *ngIf="!isAddingNewAddress() && shippingFee() === 0" class="summary-cta-hint">
+            Vui lòng chọn địa chỉ hợp lệ để tiếp tục.
           </p>
         </ng-container>
 

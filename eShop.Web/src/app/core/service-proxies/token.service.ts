@@ -3,7 +3,7 @@ import { CookieService } from 'ngx-cookie-service';
 
 /** Claim keys do OpenIddict phát hành trong Access Token */
 const CLAIM_ROLE = 'http://schemas.microsoft.com/ws/2008/06/identity/claims/role';
-const CLAIM_USER_TYPE = 'UserType';
+const CLAIM_USER_TYPE = 'user_type';
 const CLAIM_USER_ID = 'sub';
 
 @Injectable({
@@ -80,13 +80,18 @@ export class TokenService {
      * UserType là số nguyên, khác với dynamic Role name.
      */
     getUserType(): number | null {
+        const payload = this.decodePayload();
+        console.log('[DEBUG 2] Toàn bộ Payload của JWT Token:', payload); // <--- THÊM DÒNG NÀY
         const raw = this.decodePayload()?.[CLAIM_USER_TYPE];
+        console.log('[DEBUG 3] UserType lấy được từ Token là:', raw); // <--- THÊM DÒNG NÀY
         return raw !== undefined ? Number(raw) : null;
     }
 
     /** Trả về true nếu UserType là ADMIN (1) hoặc SUPER_ADMIN (2) */
     isAdmin(): boolean {
         const userType = this.getUserType();
+        const isUserAdmin = (userType === 1 || userType === 2);
+        console.log('[DEBUG 4] Kết quả check isAdmin():', isUserAdmin, '(vì UserType =', userType, ')'); // <--- THÊM DÒNG NÀY
         return userType === 1 || userType === 2;
     }
 }

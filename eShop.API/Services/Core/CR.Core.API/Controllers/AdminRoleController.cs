@@ -13,7 +13,6 @@ namespace CR.Core.API.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/admin/roles")]
-[Authorize]
 public class AdminRoleController : ControllerBase
 {
     private readonly IRoleService _roleService;
@@ -28,7 +27,7 @@ public class AdminRoleController : ControllerBase
     /// Dùng để hiển thị dropdown khi gán Role cho User.
     /// </summary>
     [HttpGet]
-    [Authorize(Policy = "Permission:Roles.View")]
+    [Authorize(Policy = "Permission:Identity.Roles.View")]
     public async Task<IActionResult> GetRoles()
     {
         var result = await _roleService.GetRolesAsync();
@@ -43,7 +42,7 @@ public class AdminRoleController : ControllerBase
     /// Admin dùng để xem/chỉnh sửa quyền của Role.
     /// </summary>
     [HttpGet("{roleId:int}/permissions")]
-    [Authorize(Policy = "Permission:Roles.View")]
+    [Authorize(Policy = "Permission:Identity.Roles.View")]
     public async Task<IActionResult> GetRolePermissions([FromRoute] int roleId)
     {
         var result = await _roleService.GetRolePermissionsAsync(roleId);
@@ -58,7 +57,7 @@ public class AdminRoleController : ControllerBase
     /// Sau khi cập nhật, cache của Role đó sẽ bị xóa (cache invalidation).
     /// </summary>
     [HttpPut("{roleId:int}/permissions")]
-    [Authorize(Policy = "Permission:Roles.Manage")]
+    [Authorize(Policy = "Permission:Identity.Roles.Manage")]
     public async Task<IActionResult> UpdateRolePermissions(
         [FromRoute] int roleId,
         [FromBody] UpdateRolePermissionsDto input)
@@ -75,7 +74,7 @@ public class AdminRoleController : ControllerBase
     /// Dùng để hiển thị checklist trên màn hình quản lý quyền của Admin.
     /// </summary>
     [HttpGet("all-permissions")]
-    [Authorize(Policy = "Permission:Roles.View")]
+    [Authorize(Policy = "Permission:Identity.Roles.View")]
     public async Task<IActionResult> GetAllPermissions()
     {
         var result = await _roleService.GetAllPermissionsGroupedAsync();

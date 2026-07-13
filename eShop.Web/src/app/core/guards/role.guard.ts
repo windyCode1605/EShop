@@ -34,11 +34,11 @@ export const roleGuard: CanActivateFn = (route, state) => {
 
   if (hasRole) return true;
 
-  if (!permissionStore.isLoaded()) {
-    const isAdmin = tokenService.isAdmin();
-    if (isAdmin && expectedRoles.some(r => r.toLowerCase() === 'admin' || r.toLowerCase() === 'super_admin')) {
-      return true;
-    }
+  // Fallback: Nếu backend chưa trả về role rõ ràng, nhưng JWT Token xác nhận đây là Admin
+  // thì vẫn cho phép vào các trang quản trị (đòi hỏi role Admin/SuperAdmin)
+  const isAdmin = tokenService.isAdmin();
+  if (isAdmin && expectedRoles.some(r => r.toLowerCase() === 'admin' || r.toLowerCase() === 'super_admin')) {
+    return true;
   }
 
   return router.createUrlTree(['/dashboard']);

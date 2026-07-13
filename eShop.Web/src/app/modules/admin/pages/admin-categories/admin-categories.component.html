@@ -1,0 +1,210 @@
+<div class="page">
+
+      <!-- Header -->
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Danh mục</h1>
+          <p class="page-subtitle">Quản lý cây danh mục sản phẩm trong cửa hàng</p>
+        </div>
+        <button class="btn btn-primary" (click)="openCreateForm()" id="btn-add-category">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h14"/><path d="M12 5v14"/>
+          </svg>
+          Thêm danh mục
+        </button>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-label">Tổng danh mục</div>
+          <div class="stat-value">{{ categories().length }}</div>
+          <div class="stat-sub">{{ rootCategories().length }} danh mục gốc</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Đang hoạt động</div>
+          <div class="stat-value">{{ activeCount() }}</div>
+          <div class="stat-sub">{{ inactiveCount() }} đã ẩn</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Tổng sản phẩm</div>
+          <div class="stat-value">{{ totalProductCount() }}</div>
+          <div class="stat-sub">Trong tất cả danh mục</div>
+        </div>
+      </div>
+
+      <!-- Toolbar -->
+      <div class="toolbar">
+        <div class="search-wrap">
+          <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+          </svg>
+          <input id="category-search" class="search-input" type="text"
+                 [(ngModel)]="searchKeyword"
+                 (ngModelChange)="onSearch($event)"
+                 placeholder="Tìm tên, slug danh mục...">
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:280px">Danh mục</th>
+              <th>Danh mục cha</th>
+              <th>Sản phẩm</th>
+              <th>Thứ tự</th>
+              <th>Trạng thái</th>
+              <th style="width:120px">Thao tác</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Skeleton -->
+            <ng-container *ngIf="loading()">
+              <tr *ngFor="let s of skeletons">
+                <td>
+                  <div class="cat-cell">
+                    <div class="skeleton" style="width:44px;height:44px;border-radius:10px;flex-shrink:0"></div>
+                    <div>
+                      <div class="skeleton" style="width:140px;height:14px;margin-bottom:6px"></div>
+                      <div class="skeleton" style="width:90px;height:12px"></div>
+                    </div>
+                  </div>
+                </td>
+                <td><div class="skeleton" style="width:80px;height:14px"></div></td>
+                <td><div class="skeleton" style="width:30px;height:14px"></div></td>
+                <td><div class="skeleton" style="width:24px;height:14px"></div></td>
+                <td><div class="skeleton" style="width:72px;height:24px;border-radius:99px"></div></td>
+                <td></td>
+              </tr>
+            </ng-container>
+
+            <!-- Data -->
+            <ng-container *ngIf="!loading()">
+              <tr *ngFor="let cat of filteredCategories(); let i = index" [id]="'cat-row-'+cat.categoryId" [style.animation-delay]="(i * 0.05) + 's'">
+                <td>
+                  <div class="cat-cell">
+                    <img *ngIf="cat.imageUrl" class="cat-thumb" [src]="cat.imageUrl" [alt]="cat.categoryName" loading="lazy">
+                    <div *ngIf="!cat.imageUrl" class="cat-thumb-placeholder">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                           fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M2 20h20L12 4Z"/>
+                      </svg>
+                    </div>
+                    <div>
+                      <div class="cat-name">{{ cat.categoryName }}</div>
+                      <div class="cat-slug">/{{ cat.slug }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <span class="badge badge-parent" *ngIf="cat.parentName">{{ cat.parentName }}</span>
+                  <span style="font-size:13px;color:#A1A1AA" *ngIf="!cat.parentName">Gốc</span>
+                </td>
+                <td>
+                  <span class="product-count">{{ cat.productCount ?? 0 }}</span>
+                </td>
+                <td style="font-size:14px;color:#71717A">{{ cat.sortOrder }}</td>
+                <td>
+                  <span class="badge" [class.badge-active]="cat.isActive" [class.badge-inactive]="!cat.isActive">
+                    {{ cat.isActive ? 'Hoạt động' : 'Đã ẩn' }}
+                  </span>
+                </td>
+                <td>
+                  <div class="actions-cell">
+                    <button class="btn-icon toggle" (click)="toggleActive(cat)"
+                            [id]="'btn-toggle-cat-'+cat.categoryId"
+                            [attr.aria-label]="cat.isActive ? 'Ẩn danh mục' : 'Hiện danh mục'">
+                      <svg *ngIf="cat.isActive" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                           fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                        <line x1="1" x2="23" y1="1" y2="23"/>
+                      </svg>
+                      <svg *ngIf="!cat.isActive" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                           fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                        <circle cx="12" cy="12" r="3"/>
+                      </svg>
+                    </button>
+                    <button class="btn-icon" (click)="openEditForm(cat)"
+                            [id]="'btn-edit-cat-'+cat.categoryId" aria-label="Chỉnh sửa">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                           fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
+                      </svg>
+                    </button>
+                    <button class="btn-icon danger" (click)="confirmDelete(cat)"
+                            [id]="'btn-delete-cat-'+cat.categoryId" aria-label="Xóa">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                           fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
+                        <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+                      </svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+
+              <!-- Empty state -->
+              <tr *ngIf="filteredCategories().length === 0">
+                <td colspan="6">
+                  <div class="empty-state">
+                    <div class="empty-icon">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 24 24"
+                           fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                      </svg>
+                    </div>
+                    <p class="empty-title">{{ searchKeyword ? 'Không tìm thấy kết quả' : 'Chưa có danh mục' }}</p>
+                    <p class="empty-desc">
+                      {{ searchKeyword ? 'Thử tìm với từ khóa khác' : 'Tạo danh mục đầu tiên để phân loại sản phẩm' }}
+                    </p>
+                    <button *ngIf="!searchKeyword" class="btn btn-primary" (click)="openCreateForm()" id="btn-empty-add-category">
+                      + Thêm danh mục
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </ng-container>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Category Form Modal -->
+    <app-category-form
+      [visible]="formVisible()"
+      [category]="selectedCategory()"
+      [allCategories]="categories()"
+      (closed)="closeForm()"
+      (saved)="onFormSaved($event)">
+    </app-category-form>
+
+    <!-- Confirm Delete Dialog -->
+    <app-confirm-dialog
+      [visible]="confirmVisible()"
+      [title]="'Xóa danh mục'"
+      [message]="'Xóa danh mục ' + deleteTarget()?.categoryName + ' có thể ảnh hưởng đến sản phẩm liên quan. Hành động này không thể hoàn tác.'"
+      [confirmLabel]="'Xóa danh mục'"
+      (confirmed)="onDeleteConfirmed()"
+      (cancelled)="cancelDelete()">
+    </app-confirm-dialog>
+
+    <!-- Toast -->
+    <div class="toast-container" aria-live="polite">
+      <div class="toast" [class]="t.type" *ngFor="let t of toasts()">
+        <svg *ngIf="t.type === 'success'" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 6 9 17l-5-5"/>
+        </svg>
+        <svg *ngIf="t.type === 'error'" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/>
+        </svg>
+        {{ t.message }}
+      </div>
+    </div>

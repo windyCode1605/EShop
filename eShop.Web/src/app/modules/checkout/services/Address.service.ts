@@ -2,7 +2,7 @@ import { Injectable, signal } from "@angular/core";
 import { environment } from "../../../my-lib/shared/enviroments/enviroment";
 import { HttpClient } from "@angular/common/http";
 import { BehaviorSubject, Observable, of, tap, catchError, EMPTY } from "rxjs";
-import { Address, AddressCreatDto } from "../models/Address.model";
+import { Address, AddressCreatDto } from "../models/address.model";
 
 @Injectable({ providedIn: 'root' })
 export class AddressService {

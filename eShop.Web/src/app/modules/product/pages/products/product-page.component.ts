@@ -7,8 +7,8 @@ import { Subject, takeUntil, finalize } from 'rxjs';
 import { ProductService } from '../../../product-manager/services/product.service';
 import { IProduct, IProductVariant, ProductResponseDto } from '../../../product-manager/models/product.model';
 import { ProductFilterModel } from '../../../product-manager/models/product-filter.model';
-import { CategoryService } from '../../services/Category.service';
-import { CartService } from '../../../Cart/services/cart.service';
+import { CategoryService } from '../../services/category.service';
+import { CartService } from '../../../cart/services/cart.service';
 
 
 interface ToastMessage {
@@ -42,10 +42,8 @@ export class ProductPageComponent implements OnInit, OnDestroy {
   hasProducts = computed(() => this.products().length > 0);
   categories = this.categoryService.categories;
 
-  // ── Cart-related state ────────────────────────────────────────────────
-  /** productId -> selected quantity */
+
   private selectedQuantityMap = signal<Record<number | string, number>>({});
-  /** productId -> đang gọi API add-to-cart (chống double click) */
   addingToCart = signal<Record<number | string, boolean>>({});
 
   cartTotalItems = this.cartService.totalItems;
@@ -62,7 +60,7 @@ export class ProductPageComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.loadProducts();
     this.categoryService.loadCategory();
-    this.cartService.getMyCart().subscribe(); // Fetch real initial cart count
+    this.cartService.getMyCart().subscribe();
   }
 
   ngOnDestroy(): void {

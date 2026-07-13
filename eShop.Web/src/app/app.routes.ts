@@ -7,7 +7,11 @@ import { roleGuard } from './core/guards/role.guard';
 export const routes: Routes = [
   { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
   { path: 'login', redirectTo: '/account/login', pathMatch: 'full' },
-  { path: 'dashboard', component: DashboardComponent, canActivate: [authGuard] },
+  {
+    path: 'dashboard',
+    canActivate: [authGuard],
+    loadChildren: () => import('./modules/dashboard/dashboard.routes').then(m => m.DASHBOARD_ROUTES)
+  },
   { path: 'products', component: ProductsComponent, canActivate: [authGuard] },
   {
     path: 'account',
@@ -26,7 +30,7 @@ export const routes: Routes = [
   {
     path: 'cart',
     canActivate: [authGuard],
-    loadChildren: () => import('./modules/Cart/cart.routes').then((m) => m.CART_ROUTES)
+    loadChildren: () => import('./modules/cart/cart.routes').then((m) => m.CART_ROUTES)
   },
 
 
@@ -42,20 +46,8 @@ export const routes: Routes = [
   },
   {
     path: 'admin',
-    canActivate: [authGuard, roleGuard], // Tạm thời comment lại để xem demo
-    data: { roles: ['Admin'] },
-    loadComponent: () => import('./modules/admin/layout/admin-layout.component').then((m) => m.AdminLayoutComponent),
-    children: [
-      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
-      {
-        path: 'dashboard',
-        loadComponent: () => import('./modules/admin/pages/admin-dashboard/admin-dashboard.component').then((m) => m.AdminDashboardComponent)
-      },
-      {
-        path: 'orders',
-        loadComponent: () => import('./modules/admin/pages/admin-orders/admin-orders.component').then((m) => m.AdminOrdersComponent)
-      }
-    ]
+    canActivate: [authGuard, roleGuard],
+    loadChildren: () => import('./modules/admin/admin.routes').then((m) => m.ADMIN_ROUTES)
   },
   { path: '**', redirectTo: '/dashboard' }
 ];

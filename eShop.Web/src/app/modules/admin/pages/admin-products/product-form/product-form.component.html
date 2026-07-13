@@ -1,0 +1,414 @@
+<div class="overlay" (click)="onClose()" *ngIf="visible">
+      <div class="drawer" (click)="$event.stopPropagation()" role="dialog" aria-modal="true"
+           [attr.aria-label]="product ? 'Chỉnh sửa sản phẩm' : 'Thêm sản phẩm mới'">
+
+        <!-- Header -->
+        <div class="drawer-header">
+          <div>
+            <div class="drawer-title">{{ product ? 'Chỉnh sửa sản phẩm' : 'Thêm sản phẩm mới' }}</div>
+            <div class="drawer-subtitle">{{ product ? product.name : 'Điền thông tin để tạo sản phẩm' }}</div>
+          </div>
+          <button class="btn-close" (click)="onClose()" aria-label="Đóng">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+          <button class="tab" [class.active]="activeTab === 'info'" (click)="setTab('info')" id="tab-info">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+            </svg>
+            Thông tin cơ bản
+          </button>
+          <button class="tab" [class.active]="activeTab === 'images'" (click)="setTab('images')" id="tab-images">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect width="18" height="18" x="3" y="3" rx="2"/>
+              <circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+            </svg>
+            Hình ảnh
+            <span class="tab-badge">{{ images().length }}</span>
+          </button>
+          <button class="tab" [class.active]="activeTab === 'attributes'" (click)="setTab('attributes')" id="tab-attributes">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/>
+            </svg>
+            Thuộc tính
+            <span class="tab-badge">{{ attributes().length }}</span>
+          </button>
+          <button class="tab" [class.active]="activeTab === 'variants'" (click)="setTab('variants')" id="tab-variants">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/>
+            </svg>
+            Biến thể
+            <span class="tab-badge">{{ variants().length }}</span>
+          </button>
+        </div>
+
+        <!-- Body -->
+        <div class="drawer-body">
+
+          <!-- ── Tab: Thông tin cơ bản ── -->
+          <ng-container *ngIf="activeTab === 'info'">
+            <div class="form-row full">
+              <div class="field">
+                <label for="pf-name">Tên sản phẩm *</label>
+                <input id="pf-name" type="text" [(ngModel)]="form.name" placeholder="Nhập tên sản phẩm"
+                       [class.error]="submitted && !form.name.trim()">
+                <span class="field-error" *ngIf="submitted && !form.name.trim()">Tên sản phẩm là bắt buộc</span>
+              </div>
+            </div>
+
+            <div class="form-row full">
+              <div class="field">
+                <label for="pf-desc">Mô tả</label>
+                <textarea id="pf-desc" [(ngModel)]="form.description" placeholder="Mô tả chi tiết sản phẩm"></textarea>
+              </div>
+            </div>
+
+            <div class="form-row three">
+              <div class="field">
+                <label for="pf-price">Giá bán (VND) *</label>
+                <input id="pf-price" type="number" [(ngModel)]="form.price" min="0" placeholder="0"
+                       [class.error]="submitted && form.price < 0">
+              </div>
+              <div class="field">
+                <label for="pf-stock">Tồn kho *</label>
+                <input id="pf-stock" type="number" [(ngModel)]="form.stock" min="0" placeholder="0">
+              </div>
+              <div class="field">
+                <label for="pf-sku">SKU</label>
+                <input id="pf-sku" type="text" [(ngModel)]="form.sku" placeholder="VD: SP-001">
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="field">
+                <label for="pf-category">Danh mục</label>
+                <select id="pf-category" [(ngModel)]="form.categoryId">
+                  <option [value]="undefined">-- Chọn danh mục --</option>
+                  <option *ngFor="let cat of categories" [value]="cat.categoryId">{{ cat.categoryName }}</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="toggle-row">
+              <div>
+                <div class="toggle-label">Hiển thị sản phẩm</div>
+                <div class="toggle-desc">Sản phẩm sẽ hiển thị trên cửa hàng</div>
+              </div>
+              <label class="toggle">
+                <input type="checkbox" [(ngModel)]="form.isActive" id="pf-active">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+
+            <div class="form-row full" style="margin-top:16px">
+              <div class="field">
+                <label for="pf-ai-desc">Mô tả AI (tùy chọn)</label>
+                <textarea id="pf-ai-desc" [(ngModel)]="form.aI_Description" placeholder="Mô tả được tạo bởi AI..."></textarea>
+                <span class="field-hint">Mô tả phụ hỗ trợ SEO và tìm kiếm</span>
+              </div>
+            </div>
+          </ng-container>
+
+          <!-- ── Tab: Hình ảnh ── -->
+          <ng-container *ngIf="activeTab === 'images'">
+            <p class="section-title">Hình ảnh sản phẩm</p>
+
+            <div class="image-grid" *ngIf="images().length > 0">
+              <div class="image-card" *ngFor="let img of images(); let i = index" [id]="'img-card-'+i">
+                <img [src]="img.imageUrl" [alt]="img.altText || 'Product image'" loading="lazy">
+                <span class="image-badge" *ngIf="img.isPrimary">Chính</span>
+                <div class="image-actions">
+                  <button class="img-btn img-btn-primary" (click)="setPrimaryImage(i)"
+                          [disabled]="img.isPrimary">Đặt chính</button>
+                  <button class="img-btn img-btn-danger" (click)="removeImage(i)">Xóa</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Upload by URL -->
+            <div style="margin-bottom:12px">
+              <div class="form-row" style="margin-bottom:8px">
+                <div class="field">
+                  <label for="img-url">URL hình ảnh</label>
+                  <input id="img-url" type="url" [(ngModel)]="newImageUrl" placeholder="https://...">
+                </div>
+                <div class="field">
+                  <label for="img-alt">Alt text</label>
+                  <input id="img-alt" type="text" [(ngModel)]="newImageAlt" placeholder="Mô tả ảnh">
+                </div>
+              </div>
+              <button class="btn btn-secondary" (click)="addImageByUrl()"
+                      [disabled]="!newImageUrl.trim()" id="btn-add-image-url">
+                + Thêm ảnh từ URL
+              </button>
+            </div>
+
+            <!-- Upload zone (placeholder for file upload) -->
+            <div class="upload-zone" (click)="triggerFileUpload()" id="upload-zone">
+              <div class="upload-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="17 8 12 3 7 8"/>
+                  <line x1="12" x2="12" y1="3" y2="15"/>
+                </svg>
+              </div>
+              <div class="upload-text">Tải ảnh lên</div>
+              <div class="upload-hint">PNG, JPG, WebP — Tối đa 5MB</div>
+              <input type="file" #fileInput accept="image/*" multiple (change)="onFileChange($event)" style="display:none">
+            </div>
+          </ng-container>
+
+          <!-- ── Tab: Thuộc tính ── -->
+          <ng-container *ngIf="activeTab === 'attributes'">
+            <p class="section-title">Thuộc tính sản phẩm</p>
+
+            <div class="empty-state" *ngIf="attributes().length === 0">
+              <div class="empty-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/>
+                </svg>
+              </div>
+              <p class="empty-title">Chưa có thuộc tính</p>
+              <p class="empty-desc">Thêm thuộc tính như Màu sắc, Kích cỡ, Chất liệu để tạo biến thể sản phẩm</p>
+            </div>
+
+            <div class="attr-card" *ngFor="let attr of attributes(); let ai = index" [id]="'attr-card-'+ai">
+              <div class="attr-header">
+                <div>
+                  <div class="attr-name">{{ attr.name }}</div>
+                  <div style="font-size:12px;color:#71717A;margin-top:2px">{{ getAttrTypeLabel(attr.type) }}</div>
+                </div>
+                <button class="btn-icon" (click)="removeAttribute(ai)" [id]="'btn-remove-attr-'+ai" aria-label="Xóa thuộc tính">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                       fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
+                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+                  </svg>
+                </button>
+              </div>
+
+              <!-- Values chips -->
+              <div class="value-chips">
+                <div class="value-chip" *ngFor="let val of attr.values; let vi = index">
+                  <span class="color-dot" *ngIf="attr.type === 'Color'"
+                        [style.background]="val.value"></span>
+                  {{ val.label }}
+                  <button class="chip-remove" (click)="removeAttributeValue(ai, vi)"
+                          [id]="'chip-remove-'+ai+'-'+vi" aria-label="Xóa giá trị">×</button>
+                </div>
+              </div>
+
+              <!-- Add new value -->
+              <div class="add-value-row">
+                <input type="text" [placeholder]="attr.type === 'Color' ? 'Label (VD: Đỏ)' : 'Giá trị mới'"
+                       [(ngModel)]="newValueLabel[ai]" [id]="'input-new-val-label-'+ai">
+                <input *ngIf="attr.type === 'Color'" type="text"
+                       placeholder="#FF0000" [(ngModel)]="newValueRaw[ai]"
+                       [id]="'input-new-val-raw-'+ai" style="max-width:100px">
+                <button class="btn-add-chip" (click)="addAttributeValue(ai)"
+                        [id]="'btn-add-val-'+ai">+ Thêm</button>
+              </div>
+            </div>
+
+            <!-- Add Attribute Button -->
+            <div *ngIf="!showAttrForm" style="margin-bottom:12px">
+              <button class="btn-add-attr" (click)="showAttrForm = true" id="btn-show-add-attr">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M5 12h14"/><path d="M12 5v14"/>
+                </svg>
+                Thêm thuộc tính
+              </button>
+            </div>
+
+            <!-- New attribute mini-form -->
+            <div class="variant-form-section" *ngIf="showAttrForm">
+              <div class="variant-form-title">Thuộc tính mới</div>
+              <div class="form-row">
+                <div class="field">
+                  <label for="new-attr-name">Tên thuộc tính *</label>
+                  <input id="new-attr-name" type="text" [(ngModel)]="newAttr.name" placeholder="VD: Màu sắc, Kích cỡ">
+                </div>
+                <div class="field">
+                  <label for="new-attr-type">Loại</label>
+                  <select id="new-attr-type" [(ngModel)]="newAttr.type">
+                    <option value="Text">Text</option>
+                    <option value="Color">Color</option>
+                    <option value="Number">Number</option>
+                    <option value="Boolean">Boolean</option>
+                  </select>
+                </div>
+              </div>
+              <div style="display:flex;gap:8px">
+                <button class="btn btn-primary" (click)="addAttribute()" id="btn-confirm-add-attr">Thêm</button>
+                <button class="btn btn-secondary" (click)="showAttrForm = false" id="btn-cancel-add-attr">Hủy</button>
+              </div>
+            </div>
+          </ng-container>
+
+          <!-- ── Tab: Biến thể ── -->
+          <ng-container *ngIf="activeTab === 'variants'">
+            <p class="section-title">Biến thể sản phẩm (Variants)</p>
+
+            <div class="empty-state" *ngIf="variants().length === 0 && attributes().length === 0">
+              <div class="empty-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/>
+                </svg>
+              </div>
+              <p class="empty-title">Chưa có biến thể</p>
+              <p class="empty-desc">Hãy thêm thuộc tính trước (tab Thuộc tính), sau đó tạo biến thể từ các thuộc tính đó</p>
+            </div>
+
+            <!-- Existing Variants -->
+            <div class="variant-card" *ngFor="let variant of variants(); let vi = index" [id]="'variant-card-'+vi">
+              <div class="variant-header" (click)="toggleVariantExpand(vi)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                     [style.transform]="expandedVariants.has(vi) ? 'rotate(90deg)' : 'rotate(0)'"
+                     style="transition:transform 150ms;color:#71717A;flex-shrink:0">
+                  <path d="m9 18 6-6-6-6"/>
+                </svg>
+                <div style="flex:1">
+                  <div class="variant-sku">{{ variant.sku }}</div>
+                  <div class="variant-meta">
+                    Giá: {{ variant.priceAdjustment >= 0 ? '+' : '' }}{{ variant.priceAdjustment | currency:'VND':'symbol':'1.0-0' }}
+                    &nbsp;·&nbsp; Tồn kho: {{ variant.stockQuantity }}
+                  </div>
+                </div>
+                <span [class]="variant.isActive ? 'variant-badge-active' : 'variant-badge-inactive'">
+                  {{ variant.isActive ? 'Hoạt động' : 'Ẩn' }}
+                </span>
+                <span style="font-size:11px;background:#FEF9C3;color:#CA8A04;padding:2px 8px;border-radius:99px;margin-left:6px" *ngIf="variant.isDefault">
+                  Mặc định
+                </span>
+                <button class="btn-icon" (click)="removeVariant(vi); $event.stopPropagation()"
+                        [id]="'btn-remove-variant-'+vi" style="margin-left:8px" aria-label="Xóa variant">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                       fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
+                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+                  </svg>
+                </button>
+              </div>
+
+              <div class="variant-body" *ngIf="expandedVariants.has(vi)">
+                <!-- Variant Attributes -->
+                <div class="variant-attr-grid" *ngIf="variant.attributes?.length">
+                  <div class="variant-attr-item" *ngFor="let a of variant.attributes">
+                    <div class="variant-attr-key">{{ a.attributeName }}</div>
+                    <div class="variant-attr-val" style="display:flex;align-items:center;gap:6px">
+                      <span *ngIf="a.attributeType === 'Color'" class="color-dot"
+                            [style.background]="a.customValue || a.attributeValue"></span>
+                      {{ a.displayValue }}
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Inline edit fields -->
+                <div class="form-row three" style="margin-bottom:8px">
+                  <div class="field">
+                    <label [for]="'v-sku-'+vi">SKU</label>
+                    <input [id]="'v-sku-'+vi" type="text" [(ngModel)]="variant.sku">
+                  </div>
+                  <div class="field">
+                    <label [for]="'v-price-'+vi">Điều chỉnh giá</label>
+                    <input [id]="'v-price-'+vi" type="number" [(ngModel)]="variant.priceAdjustment">
+                  </div>
+                  <div class="field">
+                    <label [for]="'v-stock-'+vi">Tồn kho</label>
+                    <input [id]="'v-stock-'+vi" type="number" [(ngModel)]="variant.stockQuantity" min="0">
+                  </div>
+                </div>
+                <div style="display:flex;gap:16px">
+                  <label class="toggle" style="display:flex;align-items:center;gap:10px;cursor:pointer">
+                    <input type="checkbox" [(ngModel)]="variant.isActive">
+                    <span class="toggle-slider"></span>
+                    <span style="font-size:13px;font-weight:500;color:#18181B">Hiển thị</span>
+                  </label>
+                  <label class="toggle" style="display:flex;align-items:center;gap:10px;cursor:pointer">
+                    <input type="checkbox" [(ngModel)]="variant.isDefault" (change)="setDefaultVariant(vi)">
+                    <span class="toggle-slider"></span>
+                    <span style="font-size:13px;font-weight:500;color:#18181B">Mặc định</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Add Variant Form -->
+            <div *ngIf="!showVariantForm" style="margin-bottom:12px">
+              <button class="btn-add-variant" (click)="showVariantForm = true" id="btn-show-add-variant">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M5 12h14"/><path d="M12 5v14"/>
+                </svg>
+                Thêm biến thể
+              </button>
+            </div>
+
+            <div class="variant-form-section" *ngIf="showVariantForm">
+              <div class="variant-form-title">Biến thể mới</div>
+              <div class="form-row three" style="margin-bottom:16px">
+                <div class="field">
+                  <label for="nv-sku">SKU *</label>
+                  <input id="nv-sku" type="text" [(ngModel)]="newVariant.sku" placeholder="VD: SP-001-RED-XL">
+                </div>
+                <div class="field">
+                  <label for="nv-price">Điều chỉnh giá</label>
+                  <input id="nv-price" type="number" [(ngModel)]="newVariant.priceAdjustment" placeholder="0">
+                </div>
+                <div class="field">
+                  <label for="nv-stock">Tồn kho</label>
+                  <input id="nv-stock" type="number" [(ngModel)]="newVariant.stockQuantity" min="0" placeholder="0">
+                </div>
+              </div>
+
+              <!-- Variant Attributes (one per attribute) -->
+              <div *ngIf="attributes().length > 0">
+                <div style="font-size:13px;font-weight:500;color:#18181B;margin-bottom:10px">Chọn giá trị thuộc tính</div>
+                <div class="variant-attr-row" *ngFor="let attr of attributes(); let ai = index">
+                  <span style="font-size:13px;color:#71717A;min-width:100px;flex-shrink:0">{{ attr.name }}</span>
+                  <select [(ngModel)]="newVariantAttrValues[ai]" [id]="'nv-attr-'+ai" style="flex:1;height:36px;padding:0 10px;border:1px solid #E4E4E7;border-radius:10px;font-size:13px;outline:none">
+                    <option value="">-- Chọn --</option>
+                    <option *ngFor="let val of attr.values" [value]="val.value">{{ val.label }}</option>
+                    <option value="__custom__">Nhập tự do...</option>
+                  </select>
+                  <input *ngIf="newVariantAttrValues[ai] === '__custom__'" type="text"
+                         [(ngModel)]="newVariantAttrCustom[ai]" placeholder="Giá trị tùy chỉnh"
+                         [id]="'nv-attr-custom-'+ai" style="flex:1;height:36px;padding:0 10px;border:1px solid #E4E4E7;border-radius:10px;font-size:13px;outline:none">
+                </div>
+              </div>
+
+              <div style="display:flex;gap:8px;margin-top:16px">
+                <button class="btn btn-primary" (click)="addVariant()" id="btn-confirm-add-variant">Thêm biến thể</button>
+                <button class="btn btn-secondary" (click)="showVariantForm = false" id="btn-cancel-add-variant">Hủy</button>
+              </div>
+            </div>
+          </ng-container>
+
+        </div>
+
+        <!-- Footer -->
+        <div class="drawer-footer">
+          <button class="btn btn-secondary" (click)="onClose()" id="btn-form-cancel">Hủy</button>
+          <button class="btn btn-primary" (click)="onSubmit()" [disabled]="saving()" id="btn-form-save">
+            <span *ngIf="!saving()">{{ product ? 'Lưu thay đổi' : 'Tạo sản phẩm' }}</span>
+            <span *ngIf="saving()">Đang lưu...</span>
+          </button>
+        </div>
+
+      </div>
+    </div>

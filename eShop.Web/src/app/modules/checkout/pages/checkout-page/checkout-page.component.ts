@@ -1,10 +1,10 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { CartService } from '../../../Cart/services/cart.service';
+import { CartService } from '../../../cart/services/cart.service';
 import { Router } from '@angular/router';
-import { AddressService } from '../../services/Address.service';
-import { Address } from '../../models/Address.model';
+import { AddressService } from '../../services/address.service';
+import { Address } from '../../models/address.model';
 import { OrderService, CreateOrderRequest } from '../../../order/services/order.service';
 
 @Component({
@@ -132,26 +132,42 @@ export class CheckoutPageComponent implements OnInit {
 
   // Wizard Navigation
   nextStep() {
-    if (this.isAddingNewAddress() && this.addressForm.invalid) {
-      this.addressForm.markAllAsTouched();
-      return;
-    }
-
-    if (!this.isAddingNewAddress() && !this.selectedAddressId()) {
-      alert('Vui lòng chọn địa chỉ giao hàng!');
-      return;
-    }
-
-    if (this.shippingFee() === 0) {
-      alert('Vui lòng nhập Tỉnh/Quận hợp lệ để tính phí giao hàng!');
-      return;
-    }
-
     if (this.isAddingNewAddress()) {
-      // Khi chọn tạo địa chỉ mới, ta không lưu vào DB vội,
-      // mà gom hết data lại để gửi 1 lần lúc Place Order với addressId = 0.
-      this.currentStep.set(2);
+      if (this.addressForm.invalid) {
+        this.addressForm.markAllAsTouched();
+        return;
+      }
+      
+      const newAddr = this.addressForm.value as any;
+      
+      this.addressService.createNewAddress(newAddr).subscribe({
+        next: (res) => {
+          if (res.success && res.data) {
+            this.selectAddress(res.data);
+            if (this.shippingFee() === 0) {
+              alert('Vui lòng nhập Tỉnh/Quận hợp lệ để tính phí giao hàng!');
+              return;
+            }
+            this.currentStep.set(2);
+          } else {
+             alert('Có lỗi xảy ra khi tạo địa chỉ mới.');
+          }
+        },
+        error: (err) => {
+          alert('Lỗi khi lưu địa chỉ: ' + (err.message || 'Unknown error'));
+        }
+      });
     } else {
+      if (!this.selectedAddressId()) {
+        alert('Vui lòng chọn địa chỉ giao hàng!');
+        return;
+      }
+
+      if (this.shippingFee() === 0) {
+        alert('Vui lòng nhập Tỉnh/Quận hợp lệ để tính phí giao hàng!');
+        return;
+      }
+
       this.currentStep.set(2);
     }
   }
@@ -168,40 +184,22 @@ export class CheckoutPageComponent implements OnInit {
 
     this.isLoading.set(true);
 
-    const isNewAddr = this.isAddingNewAddress();
-    const addressData = isNewAddr ? this.addressForm.value : {};
+    const selectedId = this.selectedAddressId();
+    const savedAddr = this.savedAddresses().find((a: Address) => a.id === selectedId);
     
-    let receiverName = '';
-    let receiverPhone = '';
-    let street = '';
-    let city = '';
-    let province = '';
-
-    if (isNewAddr) {
-      receiverName = addressData.receiverName || '';
-      receiverPhone = addressData.receiverPhone || '';
-      street = addressData.street || '';
-      city = addressData.city || '';
-      province = addressData.province || '';
-    } else {
-      const selectedId = this.selectedAddressId();
-      const savedAddr = this.savedAddresses().find((a: Address) => a.id === selectedId);
-      if (savedAddr) {
-        receiverName = savedAddr.receiverName;
-        receiverPhone = savedAddr.receiverPhone;
-        street = savedAddr.street;
-        city = savedAddr.city;
-        province = savedAddr.province;
-      }
+    if (!savedAddr) {
+       alert('Vui lòng chọn địa chỉ hợp lệ.');
+       this.isLoading.set(false);
+       return;
     }
 
     const payload: CreateOrderRequest = {
-      addressId: isNewAddr ? 0 : (this.selectedAddressId() || 0),
-      receiverName,
-      receiverPhone,
-      street,
-      city,
-      province,
+      addressId: selectedId || 0,
+      receiverName: savedAddr.receiverName,
+      receiverPhone: savedAddr.receiverPhone,
+      street: savedAddr.street,
+      city: savedAddr.city,
+      province: savedAddr.province,
       paymentMethod: this.paymentForm.get('paymentMethod')?.value || 'COD',
       shippingProvider: this.paymentForm.get('shippingProvider')?.value || 'GHN',
       couponCode: '', // Currently no coupon input in UI, set empty

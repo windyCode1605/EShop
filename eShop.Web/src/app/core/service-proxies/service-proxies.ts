@@ -4,7 +4,7 @@ export class AuthenticateModel implements IAuthenticateModel {
     rememberClient!: boolean;
     clientId!: string;
     secret!: string;
-    
+
     // Hàm khởi tạo để gán giá trị cho các thuộc tính
     constructor(data?: IAuthenticateModel) {
         if (data) {
@@ -33,17 +33,16 @@ export class AuthenticateResultModel implements IAuthenticateResultModel {
     }
 }
 export interface IAuthenticateModel {
-    username: string; 
-    password: string; 
+    username: string;
+    password: string;
     rememberClient: boolean;
     clientId: string;
     secret: string;
-    
+
 }
 export interface IAuthenticateResultModel {
     access_token: string | undefined;
     refresh_token: string | undefined;
-    encryptedAccessToken: string | undefined;           // Chuỗi mã hóa của access token, có thể dùng để lưu trữ an toàn hơn
-    expires_in: number;
+    encryptedAccessToken: string | undefined;
     userId: number | undefined;
 }

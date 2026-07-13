@@ -1,0 +1,130 @@
+<div class="overlay" (click)="onClose()" *ngIf="visible">
+      <div class="modal" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+
+        <!-- Header -->
+        <div class="modal-header">
+          <div>
+            <h2 class="modal-title">{{ category ? 'Chỉnh sửa danh mục' : 'Thêm danh mục' }}</h2>
+            <div class="modal-subtitle">{{ category ? category.categoryName : 'Tạo danh mục sản phẩm mới' }}</div>
+          </div>
+          <button class="btn-close" (click)="onClose()" aria-label="Đóng">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Body -->
+        <div class="modal-body">
+
+          <!-- Category Name -->
+          <div class="form-row full">
+            <div class="field">
+              <label for="cat-name">Tên danh mục *</label>
+              <input id="cat-name" type="text" [(ngModel)]="form.categoryName"
+                     (ngModelChange)="onNameChange($event)"
+                     placeholder="VD: Áo phông, Quần jeans..."
+                     [class.error]="submitted && !form.categoryName.trim()">
+              <span class="field-error" *ngIf="submitted && !form.categoryName.trim()">Tên danh mục là bắt buộc</span>
+            </div>
+          </div>
+
+          <!-- Slug -->
+          <div class="form-row full">
+            <div class="field">
+              <label for="cat-slug">Slug (URL) *</label>
+              <div class="slug-row">
+                <input id="cat-slug" type="text" [(ngModel)]="form.slug"
+                       placeholder="ao-phong"
+                       [class.error]="submitted && !form.slug.trim()">
+                <button class="btn-gen-slug" (click)="generateSlug()" type="button" id="btn-gen-slug">
+                  Tự sinh
+                </button>
+              </div>
+              <span class="field-hint">Dùng trong URL: /categories/{{ form.slug || 'slug-cua-ban' }}</span>
+              <span class="field-error" *ngIf="submitted && !form.slug.trim()">Slug là bắt buộc</span>
+            </div>
+          </div>
+
+          <!-- Description -->
+          <div class="form-row full">
+            <div class="field">
+              <label for="cat-desc">Mô tả</label>
+              <textarea id="cat-desc" [(ngModel)]="form.description"
+                        placeholder="Mô tả ngắn về danh mục..."></textarea>
+            </div>
+          </div>
+
+          <!-- Parent Category + Sort Order -->
+          <div class="form-row">
+            <div class="field">
+              <label for="cat-parent">Danh mục cha</label>
+              <select id="cat-parent" [(ngModel)]="form.parentId">
+                <option [value]="null">-- Không có --</option>
+                <option *ngFor="let cat of allCategories"
+                        [value]="cat.categoryId"
+                        [disabled]="cat.categoryId === category?.categoryId">
+                  {{ cat.categoryName }}
+                </option>
+              </select>
+              <span class="field-hint">Bỏ trống nếu là danh mục gốc</span>
+            </div>
+            <div class="field">
+              <label for="cat-sort">Thứ tự hiển thị</label>
+              <input id="cat-sort" type="number" [(ngModel)]="form.sortOrder" min="0" placeholder="0">
+              <div class="sort-hint">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 12h18M3 6h18M3 18h18"/>
+                </svg>
+                Số nhỏ hơn hiển thị trước
+              </div>
+            </div>
+          </div>
+
+          <!-- Image URL -->
+          <div class="form-row full">
+            <div class="field">
+              <label>Hình ảnh danh mục</label>
+              <div class="img-preview-wrap">
+                <img *ngIf="form.imageUrl" [src]="form.imageUrl" alt="Category image" (error)="onImageError()">
+                <div class="img-placeholder" *ngIf="!form.imageUrl">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"
+                       fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <rect width="18" height="18" x="3" y="3" rx="2"/>
+                    <circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+                  </svg>
+                  <span>Chưa có hình ảnh</span>
+                </div>
+              </div>
+              <input id="cat-image" type="url" [(ngModel)]="form.imageUrl"
+                     placeholder="https://... (URL hình ảnh)">
+            </div>
+          </div>
+
+          <!-- Active Toggle -->
+          <div class="toggle-row">
+            <div>
+              <div class="toggle-label">Hiển thị danh mục</div>
+              <div class="toggle-desc">Danh mục sẽ xuất hiện trên cửa hàng</div>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" [(ngModel)]="form.isActive" id="cat-active">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+        </div>
+
+        <!-- Footer -->
+        <div class="modal-footer">
+          <button class="btn btn-secondary" (click)="onClose()" id="btn-cat-cancel">Hủy</button>
+          <button class="btn btn-primary" (click)="onSubmit()" [disabled]="saving()" id="btn-cat-save">
+            <span *ngIf="!saving()">{{ category ? 'Lưu thay đổi' : 'Tạo danh mục' }}</span>
+            <span *ngIf="saving()">Đang lưu...</span>
+          </button>
+        </div>
+
+      </div>
+    </div>

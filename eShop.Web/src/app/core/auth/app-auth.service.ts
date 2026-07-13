@@ -77,6 +77,7 @@ export class AppAuthService {
 
     private processAuthenticateResult(authenticateResult: AuthenticateResultModel, returnUrl?: string): void {
         this.authenticateResult = authenticateResult;
+        console.log('[DEBUG 1] API Trả về kết quả login:', authenticateResult)
         if (authenticateResult.access_token) {
             this.login(
                 authenticateResult.access_token,
@@ -118,6 +119,7 @@ export class AppAuthService {
     }
 
     private navigateAfterLogin(returnUrl?: string): void {
+        console.log('[DEBUG 5] Chuẩn bị chuyển trang. TokenService.isAdmin() =', this._tokenService.isAdmin()); // <--- THÊM DÒNG NÀY
         if (returnUrl) {
             this._router.navigateByUrl(returnUrl).catch(err => console.error('Navigation error:', err));
             return;
@@ -125,7 +127,7 @@ export class AppAuthService {
         if (this._tokenService.isAdmin()) {
             this._router.navigate(['/admin/dashboard']).catch(err => console.error('Navigation error:', err));
         } else {
-            this._router.navigate(['/dashboard']).catch(err => console.error('Navigation error:', err));
+            this._router.navigate(['/']).catch(err => console.error('Navigation error:', err));
         }
     }
 
