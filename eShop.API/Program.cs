@@ -23,6 +23,8 @@ using CR.Core.Application.CategoryModule.Abstract;
 using CR.Core.Application.CategoryModule.Implements;
 using CR.Core.ApplicationServices.AddressModule.Implements;
 using CR.Core.ApplicationServices.AddressModule.Abstracts;
+using CR.Core.ApplicationServices.AttributeModule.Abstract;
+using CR.Core.ApplicationServices.AttributeModule.Implements;
 
 
 // ===============================================
@@ -255,6 +257,7 @@ builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IAddressService, AddressService>();
+builder.Services.AddScoped<IAttributeService, AttributeService>();
 
 // builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 

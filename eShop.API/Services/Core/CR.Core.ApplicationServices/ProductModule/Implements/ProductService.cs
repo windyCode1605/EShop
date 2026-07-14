@@ -4,6 +4,7 @@ using CR.Common;
 using CR.Core.ApplicationServices.ProductModule.Abstracts;
 using CR.Core.Domain.Catalog;
 using CR.Core.Dtos.Product;
+using CR.DtoBase;
 using Microsoft.EntityFrameworkCore;
 
 namespace CR.Core.ApplicationServices.Common.ServiceImplementations;
@@ -82,4 +83,8 @@ public class ProductService : ServiceBase<CoreDbContext>, IProductService
             PageSize = size
         };
     }
+    // public async Task<Result<ProductResponseDto>> UpdateAsync(ProductRequestDto input)
+    // {
+
+    // }
 }
