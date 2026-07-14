@@ -715,3 +715,19 @@ Mọi màn hình trong hệ thống EShop phải đáp ứng đồng thời các
 * Dễ mở rộng và bảo trì
 * Nhất quán trong toàn bộ hệ thống
 * Tối ưu Conversion và User Experience
+
+---
+
+## Agent skills
+
+### Issue tracker
+
+Issues and PRDs for this repo live as GitHub issues. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+The default 5 canonical roles are used. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context repo layout. See `docs/agents/domain.md`.
