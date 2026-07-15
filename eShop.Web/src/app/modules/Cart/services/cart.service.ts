@@ -93,7 +93,7 @@ export class CartService {
         };
     }
 
-    /** Map errorCode -> message hiển thị cho user (tránh hardcode trong component) */
+
     getErrorMessage(errorCode: number, fallback?: string): string {
         switch (errorCode) {
             case CartErrorCode.OutOfStock:

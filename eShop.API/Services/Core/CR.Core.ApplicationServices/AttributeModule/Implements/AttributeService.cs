@@ -3,12 +3,11 @@ using CR.ApplicationBase;
 using CR.Common;
 using CR.Constants.ErrorCodes;
 using CR.Core.ApplicationServices.AttributeModule.Abstract;
-using CR.Core.Domain.Catalog;
 using CR.Core.Dtos.AttributeModule;
 using CR.DtoBase;
 using CR.Utils.DataUtils;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
+
 
 namespace CR.Core.ApplicationServices.AttributeModule.Implements;
 
@@ -36,7 +35,7 @@ public class AttributeService : ServiceBase<CoreDbContext>, IAttributeService
             }
 
             var entity = _mapper.Map<CR.Core.Domain.Catalog.Attribute>(dto);
-            
+
             _dbContext.Attributes.Add(entity);
             await _dbContext.SaveChangesAsync();
 
@@ -69,7 +68,7 @@ public class AttributeService : ServiceBase<CoreDbContext>, IAttributeService
     public async Task<PaginatedResult<AttributeResponseDto>> GetAllAsync(int page, int size)
     {
         _logger.LogInformation("Method Name: {Method}, Page: {Page}, Size: {Size}", nameof(GetAllAsync), page, size);
-        
+
         var query = _dbContext.Attributes
             .Where(a => !a.Deleted)
             .OrderByDescending(a => a.CreatedDate);
@@ -103,14 +102,14 @@ public class AttributeService : ServiceBase<CoreDbContext>, IAttributeService
 
             var nameExists = await _dbContext.Attributes
                 .AnyAsync(a => a.Id != id && a.Name.ToLower() == dto.Name.ToLower() && !a.Deleted);
-            
+
             if (nameExists)
             {
                 return Result<AttributeResponseDto>.Failure(ErrorCode.InvalidInput, this.GetCurrentMethodInfo(), "Attribute name already exists");
             }
 
             _mapper.Map(dto, entity);
-            
+
             _dbContext.Attributes.Update(entity);
             await _dbContext.SaveChangesAsync();
 
