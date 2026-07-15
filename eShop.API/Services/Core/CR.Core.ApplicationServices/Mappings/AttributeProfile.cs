@@ -11,5 +11,8 @@ public class AttributeProfile : Profile
             .ForMember(dest => dest.AttributeType, opt => opt.MapFrom(src => src.AttributeType.ToString()));
             
         CreateMap<CR.Core.Domain.Catalog.Attribute, AttributeResponseDto>();
+
+        CreateMap<AttributeValueRequestDto, CR.Core.Domain.Catalog.AttributeValue>();
+        CreateMap<CR.Core.Domain.Catalog.AttributeValue, AttributeValueResponseDto>();
     }
 }

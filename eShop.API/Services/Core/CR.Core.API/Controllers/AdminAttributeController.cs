@@ -10,9 +10,11 @@ namespace CR.Core.API.Controllers
     public class AdminAttributeController : ControllerBase
     {
         private readonly IAttributeService _attributeService;
-        public AdminAttributeController(IAttributeService attributeService)
+        private readonly IAttributeValueService _attributeValueService;
+        public AdminAttributeController(IAttributeService attributeService, IAttributeValueService attributeValueService)
         {
             _attributeService = attributeService;
+            _attributeValueService = attributeValueService;
         }
 
         [HttpPost]
@@ -63,6 +65,23 @@ namespace CR.Core.API.Controllers
             {
                 return BadRequest(result);
             }
+            return Ok(result);
+        }
+
+        [HttpGet("value")]
+        public async Task<IActionResult> GetValuesByAttributeIdAsync([FromQuery] FilterAttributeValuePagingDto input)
+        {
+            var result = await _attributeValueService.GetValuesByAttributeIdAsync(input);
+            if (result.IsFailure)
+                return BadRequest(result);
+            return Ok(result);
+        }
+        [HttpPost("value")]
+        public async Task<IActionResult> CreatedAttributeValue(AttributeValueRequestDto input)
+        {
+            var result = await _attributeValueService.CreateAsync(input);
+            if (result.IsFailure)
+                return BadRequest(result);
             return Ok(result);
         }
     }

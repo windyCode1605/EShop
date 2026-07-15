@@ -31,7 +31,7 @@ namespace CR.Core.ApplicationServices.AttributeModule.Implements
 
         public async Task<Result<PageResult<AttributeValueResponseDto>>> GetValuesByAttributeIdAsync(FilterAttributeValuePagingDto input)
         {
-            _logger.LogInformation("Method Name : {method}, Page Size: {PageSize}, PageNumber: {PageNumber}", nameof(GetValuesByAttributeIdAsync), PageSize, PageNumber);
+            _logger.LogInformation("Method Name : {method}", nameof(GetValuesByAttributeIdAsync));
             var baseQuery = _dbContext.AttributeValues
             .Where(av => !av.Deleted);
 
@@ -61,18 +61,24 @@ namespace CR.Core.ApplicationServices.AttributeModule.Implements
             });
         }
 
-        public async Task<Result<AttributeValueResponseDto>> CreatAsync(AttributeValueRequestDto input)
+        public async Task<Result<AttributeValueResponseDto>> CreateAsync(AttributeValueRequestDto input)
         {
             try
             {
-                var exists = await _dbContext.AttributeValues.AnyAsync(av => av.AttributeId == input.AttributeId);
+                var existsAttribute = await _dbContext.Attributes.AnyAsync(a => a.Id == input.AttributeId && !a.Deleted);
+                if (!existsAttribute)
+                    return Result<AttributeValueResponseDto>.Failure(ErrorCode.InvalidInput, this.GetCurrentMethodInfo(), "Attribute not exists");
+                var exists = await _dbContext.AttributeValues.AnyAsync(av => av.AttributeId == input.AttributeId
+                && av.Value.ToLower() == input.Value.ToLower()
+                && !av.Deleted);
                 if (exists)
-                    return Result<AttributeValueResponseDto>.Failure(ErrorCode.InvalidInput, this.GetCurrentMethodInfo(), "Attribute value already exists")
+                    return Result<AttributeValueResponseDto>.Failure(ErrorCode.InvalidInput, this.GetCurrentMethodInfo(), "Attribute value already exists");
                 var entity = _mapper.Map<CR.Core.Domain.Catalog.AttributeValue>(input);
+
                 _dbContext.AttributeValues.Add(entity);
                 await _dbContext.SaveChangesAsync();
-                var resultDto = _mapper.Map<AttributeValueResponseDto>(entity);
 
+                var resultDto = _mapper.Map<AttributeValueResponseDto>(entity);
                 return Result<AttributeValueResponseDto>.Success(resultDto);
             }
             catch (Exception ex)

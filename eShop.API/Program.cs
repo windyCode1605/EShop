@@ -258,6 +258,7 @@ builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IAddressService, AddressService>();
 builder.Services.AddScoped<IAttributeService, AttributeService>();
+builder.Services.AddScoped<IAttributeValueService, AttributeValueService>();
 
 // builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 
