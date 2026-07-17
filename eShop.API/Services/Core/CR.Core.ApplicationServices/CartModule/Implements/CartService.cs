@@ -367,8 +367,17 @@ public class CartService : CoreServiceBase, ICartService
                 ProductId = ci.ProductVariant.ProductId,
                 ProductName = ci.ProductVariant.Product.Name,
                 SKU = ci.ProductVariant.SKU,
-                Size = ci.ProductVariant.Size,
-                Color = ci.ProductVariant.Color,
+                Attributes = ci.ProductVariant.VariantAttributes
+                    .Where(va => !va.Deleted)
+                    .Select(va => new CR.Core.Dtos.Product.VariantAttributeDto
+                    {
+                        AttributeId = va.AttributeId,
+                        AttributeName = va.Attribute?.Name ?? string.Empty,
+                        AttributeType = va.Attribute?.AttributeType ?? string.Empty,
+                        AttributeValueId = va.AttributeValueId,
+                        AttributeValue = va.AttributeValue?.Value,
+                        CustomValue = va.CustomValue
+                    }).ToList(),
                 UnitPrice = unitPrice,
                 Quantity = ci.Quantity,
                 LineTotal = unitPrice * ci.Quantity,

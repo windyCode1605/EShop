@@ -1,15 +1,17 @@
-import { Component, OnInit, OnDestroy, signal, computed } from '@angular/core';
+import {
+  Component, OnInit, OnDestroy, signal, computed,
+  HostListener
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { Subject, takeUntil, finalize } from 'rxjs';
 
 import { ProductService } from '../../../product-manager/services/product.service';
-import { IProduct, IProductVariant, ProductResponseDto } from '../../../product-manager/models/product.model';
+import { IProduct, IProductVariant, IVariantAttribute, ProductResponseDto } from '../../../product-manager/models/product.model';
 import { ProductFilterModel } from '../../../product-manager/models/product-filter.model';
 import { CategoryService } from '../../services/category.service';
 import { CartService } from '../../../cart/services/cart.service';
-
 
 interface ToastMessage {
   id: number;
@@ -27,6 +29,7 @@ interface ToastMessage {
 export class ProductPageComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
+  // ── Product data ───────────────────────────────────────────────────────
   products = signal<IProduct[]>([]);
   loading = signal<boolean>(false);
   totalCount = signal<number>(0);
@@ -42,14 +45,103 @@ export class ProductPageComponent implements OnInit, OnDestroy {
   hasProducts = computed(() => this.products().length > 0);
   categories = this.categoryService.categories;
 
-
+  // ── Cart ──────────────────────────────────────────────────────────────
   private selectedQuantityMap = signal<Record<number | string, number>>({});
   addingToCart = signal<Record<number | string, boolean>>({});
-
   cartTotalItems = this.cartService.totalItems;
 
+  // ── Toast ─────────────────────────────────────────────────────────────
   toasts = signal<ToastMessage[]>([]);
   private toastIdCounter = 0;
+
+  // ── Filter Dropdown ───────────────────────────────────────────────────
+  activeDropdown = signal<string | null>(null);
+  private dropdownCloseTimer: ReturnType<typeof setTimeout> | null = null;
+
+  // ── Variant Quick-Add Modal ───────────────────────────────────────────
+  quickAddProduct = signal<IProduct | null>(null);
+  selectedColor = signal<string | null>(null);
+  selectedSize = signal<string | null>(null);
+  popupQuantity = signal<number>(1);
+  isAddingToCartModal = signal(false);
+
+  /** All unique colors of modal product */
+  modalColors = computed<string[]>(() => {
+    const p = this.quickAddProduct();
+    if (!p?.variants?.length) return [];
+    const colors = new Set<string>();
+    for (const v of p.variants) {
+      const c = this.extractAttr(v, 'color');
+      if (c) colors.add(c);
+    }
+    return [...colors];
+  });
+
+  /** All sizes with availability flag based on selected color */
+  modalSizes = computed<{ value: string; available: boolean }[]>(() => {
+    const p = this.quickAddProduct();
+    if (!p?.variants?.length) return [];
+    const color = this.selectedColor();
+    const sizeMap = new Map<string, boolean>();
+    for (const v of p.variants) {
+      const s = this.extractAttr(v, 'size');
+      if (!s) continue;
+      const c = this.extractAttr(v, 'color');
+      const colorMatch = !color || c === color;
+      const inStock = v.stockQuantity > 0;
+      if (!sizeMap.has(s)) sizeMap.set(s, false);
+      if (colorMatch && inStock) sizeMap.set(s, true);
+    }
+    return [...sizeMap.entries()].map(([value, available]) => ({ value, available }));
+  });
+
+  /** Variant matching selected color + size */
+  selectedVariant = computed<IProductVariant | null>(() => {
+    const p = this.quickAddProduct();
+    if (!p?.variants?.length) return null;
+    const color = this.selectedColor();
+    const size = this.selectedSize();
+    return p.variants.find(v => {
+      const c = this.extractAttr(v, 'color');
+      const s = this.extractAttr(v, 'size');
+      const colorOk = !color || c === color;
+      const sizeOk = !size || s === size;
+      return colorOk && sizeOk && v.stockQuantity > 0;
+    }) ?? null;
+  });
+
+  /** Displayed price in modal */
+  modalPrice = computed<string>(() => {
+    const p = this.quickAddProduct();
+    if (!p) return '';
+    const variant = this.selectedVariant();
+    if (variant) return this.formatPrice(p.price + variant.priceAdjustment);
+    if (!p.variants?.length) return this.formatPrice(p.price);
+    const min = this.getMinPrice(p);
+    const max = this.getMaxPrice(p);
+    if (min === max) return this.formatPrice(min);
+    return `${this.formatPrice(min)} – ${this.formatPrice(max)}`;
+  });
+
+  /** Max qty for modal (from selected variant or total) */
+  modalMaxStock = computed<number>(() => {
+    const variant = this.selectedVariant();
+    if (variant) return variant.stockQuantity;
+    const p = this.quickAddProduct();
+    if (!p) return 0;
+    return this.getTotalStock(p);
+  });
+
+  /** Whether modal CTA is enabled */
+  canAddToCart = computed<boolean>(() => {
+    const p = this.quickAddProduct();
+    if (!p?.variants?.length) return false;
+    const hasColors = this.modalColors().length > 0;
+    const hasSizes = this.modalSizes().length > 0;
+    const colorOk = !hasColors || !!this.selectedColor();
+    const sizeOk = !hasSizes || !!this.selectedSize();
+    return colorOk && sizeOk && !!this.selectedVariant();
+  });
 
   constructor(
     private productService: ProductService,
@@ -66,8 +158,19 @@ export class ProductPageComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+    document.body.style.overflow = '';
   }
 
+  // ── Close dropdown when clicking outside ──────────────────────────────
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.filter-item')) {
+      this.activeDropdown.set(null);
+    }
+  }
+
+  // ── Products ──────────────────────────────────────────────────────────
   loadProducts(): void {
     this.loading.set(true);
     this.productService.getProducts(this.filter)
@@ -84,13 +187,13 @@ export class ProductPageComponent implements OnInit, OnDestroy {
       });
   }
 
-
   onSortChange(value: string): void {
     this.selectedSort = value;
     const [sortBy, sortOrder] = value.split('_');
     this.filter.sortBy = sortBy;
     this.filter.sortOrder = sortOrder as 'asc' | 'desc';
     this.filter.pageIndex = 1;
+    this.activeDropdown.set(null);
     this.loadProducts();
   }
 
@@ -114,6 +217,7 @@ export class ProductPageComponent implements OnInit, OnDestroy {
     this.filter.minPrice = this.minPrice ?? undefined;
     this.filter.maxPrice = this.maxPrice ?? undefined;
     this.filter.pageIndex = 1;
+    this.activeDropdown.set(null);
     this.loadProducts();
   }
 
@@ -148,16 +252,60 @@ export class ProductPageComponent implements OnInit, OnDestroy {
     return result;
   }
 
-  // ── Variant display helpers (giữ nguyên) ───────────────────────────────
+  getSortLabel(): string {
+    const map: Record<string, string> = {
+      'name_asc': 'Tên A–Z',
+      'name_desc': 'Tên Z–A',
+      'price_asc': 'Giá thấp → cao',
+      'price_desc': 'Giá cao → thấp',
+      'createdAt_desc': 'Mới nhất',
+    };
+    return map[this.selectedSort] ?? 'Sắp xếp';
+  }
+
+  // ── Filter Dropdown ───────────────────────────────────────────────────
+  openDropdown(name: string, event: MouseEvent): void {
+    event.stopPropagation();
+    if (this.dropdownCloseTimer) {
+      clearTimeout(this.dropdownCloseTimer);
+      this.dropdownCloseTimer = null;
+    }
+    this.activeDropdown.set(name);
+  }
+
+  scheduleCloseDropdown(): void {
+    this.dropdownCloseTimer = setTimeout(() => {
+      this.activeDropdown.set(null);
+    }, 180);
+  }
+
+  cancelCloseDropdown(): void {
+    if (this.dropdownCloseTimer) {
+      clearTimeout(this.dropdownCloseTimer);
+      this.dropdownCloseTimer = null;
+    }
+  }
+
+  isDropdownOpen(name: string): boolean {
+    return this.activeDropdown() === name;
+  }
+
+  // ── Variant helpers ────────────────────────────────────────────────────
+  private extractAttr(variant: IProductVariant, type: string): string | null {
+    if (type === 'color' && variant.color) return variant.color;
+    if (type === 'size' && variant.size) return variant.size;
+    const attr = variant.attributes?.find(
+      a => a.attributeName.toLowerCase() === type || a.attributeType.toLowerCase() === type
+    );
+    return attr?.displayValue ?? null;
+  }
+
   getVariantColors(product: IProduct): string[] {
     if (!product.variants?.length) return [];
     const colors = new Set<string>();
     for (const v of product.variants) {
-      if (v.color) { colors.add(v.color); continue; }
-      const colorAttr = v.attributes?.find(
-        a => a.attributeName.toLowerCase() === 'color' || a.attributeType.toLowerCase() === 'color'
-      );
-      if (colorAttr?.displayValue) colors.add(colorAttr.displayValue);
+      const c = this.extractAttr(v, 'color');
+      if (c) colors.add(c);
     }
     return [...colors];
   }
@@ -166,9 +314,8 @@ export class ProductPageComponent implements OnInit, OnDestroy {
     if (!product.variants?.length) return [];
     const sizes = new Set<string>();
     for (const v of product.variants) {
-      if (v.size) { sizes.add(v.size); continue; }
-      const sizeAttr = v.attributes?.find(a => a.attributeName.toLowerCase() === 'size');
-      if (sizeAttr?.displayValue) sizes.add(sizeAttr.displayValue);
+      const s = this.extractAttr(v, 'size');
+      if (s) sizes.add(s);
     }
     return [...sizes];
   }
@@ -213,70 +360,80 @@ export class ProductPageComponent implements OnInit, OnDestroy {
       ?? 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=800';
   }
 
+  formatPrice(value: number): string {
+    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
+  }
+
   getSkeletonItems(): number[] {
     return Array.from({ length: 12 }, (_, i) => i);
   }
 
-  // ── Cart Actions ───────────────────────────────────────────────────
-  getQuantity(product: IProduct): number {
-    return this.selectedQuantityMap()[product.id] || 1;
-  }
-
-  increaseQuantity(product: IProduct, event: Event): void {
-    event.stopPropagation();
-    const current = this.getQuantity(product);
-    const maxStock = this.getTotalStock(product);
-    if (current < maxStock) {
-      this.selectedQuantityMap.update(m => ({ ...m, [product.id]: current + 1 }));
-    }
-  }
-
-  decreaseQuantity(product: IProduct, event: Event): void {
-    event.stopPropagation();
-    const current = this.getQuantity(product);
-    if (current > 1) {
-      this.selectedQuantityMap.update(m => ({ ...m, [product.id]: current - 1 }));
-    }
-  }
-
-  isAddingToCart(product: IProduct): boolean {
-    return !!this.addingToCart()[product.id];
-  }
-
-  // ── Add to cart ──────────────────────────────────────────────────────────
-  onAddToCart(product: IProduct, event?: Event): void {
+  // ── Quick-Add Modal ───────────────────────────────────────────────────
+  openQuickAdd(product: IProduct, event?: Event): void {
     if (event) event.stopPropagation();
+    this.selectedColor.set(null);
+    this.selectedSize.set(null);
+    this.popupQuantity.set(1);
+    this.quickAddProduct.set(product);
+    document.body.style.overflow = 'hidden';
+  }
 
-    if (this.isAddingToCart(product)) return; // chống double-click / double-submit
+  closeQuickAdd(): void {
+    this.quickAddProduct.set(null);
+    document.body.style.overflow = '';
+  }
 
-    const variants = product.variants ?? [];
-    // Ở trang danh sách, mặc định lấy variant đầu tiên còn hàng
-    const variant = variants.length > 0
-      ? (variants.find(v => v.stockQuantity > 0) ?? variants[0])
-      : null;
-
-    if (!variant) {
-      this.showToast('error', 'Sản phẩm này chưa có thông tin phiên bản.');
-      return;
+  closeQuickAddOnBackdrop(event: MouseEvent): void {
+    if ((event.target as HTMLElement).classList.contains('modal-backdrop')) {
+      this.closeQuickAdd();
     }
+  }
 
-    if (variant.stockQuantity <= 0) {
-      this.showToast('error', 'Sản phẩm này đã hết hàng.');
-      return;
+  selectModalColor(color: string): void {
+    this.selectedColor.set(color);
+    const sizes = this.modalSizes();
+    const current = this.selectedSize();
+    if (current) {
+      const stillAvail = sizes.find(s => s.value === current && s.available);
+      if (!stillAvail) this.selectedSize.set(null);
     }
+  }
 
-    this.addingToCart.update(m => ({ ...m, [product.id]: true }));
-    const quantity = this.getQuantity(product);
+  selectModalSize(size: string, available: boolean): void {
+    if (!available) return;
+    this.selectedSize.set(size);
+  }
 
-    this.cartService.addToCart({ productVariantId: variant.id, quantity })
+  increasePopupQty(): void {
+    if (this.popupQuantity() < this.modalMaxStock()) {
+      this.popupQuantity.update(q => q + 1);
+    }
+  }
+
+  decreasePopupQty(): void {
+    if (this.popupQuantity() > 1) {
+      this.popupQuantity.update(q => q - 1);
+    }
+  }
+
+  onModalAddToCart(): void {
+    if (!this.canAddToCart() || this.isAddingToCartModal()) return;
+    const product = this.quickAddProduct();
+    if (!product) return;
+    const variant = this.selectedVariant();
+    if (!variant) return;
+
+    this.isAddingToCartModal.set(true);
+    this.cartService.addToCart({ productVariantId: variant.id, quantity: this.popupQuantity() })
       .pipe(
         takeUntil(this.destroy$),
-        finalize(() => this.addingToCart.update(m => ({ ...m, [product.id]: false })))
+        finalize(() => this.isAddingToCartModal.set(false))
       )
       .subscribe({
         next: (res) => {
           if (res.isSuccess) {
             this.showToast('success', `Đã thêm "${product.name}" vào giỏ hàng.`);
+            this.closeQuickAdd();
           } else {
             this.showToast('error', this.cartService.getErrorMessage(res.errorCode, res.otherData));
           }
@@ -288,6 +445,16 @@ export class ProductPageComponent implements OnInit, OnDestroy {
       });
   }
 
+  // ── Legacy cart helpers (kept for compatibility) ──────────────────────
+  getQuantity(product: IProduct): number {
+    return this.selectedQuantityMap()[product.id] || 1;
+  }
+
+  isAddingToCart(product: IProduct): boolean {
+    return !!this.addingToCart()[product.id];
+  }
+
+  // ── Toast ─────────────────────────────────────────────────────────────
   private showToast(type: 'success' | 'error', text: string): void {
     const id = ++this.toastIdCounter;
     this.toasts.update(t => [...t, { id, type, text }]);

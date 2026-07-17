@@ -2,19 +2,13 @@
 namespace CR.Core.Dtos.Product;
 
 /// <summary>
-/// Đại diện cho một Product Variant (SKU, Size, Color, Stock...).
-/// Bao gồm cả dynamic attributes từ bảng ProductVariantAttribute.
+/// Đại diện cho một Product Variant. Thông tin Size, Color và các thuộc tính khác
+/// được quản lý hoàn toàn qua danh sách Attributes (EAV model).
 /// </summary>
 public class ProductVariantResponseDto
 {
     public int Id { get; set; }
     public string SKU { get; set; } = string.Empty;
-
-    /// <summary>Size tĩnh từ cột ProductVariant.Size (nếu có).</summary>
-    public string? Size { get; set; }
-
-    /// <summary>Color tĩnh từ cột ProductVariant.Color (nếu có).</summary>
-    public string? Color { get; set; }
 
     /// <summary>Mức điều chỉnh giá so với BasePrice của product.</summary>
     public decimal PriceAdjustment { get; set; }

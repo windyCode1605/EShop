@@ -16,16 +16,25 @@ public class ProductController : ControllerBase
     }
     [HttpGet]
     public async Task<ActionResult<ApiResponse<PaginatedResult<ProductResponseDto>>>> GetAll(
-        [FromQuery] int page = 1, 
+        [FromQuery] int page = 1,
         [FromQuery] int size = 10)
     {
         var result = await _productService.GetAllAsync(page, size);
-         return Ok(ApiResponse<PaginatedResult<ProductResponseDto>>.Ok(result));
+        return Ok(ApiResponse<PaginatedResult<ProductResponseDto>>.Ok(result));
     }
     [HttpPost]
     public async Task<ActionResult<ApiResponse<ProductResponseDto>>> Create([FromBody] ProductRequestDto dto)
     {
         var result = await _productService.CreateAsync(dto);
         return Ok(ApiResponse<ProductResponseDto>.Ok(result));
+    }
+    [HttpGet("{id}")]
+    public async Task<ActionResult<ApiResponse<ProductResponseDto>>> GetById(int id)
+    {
+        var result = await _productService.GetByIdAsync(id);
+        if (result.IsFailure)
+            return BadRequest(result);
+
+        return Ok(ApiResponse<ProductResponseDto>.Ok(result.Value));
     }
 }

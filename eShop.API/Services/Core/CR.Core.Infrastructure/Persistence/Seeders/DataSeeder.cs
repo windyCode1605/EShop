@@ -83,10 +83,10 @@ namespace CR.Core.Infrastructure.Persistence.Seeders
             // 6. Product Variants & Images
             db.ProductVariants.AddRange(new List<ProductVariant>
             {
-                new ProductVariant { ProductId = products[0].Id, SKU = "IP15PM-256-TI", Size = "256GB", Color = "Titan tự nhiên", StockQuantity = 50 },
-                new ProductVariant { ProductId = products[1].Id, SKU = "S24U-256-BLK", Size = "256GB", Color = "Đen Phantom", StockQuantity = 60 },
-                new ProductVariant { ProductId = products[2].Id, SKU = "MBA-M3-14-SLV", Size = "14 inch", Color = "Bạc", StockQuantity = 45 },
-                new ProductVariant { ProductId = products[3].Id, SKU = "XPS-15-OLED", Size = "15.6 inch", Color = "Bạc Platinum", StockQuantity = 30 }
+                new ProductVariant { ProductId = products[0].Id, SKU = "IP15PM-256-TI", StockQuantity = 50 },
+                new ProductVariant { ProductId = products[1].Id, SKU = "S24U-256-BLK", StockQuantity = 60 },
+                new ProductVariant { ProductId = products[2].Id, SKU = "MBA-M3-14-SLV", StockQuantity = 45 },
+                new ProductVariant { ProductId = products[3].Id, SKU = "XPS-15-OLED", StockQuantity = 30 }
             });
 
             db.ProductImages.AddRange(new List<ProductImage>

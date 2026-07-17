@@ -19,12 +19,6 @@ namespace CR.Core.Domain.Catalog
         [Required, MaxLength(100), Unicode(false)]
         public string SKU { get; set; } = null!;
 
-        [MaxLength(50)]
-        public string? Size { get; set; }
-
-        [MaxLength(50)]
-        public string? Color { get; set; }
-
         [Column(TypeName = "decimal(18,2)")]
         public decimal PriceAdjustment { get; set; }
 

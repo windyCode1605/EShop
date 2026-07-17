@@ -40,6 +40,8 @@ export class ProductService {
   }
 
   getProductById(id: string | number): Observable<IProduct> {
-    return this.http.get<IProduct>(`${this.apiUrl}/${id}`);
+    return this.http.get<{ success: boolean; data: IProduct; message?: string }>(`${this.apiUrl}/${id}`).pipe(
+      map(response => response.data)
+    );
   }
 }

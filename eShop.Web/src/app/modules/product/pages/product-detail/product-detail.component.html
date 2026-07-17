@@ -1,0 +1,494 @@
+<div class="pd-page" [class.is-loading]="loading()">
+
+  <!-- ── Skeleton ──────────────────────────────────────────────────────── -->
+  @if (loading()) {
+    <div class="pd-container">
+      <div class="pd-skeleton-breadcrumb"></div>
+      <div class="pd-layout">
+        <div class="pd-gallery-col">
+          <div class="pd-skeleton-main-img"></div>
+          <div class="pd-skeleton-thumbs">
+            @for (i of getSkeletonItems(4); track i) {
+              <div class="pd-skeleton-thumb"></div>
+            }
+          </div>
+        </div>
+        <div class="pd-info-col">
+          <div class="pd-skeleton-category"></div>
+          <div class="pd-skeleton-title"></div>
+          <div class="pd-skeleton-price"></div>
+          <div class="pd-skeleton-variants">
+            @for (i of getSkeletonItems(3); track i) {
+              <div class="pd-skeleton-swatch"></div>
+            }
+          </div>
+          <div class="pd-skeleton-btn"></div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ── Error ─────────────────────────────────────────────────────────── -->
+  @if (!loading() && error()) {
+    <div class="pd-container pd-error-state">
+      <div class="pd-error-icon">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+      </div>
+      <h2 class="pd-error-title">Không tìm thấy sản phẩm</h2>
+      <p class="pd-error-body">Sản phẩm này có thể đã bị xóa hoặc không tồn tại.</p>
+      <a routerLink="/product" class="pd-btn-primary">Quay lại danh sách</a>
+    </div>
+  }
+
+  <!-- ── Product Content ────────────────────────────────────────────────── -->
+  @if (!loading() && !error() && product()) {
+    <div class="pd-container">
+
+      <!-- Breadcrumb -->
+      <nav class="pd-breadcrumb" aria-label="breadcrumb">
+        <a routerLink="/product" class="pd-breadcrumb-link">Sản phẩm</a>
+        <span class="pd-breadcrumb-sep">/</span>
+        <span class="pd-breadcrumb-link">{{ product()!.categoryName }}</span>
+        <span class="pd-breadcrumb-sep">/</span>
+        <span class="pd-breadcrumb-current">{{ product()!.name }}</span>
+      </nav>
+
+      <div class="pd-layout">
+
+        <!-- ── LEFT: Gallery ─────────────────────────────────────────── -->
+        <div class="pd-gallery-col">
+          <div class="pd-main-image-wrap">
+            <img
+              [src]="productImages()[activeImageIndex()]"
+              [alt]="product()!.name"
+              class="pd-main-image"
+              loading="eager"
+            />
+            @if (!isInStock()) {
+              <div class="pd-out-of-stock-badge">Hết hàng</div>
+            }
+          </div>
+          <div class="pd-thumbnails">
+            @for (img of productImages(); track $index) {
+              <button
+                class="pd-thumb-btn"
+                [class.is-active]="activeImageIndex() === $index"
+                (click)="setActiveImage($index)"
+                [attr.aria-label]="'Xem ảnh ' + ($index + 1)"
+              >
+                <img [src]="img" [alt]="'Ảnh ' + ($index + 1)" class="pd-thumb-img" loading="lazy"/>
+              </button>
+            }
+          </div>
+        </div>
+
+        <!-- ── RIGHT: Info ──────────────────────────────────────────── -->
+        <div class="pd-info-col">
+
+          <!-- Category & AI Badge -->
+          <div class="pd-meta-row">
+            <span class="pd-category-tag">{{ product()!.categoryName }}</span>
+            @if (product()!.aI_Generated) {
+              <span class="pd-ai-badge">AI Generated</span>
+            }
+          </div>
+
+          <!-- Name -->
+          <h1 class="pd-product-name">{{ product()!.name }}</h1>
+
+          <!-- Price -->
+          <div class="pd-price-block">
+            <span class="pd-price-main">{{ formatPrice(finalPrice()) }}</span>
+            @if (selectedVariant() && selectedVariant()!.priceAdjustment !== 0) {
+              <span class="pd-price-base">{{ formatPrice(product()!.price) }}</span>
+              <span class="pd-price-adj" [class.is-positive]="selectedVariant()!.priceAdjustment > 0">
+                {{ selectedVariant()!.priceAdjustment > 0 ? '+' : '' }}{{ formatPrice(selectedVariant()!.priceAdjustment) }}
+              </span>
+            }
+          </div>
+
+          <!-- Stock Status -->
+          <div class="pd-stock-row">
+            <span class="pd-stock-dot" [class.in-stock]="isInStock()" [class.out-stock]="!isInStock()"></span>
+            <span class="pd-stock-label" [class.in-stock]="isInStock()">
+              @if (isInStock()) {
+                Còn hàng &mdash; {{ stockAvailable() }} sản phẩm
+              } @else {
+                Tạm hết hàng
+              }
+            </span>
+          </div>
+
+          <!-- Divider -->
+          <div class="pd-divider"></div>
+
+          <!-- ── Variant Attribute Selectors ─────────────────────────── -->
+          @for (group of attributeGroups(); track group.name) {
+            <div class="pd-attr-group">
+              <div class="pd-attr-label">
+                <span>{{ group.name }}</span>
+                @if (isColorGroup(group.name) && selectedAttributes()[group.name]) {
+                  <span class="pd-attr-selected-val">{{ selectedAttributes()[group.name] }}</span>
+                }
+              </div>
+
+              <div class="pd-attr-options">
+                @if (isColorGroup(group.name)) {
+                  @for (value of group.values; track value) {
+                    <button
+                      class="pd-color-swatch"
+                      [class.is-selected]="isAttributeSelected(group.name, value)"
+                      [class.is-unavailable]="!isAttributeAvailable(group.name, value)"
+                      [style.background]="colorToCss(value)"
+                      [attr.title]="value"
+                      [attr.aria-label]="'Màu ' + value"
+                      (click)="selectAttributeValue(group.name, value)"
+                    ></button>
+                  }
+                } @else {
+                  @for (value of group.values; track value) {
+                    <button
+                      class="pd-size-pill"
+                      [class.is-selected]="isAttributeSelected(group.name, value)"
+                      [class.is-unavailable]="!isAttributeAvailable(group.name, value)"
+                      [attr.aria-pressed]="isAttributeSelected(group.name, value)"
+                      (click)="selectAttributeValue(group.name, value)"
+                    >{{ value }}</button>
+                  }
+                }
+              </div>
+            </div>
+          }
+
+          <!-- Selected Variant SKU info -->
+          @if (selectedVariant()) {
+            <div class="pd-variant-info-pill">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/>
+              </svg>
+              <span>SKU: {{ selectedVariant()!.sku }}</span>
+              <button class="pd-view-variants-link" (click)="showVariantPanel.set(true)" type="button">
+                Xem tất cả biến thể
+              </button>
+            </div>
+          } @else if (attributeGroups().length > 0) {
+            <p class="pd-no-variant-match">Không có biến thể phù hợp với lựa chọn hiện tại.</p>
+          }
+
+          <div class="pd-divider"></div>
+
+          <!-- ── Quantity & CTA ──────────────────────────────────────── -->
+          <div class="pd-action-row">
+            <div class="pd-quantity-stepper">
+              <button class="pd-qty-btn" (click)="decreaseQty()" [disabled]="quantity() <= 1" aria-label="Giảm số lượng">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              </button>
+              <span class="pd-qty-value" aria-live="polite">{{ quantity() }}</span>
+              <button class="pd-qty-btn" (click)="increaseQty()" [disabled]="quantity() >= stockAvailable()" aria-label="Tăng số lượng">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              </button>
+            </div>
+
+            <button
+              id="add-to-cart-btn"
+              class="pd-btn-primary pd-btn-cart"
+              [class.is-loading]="addingToCart()"
+              [disabled]="!selectedVariant() || !isInStock() || addingToCart()"
+              (click)="onAddToCart()"
+              type="button"
+            >
+              @if (addingToCart()) {
+                <span class="pd-btn-spinner"></span>
+                <span>Đang thêm...</span>
+              } @else if (!isInStock()) {
+                <span>Hết hàng</span>
+              } @else {
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+                  <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+                </svg>
+                <span>Thêm vào giỏ hàng</span>
+              }
+            </button>
+          </div>
+
+          <!-- Wishlist link -->
+          <button class="pd-wishlist-link" type="button">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+            </svg>
+            Lưu vào Wishlist
+          </button>
+
+          <!-- ── Shipping Info ───────────────────────────────────────── -->
+          <div class="pd-shipping-strip">
+            <div class="pd-shipping-item">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
+                <circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>
+              </svg>
+              <span>Giao hàng toàn quốc</span>
+            </div>
+            <div class="pd-shipping-item">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+              </svg>
+              <span>Đổi trả trong 30 ngày</span>
+            </div>
+            <div class="pd-shipping-item">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              </svg>
+              <span>Bảo hành chính hãng</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ── Accordion Sections ─────────────────────────────────────────── -->
+      <div class="pd-accordion-section">
+
+        <!-- Description -->
+        <div class="pd-accordion-item">
+          <button
+            class="pd-accordion-trigger"
+            [class.is-open]="isAccordionOpen('description')"
+            (click)="toggleAccordion('description')"
+            [attr.aria-expanded]="isAccordionOpen('description')"
+          >
+            <span>Mô tả sản phẩm</span>
+            <svg class="pd-accordion-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
+          @if (isAccordionOpen('description')) {
+            <div class="pd-accordion-body" role="region">
+              @if (product()!.aI_Description && product()!.aI_Generated) {
+                <div class="pd-ai-description-note">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                  </svg>
+                  Mô tả được tạo bởi AI
+                </div>
+                <p class="pd-description-text">{{ product()!.aI_Description }}</p>
+              } @else if (product()!.description) {
+                <p class="pd-description-text">{{ product()!.description }}</p>
+              } @else {
+                <p class="pd-description-empty">Chưa có mô tả cho sản phẩm này.</p>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- Variants Detail -->
+        @if (product()!.variants?.length) {
+          <div class="pd-accordion-item">
+            <button
+              class="pd-accordion-trigger"
+              [class.is-open]="isAccordionOpen('variants')"
+              (click)="toggleAccordion('variants')"
+              [attr.aria-expanded]="isAccordionOpen('variants')"
+            >
+              <span>Biến thể ({{ product()!.variants!.length }})</span>
+              <svg class="pd-accordion-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </button>
+            @if (isAccordionOpen('variants')) {
+              <div class="pd-accordion-body" role="region">
+                <div class="pd-variants-grid">
+                  @for (variant of product()!.variants!; track variant.id) {
+                    <div
+                      class="pd-variant-card"
+                      [class.is-selected]="selectedVariant()?.id === variant.id"
+                      [class.is-out-of-stock]="variant.stockQuantity === 0"
+                      (click)="selectVariantDirectly(variant)"
+                      role="button"
+                      [attr.aria-pressed]="selectedVariant()?.id === variant.id"
+                      [attr.tabindex]="0"
+                      (keydown.enter)="selectVariantDirectly(variant)"
+                      (keydown.space)="selectVariantDirectly(variant)"
+                    >
+                      <div class="pd-vc-header">
+                        <div class="pd-vc-attrs">
+                          @for (attr of variant.attributes; track attr.attributeId) {
+                            @if (isColorGroup(attr.attributeName)) {
+                              <span
+                                class="pd-vc-color-dot"
+                                [style.background]="colorToCss(attr.displayValue)"
+                                [attr.title]="attr.displayValue"
+                              ></span>
+                            } @else {
+                              <span class="pd-vc-attr-chip">{{ attr.displayValue }}</span>
+                            }
+                          }
+                        </div>
+                        @if (selectedVariant()?.id === variant.id) {
+                          <svg class="pd-vc-check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <polyline points="20 6 9 17 4 12"/>
+                          </svg>
+                        }
+                      </div>
+                      <div class="pd-vc-sku">{{ variant.sku }}</div>
+                      <div class="pd-vc-footer">
+                        <span class="pd-vc-price">{{ formatPrice(product()!.price + variant.priceAdjustment) }}</span>
+                        <span class="pd-vc-stock" [class.low-stock]="variant.stockQuantity > 0 && variant.stockQuantity <= 5">
+                          @if (variant.stockQuantity === 0) {
+                            Hết hàng
+                          } @else if (variant.stockQuantity <= 5) {
+                            Còn {{ variant.stockQuantity }}
+                          } @else {
+                            Còn hàng
+                          }
+                        </span>
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- Product Info row -->
+        <div class="pd-accordion-item">
+          <button
+            class="pd-accordion-trigger"
+            [class.is-open]="isAccordionOpen('info')"
+            (click)="toggleAccordion('info')"
+            [attr.aria-expanded]="isAccordionOpen('info')"
+          >
+            <span>Thông tin sản phẩm</span>
+            <svg class="pd-accordion-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
+          @if (isAccordionOpen('info')) {
+            <div class="pd-accordion-body" role="region">
+              <div class="pd-info-grid">
+                <div class="pd-info-card">
+                  <span class="pd-info-label">Danh mục</span>
+                  <span class="pd-info-value">{{ product()!.categoryName }}</span>
+                </div>
+                <div class="pd-info-card">
+                  <span class="pd-info-label">Tổng tồn kho</span>
+                  <span class="pd-info-value">{{ product()!.stock }}</span>
+                </div>
+                <div class="pd-info-card">
+                  <span class="pd-info-label">Số biến thể</span>
+                  <span class="pd-info-value">{{ product()!.variants?.length ?? 0 }}</span>
+                </div>
+                <div class="pd-info-card">
+                  <span class="pd-info-label">Ngày thêm</span>
+                  <span class="pd-info-value">{{ product()!.createdAt | date:'dd/MM/yyyy' }}</span>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── Variant Detail Panel (slide-over) ──────────────────────────── -->
+    @if (showVariantPanel()) {
+      <div class="pd-panel-backdrop" (click)="showVariantPanel.set(false)" aria-hidden="true"></div>
+      <aside class="pd-variant-panel" role="dialog" aria-modal="true" aria-label="Tất cả biến thể">
+        <div class="pd-panel-header">
+          <h2 class="pd-panel-title">Biến thể sản phẩm</h2>
+          <button class="pd-panel-close" (click)="showVariantPanel.set(false)" aria-label="Đóng">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Panel current selection -->
+        @if (selectedVariant()) {
+          <div class="pd-panel-selected">
+            <span class="pd-panel-selected-label">Đang chọn</span>
+            <div class="pd-panel-selected-card">
+              <div class="pd-psc-attrs">
+                @for (attr of selectedVariant()!.attributes; track attr.attributeId) {
+                  @if (isColorGroup(attr.attributeName)) {
+                    <span class="pd-psc-color" [style.background]="colorToCss(attr.displayValue)" [attr.title]="attr.displayValue"></span>
+                  } @else {
+                    <span class="pd-psc-chip">{{ attr.displayValue }}</span>
+                  }
+                }
+              </div>
+              <div class="pd-psc-sku">{{ selectedVariant()!.sku }}</div>
+              <div class="pd-psc-price">{{ formatPrice(product()!.price + selectedVariant()!.priceAdjustment) }}</div>
+              <div class="pd-psc-stock" [class.in-stock]="selectedVariant()!.stockQuantity > 0">
+                {{ selectedVariant()!.stockQuantity > 0 ? 'Còn ' + selectedVariant()!.stockQuantity + ' sản phẩm' : 'Hết hàng' }}
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- All variants list -->
+        <div class="pd-panel-list">
+          <p class="pd-panel-list-title">Tất cả biến thể</p>
+          @for (variant of product()!.variants!; track variant.id) {
+            <div
+              class="pd-panel-variant-row"
+              [class.is-selected]="selectedVariant()?.id === variant.id"
+              [class.is-oos]="variant.stockQuantity === 0"
+              (click)="selectVariantDirectly(variant)"
+              role="button"
+              [attr.tabindex]="0"
+              (keydown.enter)="selectVariantDirectly(variant)"
+            >
+              <div class="pd-pvr-radio" [class.is-checked]="selectedVariant()?.id === variant.id"></div>
+              <div class="pd-pvr-attrs">
+                @for (attr of variant.attributes; track attr.attributeId) {
+                  @if (isColorGroup(attr.attributeName)) {
+                    <span class="pd-pvr-color" [style.background]="colorToCss(attr.displayValue)"></span>
+                  } @else {
+                    <span class="pd-pvr-attr">{{ attr.displayValue }}</span>
+                  }
+                }
+              </div>
+              <div class="pd-pvr-sku">{{ variant.sku }}</div>
+              <div class="pd-pvr-price">{{ formatPrice(product()!.price + variant.priceAdjustment) }}</div>
+              <div class="pd-pvr-stock" [class.oos]="variant.stockQuantity === 0" [class.low]="variant.stockQuantity > 0 && variant.stockQuantity <= 5">
+                {{ variant.stockQuantity === 0 ? 'Hết' : variant.stockQuantity <= 5 ? 'Còn ' + variant.stockQuantity : 'Còn hàng' }}
+              </div>
+            </div>
+          }
+        </div>
+
+        <div class="pd-panel-footer">
+          <button class="pd-btn-primary" (click)="showVariantPanel.set(false)">Xác nhận lựa chọn</button>
+        </div>
+      </aside>
+    }
+  }
+
+</div>
+
+<!-- ── Toast Notifications ─────────────────────────────────────────────── -->
+<div class="pd-toasts" aria-live="polite" aria-atomic="false">
+  @for (toast of toasts(); track toast.id) {
+    <div class="pd-toast" [class.is-success]="toast.type === 'success'" [class.is-error]="toast.type === 'error'">
+      @if (toast.type === 'success') {
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      } @else {
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
+        </svg>
+      }
+      <span>{{ toast.text }}</span>
+      <button class="pd-toast-close" (click)="dismissToast(toast.id)" aria-label="Đóng thông báo">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+  }
+</div>

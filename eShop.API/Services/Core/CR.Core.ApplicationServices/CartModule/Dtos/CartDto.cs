@@ -1,4 +1,5 @@
 // ApplicationServices/CartModule/Dtos/CartDtos.cs
+using CR.Core.Dtos.Product;
 namespace CR.Core.ApplicationServices.CartModule.Dtos;
 
 public class AddToCartDto
@@ -31,8 +32,8 @@ public class CartItemDto
     public int ProductId { get; set; }
     public string ProductName { get; set; } = null!;
     public string SKU { get; set; } = null!;
-    public string? Size { get; set; }
-    public string? Color { get; set; }
+    /// <summary>Các thuộc tính động của variant (Size, Color, ...) lấy từ VariantAttributes.</summary>
+    public List<VariantAttributeDto> Attributes { get; set; } = [];
     public decimal UnitPrice { get; set; }
     public int Quantity { get; set; }
     public decimal LineTotal { get; set; }

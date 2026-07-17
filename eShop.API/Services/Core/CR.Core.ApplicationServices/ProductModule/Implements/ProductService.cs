@@ -1,10 +1,13 @@
 using AutoMapper;
 using CR.ApplicationBase;
 using CR.Common;
+using CR.Constants.ErrorCodes;
 using CR.Core.ApplicationServices.ProductModule.Abstracts;
 using CR.Core.Domain.Catalog;
 using CR.Core.Dtos.Product;
 using CR.DtoBase;
+using CR.Utils.DataUtils;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.EntityFrameworkCore;
 
 namespace CR.Core.ApplicationServices.Common.ServiceImplementations;
@@ -83,6 +86,33 @@ public class ProductService : ServiceBase<CoreDbContext>, IProductService
             PageSize = size
         };
     }
+    public async Task<Result<ProductResponseDto>> GetByIdAsync(int id)
+    {
+        _logger.LogInformation("Method Name: {method}", nameof(GetByIdAsync));
+        var product = await _dbContext.Products
+            .Include(p => p.Category)
+            .Include(p => p.Images)
+            .Include(p => p.ProductAttributes.Where(pa => !pa.Deleted))
+                .ThenInclude(pa => pa.Attribute)
+            .Include(p => p.ProductAttributes.Where(pa => !pa.Deleted))
+                .ThenInclude(pa => pa.AttributeValue)
+            .Include(p => p.Variants.Where(v => !v.Deleted))
+                .ThenInclude(v => v.VariantAttributes.Where(va => !va.Deleted))
+                    .ThenInclude(va => va.Attribute)
+            .Include(p => p.Variants.Where(v => !v.Deleted))
+                .ThenInclude(v => v.VariantAttributes.Where(va => !va.Deleted))
+                    .ThenInclude(av => av.AttributeValue)
+            .FirstOrDefaultAsync(p => p.Id == id && !p.Deleted);
+
+        if (product == null)
+        {
+            return Result<ProductResponseDto>.Failure(ErrorCode.InvalidInput, this.GetCurrentMethodInfo(), "Product not found");
+        }
+
+        var resultDto = _mapper.Map<ProductResponseDto>(product);
+        return Result<ProductResponseDto>.Success(resultDto);
+    }
+
     // public async Task<Result<ProductResponseDto>> UpdateAsync(ProductRequestDto input)
     // {
 

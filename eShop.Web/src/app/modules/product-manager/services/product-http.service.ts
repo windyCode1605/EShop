@@ -5,6 +5,15 @@ import { IProduct, ProductResponseDto, ProductCreateUpdateDto, ApiPaginatedRespo
 import { ProductFilterModel } from '../models/product-filter.model';
 import { environment } from '../../../my-lib/shared/enviroments/enviroment';
 
+/** Generic single-item response envelope from the backend. */
+interface ApiSingleResponse<T> {
+  success: boolean;
+  data: T;
+  message?: string;
+  errors?: string[];
+  statusCode?: number;
+}
+
 
 @Injectable({
   providedIn: 'root'
@@ -60,24 +69,30 @@ export class ProductHttpService {
   }
 
   /**
-   * Get product by ID
+   * Get product by ID — unwraps { success, data: IProduct } envelope.
    */
   getProductById(id: string | number): Observable<IProduct> {
-    return this.http.get<IProduct>(`${this.apiUrl}/${id}`);
+    return this.http.get<ApiSingleResponse<IProduct>>(`${this.apiUrl}/${id}`).pipe(
+      map(response => response.data)
+    );
   }
 
   /**
-   * Create new product
+   * Create new product — unwraps { success, data: IProduct } envelope.
    */
   createProduct(product: ProductCreateUpdateDto): Observable<IProduct> {
-    return this.http.post<IProduct>(this.apiUrl, product);
+    return this.http.post<ApiSingleResponse<IProduct>>(this.apiUrl, product).pipe(
+      map(response => response.data)
+    );
   }
 
   /**
-   * Update product
+   * Update product — unwraps { success, data: IProduct } envelope.
    */
   updateProduct(id: string | number, product: ProductCreateUpdateDto): Observable<IProduct> {
-    return this.http.put<IProduct>(`${this.apiUrl}/${id}`, product);
+    return this.http.put<ApiSingleResponse<IProduct>>(`${this.apiUrl}/${id}`, product).pipe(
+      map(response => response.data)
+    );
   }
 
   /**
