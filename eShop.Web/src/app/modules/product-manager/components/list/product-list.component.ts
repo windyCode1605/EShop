@@ -32,9 +32,9 @@ export class ProductListComponent implements OnInit, OnDestroy {
   currentFilter: ProductFilterModel;
   totalPages: number = 0;
   totalItems: number = 0;
-  categories: string[] = [];
-  featuredCategories: string[] = ['Tất cả'];
-  selectedCategory: string = 'Tất cả';
+  categories: { id: number; name: string }[] = [];
+  featuredCategories: { id: number | null; name: string }[] = [{ id: null, name: 'Tất cả' }];
+  selectedCategory: number | null = null;
   selectedProduct: IProduct | null = null;
   cartCount: number = 0;
   sortValue: 'popular' | 'priceAsc' | 'priceDesc' | 'newest' = 'popular';
@@ -86,8 +86,14 @@ export class ProductListComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(products => {
         this.products = products;
-        this.categories = Array.from(new Set(products.map((p) => p.categoryName).filter(Boolean)));
-        this.featuredCategories = ['Tất cả', ...this.categories];
+        const uniqueCategories = new Map<number, string>();
+        products.forEach(p => {
+          if (p.categoryId && p.categoryName) {
+            uniqueCategories.set(p.categoryId, p.categoryName);
+          }
+        });
+        this.categories = Array.from(uniqueCategories.entries()).map(([id, name]) => ({ id, name }));
+        this.featuredCategories = [{ id: null, name: 'Tất cả' }, ...this.categories];
         if (!this.selectedProduct && products.length > 0) {
           this.selectedProduct = products[0];
         }
@@ -117,10 +123,10 @@ export class ProductListComponent implements OnInit, OnDestroy {
   /**
    * Handle storefront category chip click
    */
-  onCategoryChipChange(category: string): void {
-    this.selectedCategory = category;
+  onCategoryChipChange(category: { id: number | null; name: string }): void {
+    this.selectedCategory = category.id;
     this.currentFilter.pageIndex = 1;
-    this.currentFilter.categoryId = category === 'Tất cả' ? undefined : category;
+    this.currentFilter.categoryId = category.id ?? undefined;
     this.loadProducts();
   }
 
@@ -167,7 +173,7 @@ export class ProductListComponent implements OnInit, OnDestroy {
    */
   onFilterReset(): void {
     this.currentFilter = new ProductFilterModel();
-    this.selectedCategory = 'Tất cả';
+    this.selectedCategory = null;
     this.sortValue = 'popular';
     this.loadProducts();
   }

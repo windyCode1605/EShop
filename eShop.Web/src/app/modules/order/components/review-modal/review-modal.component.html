@@ -1,0 +1,73 @@
+<div class="modal-backdrop" (click)="close.emit()">
+  <div class="modal-dialog" (click)="$event.stopPropagation()">
+    
+    <button class="modal-close" (click)="close.emit()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+
+    <div class="modal-header">
+      <h2 class="modal-title">Đánh giá sản phẩm</h2>
+      <p class="modal-subtitle">Bạn cảm thấy thế nào về sản phẩm này?</p>
+    </div>
+
+    <div class="modal-body" *ngIf="!isSuccess()">
+      <!-- Product Info -->
+      <div class="product-info" *ngIf="product">
+        <div class="product-image">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        </div>
+        <div>
+          <h4>{{ product.productName }}</h4>
+          <p>Phân loại: {{ product.variantSKU }}</p>
+        </div>
+      </div>
+
+      <!-- Star Rating -->
+      <div class="star-rating">
+        <div class="stars">
+          <button *ngFor="let i of [1, 2, 3, 4, 5]" 
+                  class="star-btn" 
+                  [class.active]="i <= rating()"
+                  (click)="setRating(i)">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" [attr.fill]="i <= rating() ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+            </svg>
+          </button>
+        </div>
+        <div class="rating-text">
+          <span *ngIf="rating() === 0">Chưa đánh giá</span>
+          <span *ngIf="rating() === 1">Rất tệ</span>
+          <span *ngIf="rating() === 2">Tệ</span>
+          <span *ngIf="rating() === 3">Bình thường</span>
+          <span *ngIf="rating() === 4">Tốt</span>
+          <span *ngIf="rating() === 5">Tuyệt vời!</span>
+        </div>
+      </div>
+
+      <!-- Comment Input -->
+      <div class="form-group">
+        <label>Chia sẻ thêm về trải nghiệm của bạn (Không bắt buộc)</label>
+        <textarea [(ngModel)]="comment" 
+                  rows="4" 
+                  placeholder="Sản phẩm có giống mô tả không? Chất lượng thế nào?">
+        </textarea>
+      </div>
+    </div>
+
+    <!-- Success State -->
+    <div class="modal-success" *ngIf="isSuccess()">
+      <div class="success-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      </div>
+      <h3>Cảm ơn đánh giá của bạn!</h3>
+      <p>Đánh giá sẽ giúp những người dùng khác có thêm thông tin khi mua hàng.</p>
+    </div>
+
+    <div class="modal-footer" *ngIf="!isSuccess()">
+      <button class="btn btn-primary" [disabled]="isSubmitting()" (click)="submitReview()">
+        {{ isSubmitting() ? 'Đang gửi...' : 'Gửi đánh giá' }}
+      </button>
+    </div>
+
+  </div>
+</div>

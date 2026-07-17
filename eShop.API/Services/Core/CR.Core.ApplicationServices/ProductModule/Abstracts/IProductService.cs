@@ -6,7 +6,7 @@ using CR.ApplicationBase.Common;
 namespace CR.Core.ApplicationServices.ProductModule.Abstracts;
 public interface IProductService
 {
-    Task<PaginatedResult<ProductResponseDto>> GetAllAsync(int Page, int size);
+    Task<PaginatedResult<ProductResponseDto>> GetAllAsync(int Page, int size, int? categoryId = null);
     Task<ProductResponseDto> CreateAsync(ProductRequestDto dto);
     // Task<ProductResponseDto> UpdateAsync(ProductRequestDto dto);
     Task<Result<ProductResponseDto>> GetByIdAsync(int id);

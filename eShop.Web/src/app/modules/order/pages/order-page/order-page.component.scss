@@ -259,21 +259,48 @@ $success-color: #16A34A;
 
 .item-details {
   flex: 1;
+
+  .item-name {
+    font-size: 16px;
+    font-weight: 500;
+    margin: 0 0 4px 0;
+  }
+
+  .item-meta {
+    font-size: 14px;
+    color: #71717A;
+    margin: 0;
+  }
 }
 
-.item-name {
-  font-size: 16px;
-  font-weight: 500;
-  margin-bottom: 4px;
-}
+.item-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
 
-.item-meta {
-  font-size: 14px;
-  color: $text-secondary;
-}
+  .item-price {
+    font-family: 'Geist Mono', 'JetBrains Mono', monospace;
+    font-weight: 500;
+    font-size: 16px;
+  }
 
-.item-price {
-  font-weight: 600;
+  .btn-review {
+    background: #FFFFFF;
+    border: 1px solid #E4E4E7;
+    color: #18181B;
+    padding: 6px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+      border-color: #18181B;
+      background: #F9FAFB;
+    }
+  }
 }
 
 /* Sidebar Info Cards */

@@ -324,11 +324,11 @@ public class OrderService : CoreServiceBase, IOrderService
     public async Task<Result<PageResult<OrderDto>>> GetMyOrders(FilterOrderPagingDto input)
     {
         var userID = _httpContext.GetCurrentUserId();
-        
+
         // 1. Base Query chỉ dùng để lọc (Không Include bảng con)
         var baseQuery = _dbContext.Orders
             .AsNoTracking()
-            .Where(o => o.UserId == userID && !o.Deleted && (string.IsNullOrEmpty(input.Status) 
+            .Where(o => o.UserId == userID && !o.Deleted && (string.IsNullOrEmpty(input.Status)
             || o.Status == input.Status));
 
         // 2. Đếm tổng số lượng dựa trên Base Query (Rất nhanh)
@@ -439,12 +439,44 @@ public class OrderService : CoreServiceBase, IOrderService
                     shipment.ActualDelivery = DateTimeUtils.GetDate();
                 }
                 var payment = order.Payments?.FirstOrDefault();
-                if (payment != null && payment.Status == PaymentStatus.Pending.ToString())
+                if (payment != null && payment.Status == PaymentStatus.Pending)
                 {
-                    payment.Status = PaymentStatus.Success.ToString();
+                    payment.Status = PaymentStatus.Success;
                     payment.PaidAt = DateTimeUtils.GetDate();
                 }
             }
+            else if (input.NewStatus == OrderStatusConst.Returned)
+            {
+                // 1. Cập nhật Shipment thành Returned
+                var shipment = await _dbContext.Shipments.FirstOrDefaultAsync(s => s.OrderId == orderId && !s.Deleted);
+                if (shipment != null)
+                {
+                    shipment.Status = ShipmentStatus.Returned;
+                    shipment.ModifiedDate = DateTimeUtils.GetDate();
+                }
+
+                // 2. Đánh dấu Payment là Failed (nếu chưa thanh toán)
+                var payment = order.Payments?.FirstOrDefault();
+                if (payment != null && payment.Status == PaymentStatus.Pending)
+                {
+                    payment.Status = PaymentStatus.Failed;
+                }
+
+                // 3. Hoàn lại số lượng tồn kho (Restock)
+                var orderItems = await _dbContext.OrderItems
+                    .Include(oi => oi.ProductVariant)
+                    .Where(oi => oi.OrderId == orderId)
+                    .ToListAsync();
+
+                foreach (var item in orderItems)
+                {
+                    if (item.ProductVariant != null)
+                    {
+                        item.ProductVariant.StockQuantity += item.Quantity;
+                    }
+                }
+            }
+
             await _dbContext.SaveChangesAsync();
             await transaction.CommitAsync();
             return Result.Success();

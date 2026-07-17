@@ -17,7 +17,7 @@
         <button class="filter-btn" [class.is-active]="isDropdownOpen('category')" id="filter-category-btn">
           <span>
             Danh mục
-            <span class="filter-tag" *ngIf="selectedCategories().length > 0">{{ selectedCategories().length }}</span>
+            <span class="filter-tag" *ngIf="selectedCategoryId() !== null">•</span>
           </span>
           <svg class="chevron" [class.rotated]="isDropdownOpen('category')"
                width="14" height="14" viewBox="0 0 24 24" fill="none"
@@ -36,10 +36,10 @@
             <label
               *ngFor="let cat of categories()"
               class="dropdown-option"
-              [class.is-selected]="isCategorySelected(cat.categoryName)"
-              (click)="onCategoryToggle(cat.categoryName)">
+              [class.is-selected]="isCategorySelected(cat.categoryId)"
+              (click)="onCategoryToggle(cat.categoryId)">
               <span class="option-check">
-                <svg *ngIf="isCategorySelected(cat.categoryName)"
+                <svg *ngIf="isCategorySelected(cat.categoryId)"
                      width="12" height="12" viewBox="0 0 24 24" fill="none"
                      stroke="currentColor" stroke-width="3">
                   <polyline points="20 6 9 17 4 12"/>

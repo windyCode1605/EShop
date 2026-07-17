@@ -34,63 +34,66 @@
             <div class="tracking-timeline">
               
               <!-- PENDING -->
-              <div class="timeline-item" [class.timeline-item--active]="isStatusActive('Pending')" [class.timeline-item--done]="isStatusPast('Pending')">
+              <div class="timeline-item" [class.timeline-item--active]="isStatusActive('PENDING')" [class.timeline-item--done]="isStatusPast('PENDING')">
                 <div class="timeline-icon">
                   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/></svg>
                 </div>
                 <div class="timeline-content">
                   <h3 class="timeline-title">Chờ xác nhận</h3>
-                  <p class="timeline-desc" *ngIf="order().status === 'Pending'">Đơn hàng của bạn đã được tiếp nhận và đang chờ admin xác nhận.</p>
+                  <p class="timeline-desc" *ngIf="order().status === 'PENDING'">Đơn hàng của bạn đã được tiếp nhận và đang chờ admin xác nhận.</p>
                 </div>
               </div>
-              <div class="timeline-connector" [class.timeline-connector--active]="isStatusPast('Pending')"></div>
+              <div class="timeline-connector" [class.timeline-connector--active]="isStatusPast('PENDING')"></div>
 
               <!-- PROCESSING -->
-              <div class="timeline-item" [class.timeline-item--active]="isStatusActive('Processing')" [class.timeline-item--done]="isStatusPast('Processing')">
+              <div class="timeline-item" [class.timeline-item--active]="isStatusActive('PROCESSING')" [class.timeline-item--done]="isStatusPast('PROCESSING')">
                 <div class="timeline-icon">
                   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
                 </div>
                 <div class="timeline-content">
                   <h3 class="timeline-title">Đang xử lý & Đóng gói</h3>
-                  <p class="timeline-desc" *ngIf="order().status === 'Processing'">Đơn hàng đã được xác nhận và đang được đóng gói.</p>
+                  <p class="timeline-desc" *ngIf="order().status === 'PROCESSING' || order().status === 'CONFIRMED'">Đơn hàng đã được xác nhận và đang được đóng gói.</p>
                 </div>
               </div>
-              <div class="timeline-connector" [class.timeline-connector--active]="isStatusPast('Processing')"></div>
+              <div class="timeline-connector" [class.timeline-connector--active]="isStatusPast('PROCESSING')"></div>
 
-              <!-- SHIPPED -->
-              <div class="timeline-item" [class.timeline-item--active]="isStatusActive('Shipped')" [class.timeline-item--done]="isStatusPast('Shipped')">
+              <!-- SHIPPING -->
+              <div class="timeline-item" [class.timeline-item--active]="isStatusActive('SHIPPING')" [class.timeline-item--done]="isStatusPast('SHIPPING')">
                 <div class="timeline-icon">
                   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
                 </div>
                 <div class="timeline-content">
                   <h3 class="timeline-title">Đang giao hàng</h3>
-                  <p class="timeline-desc" *ngIf="order().status === 'Shipped' || isStatusPast('Shipped')">
+                  <p class="timeline-desc" *ngIf="order().status === 'SHIPPING' || isStatusPast('SHIPPING')">
                     Đã giao cho đơn vị vận chuyển: <strong>{{ order().shipment?.shippingProvider || 'N/A' }}</strong><br>
                     Mã vận đơn: <span class="tracking-number">{{ order().shipment?.trackingNumber || 'Đang cập nhật' }}</span>
                   </p>
                 </div>
               </div>
-              <div class="timeline-connector" [class.timeline-connector--active]="isStatusPast('Shipped')"></div>
+              <div class="timeline-connector" [class.timeline-connector--active]="isStatusPast('SHIPPING')"></div>
 
               <!-- DELIVERED -->
-              <div class="timeline-item" [class.timeline-item--active]="isStatusActive('Delivered')" [class.timeline-item--done]="isStatusPast('Delivered')">
+              <div class="timeline-item" [class.timeline-item--active]="isStatusActive('DELIVERED')" [class.timeline-item--done]="isStatusPast('DELIVERED')">
                 <div class="timeline-icon">
                   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
                 </div>
                 <div class="timeline-content">
                   <h3 class="timeline-title">Giao hàng thành công</h3>
-                  <p class="timeline-desc" *ngIf="order().status === 'Delivered'">Đơn hàng đã được giao đến bạn.</p>
+                  <p class="timeline-desc" *ngIf="order().status === 'DELIVERED'">Đơn hàng đã được giao đến bạn.</p>
                 </div>
               </div>
             </div>
 
-            <!-- Cancelled State (Separate from timeline) -->
-            <div class="cancelled-state" *ngIf="order().status === 'Cancelled'">
-              <div class="cancelled-icon">
+            <!-- Cancelled / Returned State (Separate from timeline) -->
+            <div class="cancelled-state" *ngIf="order().status === 'CANCELLED' || order().status === 'RETURNED'">
+              <div class="cancelled-icon" *ngIf="order().status === 'CANCELLED'">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
               </div>
-              <h3>Đơn hàng đã bị huỷ</h3>
-              <p>Đơn hàng này đã bị huỷ bởi quản trị viên hoặc khách hàng.</p>
+              <div class="returned-icon" *ngIf="order().status === 'RETURNED'">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+              </div>
+              <h3>{{ order().status === 'CANCELLED' ? 'Đơn hàng đã bị huỷ' : 'Giao hàng thất bại (Trả hàng)' }}</h3>
+              <p>{{ order().status === 'CANCELLED' ? 'Đơn hàng này đã bị huỷ bởi quản trị viên hoặc khách hàng.' : 'Shipper báo khách không nhận hàng hoặc không liên lạc được.' }}</p>
             </div>
           </section>
 
@@ -106,8 +109,16 @@
                   <h4 class="item-name">{{ item.productName }}</h4>
                   <p class="item-meta">Phân loại: {{ item.variantSKU }} x {{ item.quantity }}</p>
                 </div>
-                <div class="item-price">
-                  {{ item.lineTotal | currency:'VND':'symbol':'1.0-0' }}
+                <div class="item-actions">
+                  <div class="item-price">
+                    {{ item.lineTotal | currency:'VND':'symbol':'1.0-0' }}
+                  </div>
+                  <!-- REVIEW BUTTON -->
+                  <button class="btn btn-review" 
+                          *ngIf="order().status === 'DELIVERED'"
+                          (click)="openReview(item)">
+                    Đánh giá
+                  </button>
                 </div>
               </div>
             </div>
@@ -169,3 +180,9 @@
 
   </div>
 </div>
+
+<app-review-modal 
+  *ngIf="isReviewModalOpen()" 
+  [product]="selectedProductForReview()" 
+  (close)="closeReview()">
+</app-review-modal>

@@ -1,0 +1,62 @@
+<div class="page-container">
+  <div class="page-header">
+    <h1 class="page-title">Lịch sử đơn hàng</h1>
+    <p class="page-subtitle">Quản lý và theo dõi các đơn hàng bạn đã mua tại EShop.</p>
+  </div>
+
+  <div *ngIf="isLoading()" class="loading-state">
+    <div class="skeleton-card" *ngFor="let i of [1, 2, 3]"></div>
+  </div>
+
+  <div *ngIf="hasError()" class="error-state">
+    <p>Đã xảy ra lỗi khi tải danh sách đơn hàng. Vui lòng thử lại sau.</p>
+    <button class="btn btn-secondary" (click)="fetchOrders()">Thử lại</button>
+  </div>
+
+  <div *ngIf="!isLoading() && !hasError() && orders().length === 0" class="empty-state">
+    <div class="empty-icon">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+      </svg>
+    </div>
+    <h3>Chưa có đơn hàng nào</h3>
+    <p>Bạn chưa mua sắm sản phẩm nào. Hãy khám phá các bộ sưu tập mới nhất nhé.</p>
+    <a routerLink="/product" class="btn btn-primary">Mua sắm ngay</a>
+  </div>
+
+  <div *ngIf="!isLoading() && orders().length > 0" class="order-list">
+    <div class="order-card" *ngFor="let order of orders()">
+      <div class="order-header">
+        <div class="order-info">
+          <span class="order-code">#{{ order.orderCode }}</span>
+          <span class="order-date">{{ order.createdDate | date:'dd/MM/yyyy HH:mm' }}</span>
+        </div>
+        <div class="order-status" [ngClass]="getStatusConfig(order.status).type">
+          {{ getStatusConfig(order.status).text }}
+        </div>
+      </div>
+
+      <div class="order-body">
+        <div class="order-items">
+          <!-- Chỉ hiển thị 2 sản phẩm đầu, ẩn phần còn lại -->
+          <div class="item-row" *ngFor="let item of order.items | slice:0:2">
+            <div class="item-name">{{ item.productName }} <span class="item-variant">({{ item.variantSKU }})</span></div>
+            <div class="item-qty">x{{ item.quantity }}</div>
+          </div>
+          <div class="more-items" *ngIf="order.items.length > 2">
+            + {{ order.items.length - 2 }} sản phẩm khác
+          </div>
+        </div>
+
+        <div class="order-summary">
+          <span class="total-label">Tổng tiền:</span>
+          <span class="total-amount">{{ order.totalAmount | currency:'VND':'symbol':'1.0-0' }}</span>
+        </div>
+      </div>
+
+      <div class="order-footer">
+        <a [routerLink]="['/order', order.id]" class="btn btn-secondary">Xem chi tiết</a>
+      </div>
+    </div>
+  </div>
+</div>

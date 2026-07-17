@@ -36,11 +36,11 @@ export class ProductPageComponent implements OnInit, OnDestroy {
   totalPages = signal<number>(0);
   currentPage = signal<number>(1);
 
-  filter = new ProductFilterModel({ pageIndex: 1, pageSize: 12 });
+  filter = new ProductFilterModel({ pageIndex: 1, pageSize: 12, isActive: undefined });
   minPrice: number | null = null;
   maxPrice: number | null = null;
   selectedSort = 'name_asc';
-  selectedCategories = signal<string[]>([]);
+  selectedCategoryId = signal<number | null>(null);
 
   hasProducts = computed(() => this.products().length > 0);
   categories = this.categoryService.categories;
@@ -197,20 +197,18 @@ export class ProductPageComponent implements OnInit, OnDestroy {
     this.loadProducts();
   }
 
-  onCategoryToggle(categoryName: string): void {
-    const current = this.selectedCategories();
-    const idx = current.indexOf(categoryName);
-    this.selectedCategories.set(
-      idx > -1 ? current.filter(c => c !== categoryName) : [...current, categoryName]
-    );
-    const selected = this.selectedCategories();
-    this.filter.categoryId = selected.length > 0 ? selected[0] : undefined;
+  onCategoryToggle(categoryId: number): void {
+    const current = this.selectedCategoryId();
+    // Click cùng danh mục đang chọn → bỏ chọn (xem tất cả)
+    const next = current === categoryId ? null : categoryId;
+    this.selectedCategoryId.set(next);
+    this.filter.categoryId = next ?? undefined;
     this.filter.pageIndex = 1;
     this.loadProducts();
   }
 
-  isCategorySelected(name: string): boolean {
-    return this.selectedCategories().includes(name);
+  isCategorySelected(id: number): boolean {
+    return this.selectedCategoryId() === id;
   }
 
   onPriceFilter(): void {

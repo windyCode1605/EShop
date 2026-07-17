@@ -56,10 +56,10 @@
           type="button"
           *ngFor="let category of featuredCategories"
           class="filter-chip"
-          [class.active]="selectedCategory === category"
+          [class.active]="selectedCategory === category.id"
           (click)="onCategoryChipChange(category)"
         >
-          {{ category }}
+          {{ category.name }}
         </button>
       </div>
 

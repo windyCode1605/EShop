@@ -47,7 +47,7 @@ import { filter } from 'rxjs';
 
           <ng-container *ngIf="isLoggedIn(); else loginBtn">
             <div class="shell-nav__user">
-              <span class="shell-nav__user-name">Tài khoản</span>
+              <a routerLink="/order" class="shell-nav__user-name" routerLinkActive="is-active">Đơn hàng của tôi</a>
               <button (click)="logout()" class="shell-nav__logout">
                 Đăng xuất
               </button>
@@ -233,6 +233,12 @@ import { filter } from 'rxjs';
         font-size: 14px;
         font-weight: 500;
         color: var(--color-text-primary);
+        text-decoration: none;
+        transition: color 0.2s ease;
+      }
+      .shell-nav__user-name:hover,
+      .shell-nav__user-name.is-active {
+        color: var(--color-accent);
       }
       .shell-nav__logout {
         font-size: 14px;

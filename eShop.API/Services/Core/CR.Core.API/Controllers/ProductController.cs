@@ -17,9 +17,10 @@ public class ProductController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<ApiResponse<PaginatedResult<ProductResponseDto>>>> GetAll(
         [FromQuery] int page = 1,
-        [FromQuery] int size = 10)
+        [FromQuery] int size = 10,
+        [FromQuery] int? categoryId = null)
     {
-        var result = await _productService.GetAllAsync(page, size);
+        var result = await _productService.GetAllAsync(page, size, categoryId);
         return Ok(ApiResponse<PaginatedResult<ProductResponseDto>>.Ok(result));
     }
     [HttpPost]

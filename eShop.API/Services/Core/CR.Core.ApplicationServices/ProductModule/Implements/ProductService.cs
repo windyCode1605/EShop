@@ -55,11 +55,12 @@ public class ProductService : ServiceBase<CoreDbContext>, IProductService
                    .Replace(",", "");
     }
 
-    public async Task<PaginatedResult<ProductResponseDto>> GetAllAsync(int page, int size)
+    public async Task<PaginatedResult<ProductResponseDto>> GetAllAsync(int page, int size, int? categoryId = null)
     {
-        _logger.LogInformation("Method Name: {Method}, Page: {Page}, Size: {Size}", nameof(GetAllAsync), page, size);
+        _logger.LogInformation("Method Name: {Method}, Page: {Page}, Size: {Size}, CategoryId: {CategoryId}", nameof(GetAllAsync), page, size, categoryId);
         var query = _dbContext.Products
             .Where(p => !p.Deleted)
+            .Where(p => !categoryId.HasValue || p.CategoryId == categoryId)
             .Include(p => p.Category)
             .Include(p => p.Images)
             .Include(p => p.Variants.Where(v => !v.Deleted))

@@ -1,0 +1,233 @@
+.page-container {
+  max-width: 1024px;
+  margin: 0 auto;
+  padding: 64px 24px;
+  font-family: 'Geist', 'Satoshi', sans-serif;
+  color: #18181B;
+}
+
+.page-header {
+  margin-bottom: 48px;
+
+  .page-title {
+    font-size: 32px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin: 0 0 8px 0;
+  }
+
+  .page-subtitle {
+    font-size: 16px;
+    color: #71717A;
+    margin: 0;
+  }
+}
+
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+
+  .skeleton-card {
+    height: 180px;
+    border-radius: 24px;
+    background: linear-gradient(90deg, #F4F4F5 25%, #E4E4E7 50%, #F4F4F5 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.empty-state, .error-state {
+  text-align: center;
+  padding: 64px 0;
+  background: #F9FAFB;
+  border-radius: 24px;
+  
+  .empty-icon {
+    color: #A1A1AA;
+    margin-bottom: 16px;
+  }
+
+  h3 {
+    font-size: 20px;
+    font-weight: 500;
+    margin: 0 0 8px 0;
+  }
+
+  p {
+    color: #71717A;
+    margin: 0 0 24px 0;
+  }
+}
+
+.order-list {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.order-card {
+  background: #FFFFFF;
+  border: 1px solid #E4E4E7;
+  border-radius: 24px;
+  padding: 24px;
+  transition: box-shadow 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+  &:hover {
+    box-shadow: 0 10px 40px -10px rgba(0,0,0,0.05);
+  }
+
+  .order-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #F4F4F5;
+    padding-bottom: 16px;
+    margin-bottom: 16px;
+
+    .order-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+
+      .order-code {
+        font-family: 'Geist Mono', 'JetBrains Mono', monospace;
+        font-weight: 600;
+        font-size: 16px;
+      }
+
+      .order-date {
+        color: #71717A;
+        font-size: 14px;
+      }
+    }
+
+    .order-status {
+      font-size: 14px;
+      font-weight: 500;
+      padding: 6px 12px;
+      border-radius: 12px;
+      
+      &.pending { background: #F3F4F6; color: #4B5563; }
+      &.processing { background: #DBEAFE; color: #1E40AF; }
+      &.shipping { background: #FEF3C7; color: #92400E; }
+      &.delivered { background: #D1FAE5; color: #065F46; }
+      &.cancelled { background: #FEE2E2; color: #991B1B; }
+    }
+  }
+
+  .order-body {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 24px;
+    align-items: center;
+
+    .order-items {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+
+      .item-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 15px;
+
+        .item-variant {
+          color: #71717A;
+          font-size: 13px;
+        }
+
+        .item-qty {
+          font-family: 'Geist Mono', monospace;
+          color: #71717A;
+        }
+      }
+
+      .more-items {
+        font-size: 13px;
+        color: #A1A1AA;
+        margin-top: 4px;
+      }
+    }
+
+    .order-summary {
+      text-align: right;
+      
+      .total-label {
+        display: block;
+        font-size: 13px;
+        color: #71717A;
+        margin-bottom: 4px;
+      }
+
+      .total-amount {
+        font-family: 'Geist Mono', monospace;
+        font-size: 18px;
+        font-weight: 600;
+      }
+    }
+  }
+
+  .order-footer {
+    margin-top: 24px;
+    display: flex;
+    justify-content: flex-end;
+  }
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 20px;
+  height: 44px;
+  border-radius: 14px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+  &:active {
+    transform: translateY(1px);
+  }
+
+  &.btn-primary {
+    background: #18181B;
+    color: #FFFFFF;
+    border: none;
+
+    &:hover {
+      background: #27272A;
+      transform: scale(1.02);
+    }
+  }
+
+  &.btn-secondary {
+    background: #FFFFFF;
+    color: #18181B;
+    border: 1px solid #E4E4E7;
+
+    &:hover {
+      border-color: #D4D4D8;
+      background: #F9FAFB;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .order-card .order-body {
+    grid-template-columns: 1fr;
+    
+    .order-summary {
+      text-align: left;
+      border-top: 1px dashed #E4E4E7;
+      padding-top: 16px;
+    }
+  }
+}

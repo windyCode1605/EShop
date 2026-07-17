@@ -4,7 +4,7 @@
  */
 export interface IProductFilter {
   keyword?: string;
-  categoryId?: string;
+  categoryId?: number;
   minPrice?: number;
   maxPrice?: number;
   isActive?: boolean;
@@ -19,7 +19,7 @@ export interface IProductFilter {
  */
 export class ProductFilterModel implements IProductFilter {
   keyword?: string;
-  categoryId?: string;
+  categoryId?: number;
   minPrice?: number;
   maxPrice?: number;
   isActive: boolean = true;
