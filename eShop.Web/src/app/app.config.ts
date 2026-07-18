@@ -6,12 +6,13 @@ import { CookieService } from 'ngx-cookie-service';
 
 import { routes } from './app.routes';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
+import { apiUrlInterceptor } from './core/interceptors/api-url.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes),
     provideHttpClient(
-      withInterceptors([authInterceptor]),
+      withInterceptors([apiUrlInterceptor, authInterceptor]),
       withInterceptorsFromDi()
     ),
     MessageService,

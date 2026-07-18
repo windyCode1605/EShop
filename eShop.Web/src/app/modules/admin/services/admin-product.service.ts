@@ -1,7 +1,7 @@
 import { Injectable, signal } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, of, throwError } from 'rxjs';
-import { environment } from '../../../my-lib/shared/enviroments/enviroment';
+import { API_ENDPOINTS } from '../../../core/constants/api-endpoints.const';
 import { map } from 'rxjs/operators';
 import { ApiResponse } from '../../../core/models';
 import {
@@ -30,11 +30,6 @@ export interface AdminProductListResponse {
 
 @Injectable({ providedIn: 'root' })
 export class AdminProductService {
-  private baseUrl = `${environment.api}/api/Product`;
-  private imageUrl = `${environment.api}/api/Admin/ProductImage`;
-  private attributeUrl = `${environment.api}/api/Admin/ProductAttribute`;
-  private variantUrl = `${environment.api}/api/Admin/ProductVariant`;
-
   // Local state — signal-based
   products = signal<IAdminProduct[]>([]);
   loading = signal<boolean>(false);
@@ -60,7 +55,7 @@ export class AdminProductService {
     if (filter.sortBy) params = params.set('sortBy', filter.sortBy);
     if (filter.sortOrder) params = params.set('sortOrder', filter.sortOrder);
 
-    return this.http.get<ApiResponse<AdminProductListResponse>>(this.baseUrl, { params })
+    return this.http.get<ApiResponse<AdminProductListResponse>>(API_ENDPOINTS.ADMIN.PRODUCT.GET_ALL, { params })
       .pipe(map(res => res.data!));
   }
 
@@ -69,7 +64,7 @@ export class AdminProductService {
    * TODO: Kết nối khi backend sẵn sàng
    */
   getProductById(id: number | string): Observable<IAdminProduct> {
-    return this.http.get<ApiResponse<IAdminProduct>>(`${this.baseUrl}/${id}`)
+    return this.http.get<ApiResponse<IAdminProduct>>(API_ENDPOINTS.ADMIN.PRODUCT.GET_BY_ID(id))
       .pipe(map(res => res.data!));
   }
 
@@ -78,7 +73,7 @@ export class AdminProductService {
    * TODO: Kết nối khi backend sẵn sàng
    */
   createProduct(dto: IProductCreateDto): Observable<IAdminProduct> {
-    return this.http.post<ApiResponse<IAdminProduct>>(this.baseUrl, dto)
+    return this.http.post<ApiResponse<IAdminProduct>>(API_ENDPOINTS.ADMIN.PRODUCT.CREATE, dto)
       .pipe(map(res => res.data!));
   }
 
@@ -87,7 +82,7 @@ export class AdminProductService {
    * TODO: Kết nối khi backend sẵn sàng
    */
   updateProduct(id: number | string, dto: IProductUpdateDto): Observable<IAdminProduct> {
-    return this.http.put<ApiResponse<IAdminProduct>>(`${this.baseUrl}/${id}`, dto)
+    return this.http.put<ApiResponse<IAdminProduct>>(API_ENDPOINTS.ADMIN.PRODUCT.UPDATE(id), dto)
       .pipe(map(res => res.data!));
   }
 
@@ -96,7 +91,7 @@ export class AdminProductService {
    * TODO: Kết nối khi backend sẵn sàng
    */
   deleteProduct(id: number | string): Observable<void> {
-    return this.http.delete<ApiResponse<void>>(`${this.baseUrl}/${id}`)
+    return this.http.delete<ApiResponse<void>>(API_ENDPOINTS.ADMIN.PRODUCT.DELETE(id))
       .pipe(map(res => res.data!));
   }
 
@@ -108,7 +103,7 @@ export class AdminProductService {
    */
   getProductImages(productId: number | string): Observable<IProductImage[]> {
     const params = new HttpParams().set('productId', productId.toString());
-    return this.http.get<IProductImage[]>(this.imageUrl, { params });
+    return this.http.get<IProductImage[]>(API_ENDPOINTS.ADMIN.PRODUCT_IMAGE.GET_ALL, { params });
   }
 
   /**
@@ -116,7 +111,7 @@ export class AdminProductService {
    * TODO: Kết nối khi backend sẵn sàng
    */
   addProductImage(dto: IProductImageCreateDto): Observable<IProductImage> {
-    return this.http.post<IProductImage>(this.imageUrl, dto);
+    return this.http.post<IProductImage>(API_ENDPOINTS.ADMIN.PRODUCT_IMAGE.CREATE, dto);
   }
 
   /**
@@ -124,7 +119,7 @@ export class AdminProductService {
    * TODO: Kết nối khi backend sẵn sàng
    */
   updateProductImage(id: number, dto: Partial<IProductImageCreateDto>): Observable<IProductImage> {
-    return this.http.put<IProductImage>(`${this.imageUrl}/${id}`, dto);
+    return this.http.put<IProductImage>(API_ENDPOINTS.ADMIN.PRODUCT_IMAGE.UPDATE(id), dto);
   }
 
   /**
@@ -132,7 +127,7 @@ export class AdminProductService {
    * TODO: Kết nối khi backend sẵn sàng
    */
   deleteProductImage(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.imageUrl}/${id}`);
+    return this.http.delete<void>(API_ENDPOINTS.ADMIN.PRODUCT_IMAGE.DELETE(id));
   }
 
   /**
@@ -143,7 +138,7 @@ export class AdminProductService {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('productId', productId.toString());
-    return this.http.post<{ url: string }>(`${this.imageUrl}/upload`, formData);
+    return this.http.post<{ url: string }>(API_ENDPOINTS.ADMIN.PRODUCT_IMAGE.UPLOAD, formData);
   }
 
   // ── Product Attributes ─────────────────────────────────────────────────────
@@ -154,7 +149,7 @@ export class AdminProductService {
    */
   getProductAttributes(productId: number | string): Observable<IProductAttribute[]> {
     const params = new HttpParams().set('productId', productId.toString());
-    return this.http.get<IProductAttribute[]>(this.attributeUrl, { params });
+    return this.http.get<IProductAttribute[]>(API_ENDPOINTS.ADMIN.PRODUCT_ATTRIBUTE.GET_ALL, { params });
   }
 
   /**
@@ -162,7 +157,7 @@ export class AdminProductService {
    * TODO: Kết nối khi backend sẵn sàng
    */
   createProductAttribute(productId: number | string, dto: IProductAttributeCreateDto): Observable<IProductAttribute> {
-    return this.http.post<IProductAttribute>(this.attributeUrl, { ...dto, productId });
+    return this.http.post<IProductAttribute>(API_ENDPOINTS.ADMIN.PRODUCT_ATTRIBUTE.CREATE, { ...dto, productId });
   }
 
   /**
@@ -170,7 +165,7 @@ export class AdminProductService {
    * TODO: Kết nối khi backend sẵn sàng
    */
   updateProductAttribute(id: number, dto: Partial<IProductAttributeCreateDto>): Observable<IProductAttribute> {
-    return this.http.put<IProductAttribute>(`${this.attributeUrl}/${id}`, dto);
+    return this.http.put<IProductAttribute>(API_ENDPOINTS.ADMIN.PRODUCT_ATTRIBUTE.UPDATE(id), dto);
   }
 
   /**
@@ -178,7 +173,7 @@ export class AdminProductService {
    * TODO: Kết nối khi backend sẵn sàng
    */
   deleteProductAttribute(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.attributeUrl}/${id}`);
+    return this.http.delete<void>(API_ENDPOINTS.ADMIN.PRODUCT_ATTRIBUTE.DELETE(id));
   }
 
   // ── Product Variants ───────────────────────────────────────────────────────
@@ -189,7 +184,7 @@ export class AdminProductService {
    */
   getProductVariants(productId: number | string): Observable<IAdminProductVariant[]> {
     const params = new HttpParams().set('productId', productId.toString());
-    return this.http.get<IAdminProductVariant[]>(this.variantUrl, { params });
+    return this.http.get<IAdminProductVariant[]>(API_ENDPOINTS.ADMIN.PRODUCT_VARIANT.GET_ALL, { params });
   }
 
   /**
@@ -197,7 +192,7 @@ export class AdminProductService {
    * TODO: Kết nối khi backend sẵn sàng
    */
   createProductVariant(dto: IProductVariantCreateDto): Observable<IAdminProductVariant> {
-    return this.http.post<IAdminProductVariant>(this.variantUrl, dto);
+    return this.http.post<IAdminProductVariant>(API_ENDPOINTS.ADMIN.PRODUCT_VARIANT.CREATE, dto);
   }
 
   /**
@@ -205,7 +200,7 @@ export class AdminProductService {
    * TODO: Kết nối khi backend sẵn sàng
    */
   updateProductVariant(id: number, dto: IProductVariantUpdateDto): Observable<IAdminProductVariant> {
-    return this.http.put<IAdminProductVariant>(`${this.variantUrl}/${id}`, dto);
+    return this.http.put<IAdminProductVariant>(API_ENDPOINTS.ADMIN.PRODUCT_VARIANT.UPDATE(id), dto);
   }
 
   /**
@@ -213,6 +208,6 @@ export class AdminProductService {
    * TODO: Kết nối khi backend sẵn sàng
    */
   deleteProductVariant(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.variantUrl}/${id}`);
+    return this.http.delete<void>(API_ENDPOINTS.ADMIN.PRODUCT_VARIANT.DELETE(id));
   }
 }

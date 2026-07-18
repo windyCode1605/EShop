@@ -1,6 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 import { IAdminOrder, IAdminOrderPagedResult } from '../models/admin-orders.models';
-import { environment } from '../../../my-lib/shared/enviroments/enviroment';
+import { API_ENDPOINTS } from '../../../core/constants/api-endpoints.const';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
@@ -17,13 +17,12 @@ export interface IUpdateOrderStatus {
 export class AdminOrderService { // Đổi tên cho đúng file
 
     Orders = signal<IAdminOrder[]>([]);
-    private readonly apiUrl = environment.api;
 
     constructor(private http: HttpClient) { }
 
     loadOrder() {
         if (this.Orders().length > 0) return;
-        this.http.get<any>(`${this.apiUrl}/api/admin/orders?pageNumber=1&pageSize=10`)
+        this.http.get<any>(`${API_ENDPOINTS.ADMIN.ORDER.BASE}?pageNumber=1&pageSize=10`)
             .subscribe({
                 next: (response) => {
                     if (response.isSuccess && response.value && response.value.items) {
@@ -39,6 +38,6 @@ export class AdminOrderService { // Đổi tên cho đúng file
     }
 
     updateOrderStatus(orderId: string | number, payload: IUpdateOrderStatus): Observable<any> {
-        return this.http.patch<any>(`${this.apiUrl}/api/admin/orders/${orderId}/status`, payload);
+        return this.http.patch<any>(API_ENDPOINTS.ADMIN.ORDER.UPDATE_STATUS(orderId), payload);
     }
 }

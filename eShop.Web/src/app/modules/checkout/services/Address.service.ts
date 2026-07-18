@@ -1,5 +1,5 @@
 import { Injectable, signal } from "@angular/core";
-import { environment } from "../../../my-lib/shared/enviroments/enviroment";
+import { API_ENDPOINTS } from "../../../core/constants/api-endpoints.const";
 import { HttpClient } from "@angular/common/http";
 import { BehaviorSubject, Observable, of, tap, catchError, EMPTY } from "rxjs";
 import { Address, AddressCreatDto } from "../models/address.model";
@@ -7,7 +7,6 @@ import { Address, AddressCreatDto } from "../models/address.model";
 @Injectable({ providedIn: 'root' })
 export class AddressService {
 
-    private apiUrl = environment.api;
     savedAddresses = signal<Address[]>([]);
 
     private loadingSubject = new BehaviorSubject<boolean>(false);
@@ -18,7 +17,7 @@ export class AddressService {
     loadAddress(): Observable<any> {
         if (this.savedAddresses().length > 0) return of(null);
 
-        return this.http.get<any>(`${this.apiUrl}/api/Address`).pipe(
+        return this.http.get<any>(API_ENDPOINTS.ADDRESS.GET_ALL).pipe(
             tap({
                 next: (response) => {
                     if (response.success && response.data) {
@@ -37,7 +36,7 @@ export class AddressService {
     createNewAddress(addressCreatDto: AddressCreatDto): Observable<any> {
         this.loadingSubject.next(true);
 
-        return this.http.post<any>(`${this.apiUrl}/api/Address`, addressCreatDto).pipe(
+        return this.http.post<any>(API_ENDPOINTS.ADDRESS.CREATE, addressCreatDto).pipe(
             tap({
                 next: (response) => {
                     if (response.success && response.data) {

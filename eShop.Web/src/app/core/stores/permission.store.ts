@@ -1,7 +1,7 @@
 import { computed, Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
-import { environment } from '../../my-lib/shared/enviroments/enviroment';
+import { API_ENDPOINTS } from '../../core/constants/api-endpoints.const';
 
 export interface UserAuthorization {
   roles: string[];
@@ -23,8 +23,6 @@ export interface UserAuthorization {
  */
 @Injectable({ providedIn: 'root' })
 export class PermissionStore {
-  private readonly apiUrl = `${environment.api}/api/me/permissions`;
-
 
   private readonly _roles = signal<string[]>([]);
   private readonly _permissions = signal<string[]>([]);
@@ -47,7 +45,7 @@ export class PermissionStore {
   async load(): Promise<void> {
     try {
       const res = await firstValueFrom(
-        this.http.get<{ data: UserAuthorization }>(`${this.apiUrl}`)
+        this.http.get<{ data: UserAuthorization }>(API_ENDPOINTS.ME.PERMISSIONS)
       );
       this._roles.set(res.data.roles ?? []);
       this._permissions.set(res.data.permissions ?? []);

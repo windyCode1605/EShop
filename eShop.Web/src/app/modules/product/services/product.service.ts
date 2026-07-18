@@ -4,11 +4,10 @@ import { Observable, map } from 'rxjs';
 import { ProductResponseDto, ApiPaginatedResponse, IProduct } from '../../product-manager/models/product.model';
 import { ProductFilterModel } from '../../product-manager/models/product-filter.model';
 import { environment } from '../../../my-lib/shared/enviroments/enviroment';
+import { API_ENDPOINTS } from '../../../core/constants/api-endpoints.const';
 
 @Injectable({ providedIn: 'root' })
 export class ProductService {
-  private apiUrl = `${environment.api}/api/Product`;
-
   constructor(private http: HttpClient) { }
 
   getProducts(filter: ProductFilterModel): Observable<ProductResponseDto> {
@@ -26,7 +25,7 @@ export class ProductService {
     if (filter.sortBy) params = params.set('sortBy', filter.sortBy);
     if (filter.sortOrder) params = params.set('sortOrder', filter.sortOrder);
 
-    return this.http.get<ApiPaginatedResponse<IProduct>>(this.apiUrl, { params }).pipe(
+    return this.http.get<ApiPaginatedResponse<IProduct>>(API_ENDPOINTS.PRODUCT.GET_ALL, { params }).pipe(
       map(response => ({
         items: response.data?.items || [],
         totalCount: response.data?.totalCount || 0,
@@ -40,7 +39,7 @@ export class ProductService {
   }
 
   getProductById(id: string | number): Observable<IProduct> {
-    return this.http.get<{ success: boolean; data: IProduct; message?: string }>(`${this.apiUrl}/${id}`).pipe(
+    return this.http.get<{ success: boolean; data: IProduct; message?: string }>(API_ENDPOINTS.PRODUCT.GET_BY_ID(id)).pipe(
       map(response => response.data)
     );
   }

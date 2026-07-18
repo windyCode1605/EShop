@@ -2,13 +2,11 @@ import { computed, Injectable, signal } from "@angular/core";
 import { catchError, finalize, Observable, throwError, tap } from "rxjs";
 import { AddToCartRequest, AddToCartResponse, ApiResult, CartErrorCode, CartItemDto, CartSummaryDto } from "../models/cart.models";
 import { HttpClient, HttpErrorResponse } from "@angular/common/http";
-import { environment } from "../../../my-lib/shared/enviroments/enviroment";
+import { API_ENDPOINTS } from "../../../core/constants/api-endpoints.const";
 
 
 @Injectable({ providedIn: 'root' })
 export class CartService {
-    private readonly baseUrl = `${environment.api}/api/Cart`;
-
     private _totalItems = signal<number>(0);
     private _isSyncing = signal<boolean>(false);
 
@@ -24,7 +22,7 @@ export class CartService {
         this._totalItems.set(previousCount + request.quantity);
 
         return this.http.post<ApiResult<AddToCartResponse>>(
-            `${this.baseUrl}/add-to-cart`,
+            API_ENDPOINTS.CART.ADD_TO_CART,
             request
         ).pipe(
             tap((res) => {
@@ -41,7 +39,7 @@ export class CartService {
 
     getMyCart(): Observable<ApiResult<CartSummaryDto>> {
         this._isSyncing.set(true);
-        return this.http.get<ApiResult<CartSummaryDto>>(`${this.baseUrl}/get-my-cart`).pipe(
+        return this.http.get<ApiResult<CartSummaryDto>>(API_ENDPOINTS.CART.GET_MY_CART).pipe(
             tap((res) => {
                 if (res.isSuccess && res.value) {
                     this._totalItems.set(res.value.totalItems);
@@ -57,7 +55,7 @@ export class CartService {
     updateCartItem(cartItemId: number, quantity: number): Observable<ApiResult<boolean>> {
         this._isSyncing.set(true);
         const payload = { cartItemId, quantity };
-        return this.http.put<ApiResult<boolean>>(`${this.baseUrl}/update-item`, payload).pipe(
+        return this.http.put<ApiResult<boolean>>(API_ENDPOINTS.CART.UPDATE_ITEM, payload).pipe(
             catchError((err: HttpErrorResponse) => {
                 return throwError(() => this.mapError(err));
             }),
@@ -67,7 +65,7 @@ export class CartService {
 
     removeCartItem(cartItemId: number): Observable<ApiResult<boolean>> {
         this._isSyncing.set(true);
-        return this.http.delete<ApiResult<boolean>>(`${this.baseUrl}/remove-item`, {
+        return this.http.delete<ApiResult<boolean>>(API_ENDPOINTS.CART.REMOVE_ITEM, {
             body: cartItemId,
             headers: { 'Content-Type': 'application/json' }
         }).pipe(
