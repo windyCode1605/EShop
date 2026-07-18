@@ -1,6 +1,4 @@
-/**
- * Helper function to generate standard CRUD endpoints for a given base path.
- */
+
 function createCrudEndpoints(basePath: string) {
     return {
         BASE: basePath,
@@ -13,8 +11,21 @@ function createCrudEndpoints(basePath: string) {
 }
 
 export const API_ENDPOINTS = {
-    PRODUCT: {
-        ...createCrudEndpoints('/api/Product'),
+    // PUBLIC / CUSTOMER ENDPOINTS
+    ADDRESS: {
+        ...createCrudEndpoints('/api/Address'),
+        SET_DEFAULT: (id: string | number) => `/api/Address/${id}/default`,
+    },
+
+    CART: {
+        ...createCrudEndpoints('/api/Cart'),
+        ADD_TO_CART: '/api/Cart/add-to-cart',
+        GET_MY_CART: '/api/Cart/get-my-cart',
+        UPDATE_ITEM: '/api/Cart/update-item',
+        REMOVE_ITEM: '/api/Cart/remove-item',
+        CLEAR: '/api/Cart/clear',
+        VALIDATE: '/api/Cart/validate',
+        CHECKOUT_PREVIEW: '/api/Cart/checkout-preview',
     },
 
     CATEGORY: {
@@ -27,53 +38,77 @@ export const API_ENDPOINTS = {
         ...createCrudEndpoints('/api/Order'),
         CREATE: '/api/Order/create',
         MY_ORDERS: '/api/Order/my-orders',
+        CANCEL: (id: string | number) => `/api/Order/${id}/cancel`,
     },
 
-    ADDRESS: {
-        ...createCrudEndpoints('/api/Address'),
+    PAYMENT: {
+        GET_BY_ORDER_ID: (orderId: string | number) => `/api/payments/order/${orderId}`,
+        CREATE_URL: (orderId: string | number) => `/api/payments/order/${orderId}/create-url`,
+        GATEWAY_CALLBACK: '/api/payments/gateway/callback',
+        CONFIRM_BANK_TRANSFER: (orderId: string | number) => `/api/payments/order/${orderId}/confirm-bank-transfer`,
+        REFUND: (orderId: string | number) => `/api/payments/order/${orderId}/refund`,
     },
 
-    CART: {
-        ...createCrudEndpoints('/api/Cart'),
-        ADD_TO_CART: '/api/Cart/add-to-cart',
-        GET_MY_CART: '/api/Cart/get-my-cart',
-        UPDATE_ITEM: '/api/Cart/update-item',
-        REMOVE_ITEM: '/api/Cart/remove-item',
+    PRODUCT: {
+        ...createCrudEndpoints('/api/Product'),
     },
 
-    // ---------------------------------------------------------
+    SHIPMENT: {
+        GET_BY_ORDER_ID: (orderId: string | number) => `/api/shipments/order/${orderId}`,
+        WEBHOOK: '/api/shipments/webhook',
+        TRACKING: '/api/shipments/tracking',
+        UPDATE_STATUS: (shipmentId: string | number) => `/api/shipments/${shipmentId}/status`,
+    },
+
     // AUTH & USER ENDPOINTS
-    // ---------------------------------------------------------
     AUTH: {
         REGISTER: '/api/auth/register',
         VERIFY_OTP: '/api/auth/verify-otp',
         SET_PASSWORD: '/api/auth/set-password',
+        CONNECT_AUTHORIZE: '/connect/authorize',
+        AUTHENTICATE_LOGIN: '/authenticate/login',
+        CONNECT_TOKEN: '/connect/token',
     },
 
     ME: {
         PERMISSIONS: '/api/me/permissions',
     },
 
-    // ---------------------------------------------------------
     // ADMIN ENDPOINTS
-    // ---------------------------------------------------------
     ADMIN: {
-        PRODUCT: {
-            ...createCrudEndpoints('/api/Admin/Product'),
-        },
-        PRODUCT_IMAGE: {
-            ...createCrudEndpoints('/api/Admin/ProductImage'),
-            UPLOAD: '/api/Admin/ProductImage/upload',
-        },
-        PRODUCT_ATTRIBUTE: {
-            ...createCrudEndpoints('/api/Admin/ProductAttribute'),
-        },
-        PRODUCT_VARIANT: {
-            ...createCrudEndpoints('/api/Admin/ProductVariant'),
+        ATTRIBUTE: {
+            ...createCrudEndpoints('/api/attribute/AdminAttribute'),
+            GET_VALUE: '/api/attribute/AdminAttribute/value',
+            POST_VALUE: '/api/attribute/AdminAttribute/value',
         },
         ORDER: {
             ...createCrudEndpoints('/api/admin/orders'),
             UPDATE_STATUS: (id: string | number) => `/api/admin/orders/${id}/status`,
+        },
+        ROLE: {
+            ...createCrudEndpoints('/api/admin/roles'),
+            GET_PERMISSIONS: (roleId: string | number) => `/api/admin/roles/${roleId}/permissions`,
+            UPDATE_PERMISSIONS: (roleId: string | number) => `/api/admin/roles/${roleId}/permissions`,
+            GET_ALL_PERMISSIONS: '/api/admin/roles/all-permissions',
+        },
+        USER: {
+            UPDATE_ROLES: (userId: string | number) => `/api/admin/users/${userId}/roles`,
+            TEST_PERMISSION: '/api/admin/users/test-permission',
+        },
+
+        // Vẫn giữ lại để không vỡ service cũ (AdminProductService đang dùng)
+        PRODUCT: {
+            ...createCrudEndpoints('/api/Product'),
+        },
+        PRODUCT_IMAGE: {
+            ...createCrudEndpoints('/api/admin/ProductImage'),
+            UPLOAD: '/api/admin/ProductImage/upload',
+        },
+        PRODUCT_ATTRIBUTE: {
+            ...createCrudEndpoints('/api/admin/ProductAttribute'),
+        },
+        PRODUCT_VARIANT: {
+            ...createCrudEndpoints('/api/admin/ProductVariant'),
         },
     },
 } as const;
