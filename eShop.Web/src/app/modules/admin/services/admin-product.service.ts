@@ -69,11 +69,11 @@ export class AdminProductService {
   }
 
   /**
-   * POST /api/Admin/Product — tạo sản phẩm mới
-   * TODO: Kết nối khi backend sẵn sàng
+   * POST /api/Product — Luồng 1: Tạo Product + Variants cùng 1 lần.
+   * Variants là optional — có thể gửi mảng rỗng nếu muốn tạo variant riêng sau.
    */
   createProduct(dto: IProductCreateDto): Observable<IAdminProduct> {
-    return this.http.post<ApiResponse<IAdminProduct>>(API_ENDPOINTS.ADMIN.PRODUCT.CREATE, dto)
+    return this.http.post<ApiResponse<IAdminProduct>>(API_ENDPOINTS.PRODUCT.CREATE, dto)
       .pipe(map(res => res.data!));
   }
 
@@ -188,11 +188,12 @@ export class AdminProductService {
   }
 
   /**
-   * POST /api/Admin/ProductVariant — tạo variant mới
-   * TODO: Kết nối khi backend sẵn sàng
+   * POST /api/Product/variants — Luồng 2: Tạo Variant độc lập cho Product đã có.
+   * dto.productId là bắt buộc.
    */
   createProductVariant(dto: IProductVariantCreateDto): Observable<IAdminProductVariant> {
-    return this.http.post<IAdminProductVariant>(API_ENDPOINTS.ADMIN.PRODUCT_VARIANT.CREATE, dto);
+    return this.http.post<ApiResponse<IAdminProductVariant>>(API_ENDPOINTS.PRODUCT.VARIANT_CREATE, dto)
+      .pipe(map(res => res.data!));
   }
 
   /**

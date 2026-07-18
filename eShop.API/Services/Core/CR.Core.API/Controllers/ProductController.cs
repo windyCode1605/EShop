@@ -38,4 +38,23 @@ public class ProductController : ControllerBase
 
         return Ok(ApiResponse<ProductResponseDto>.Ok(result.Value));
     }
+
+    [HttpPut("{id}")]
+    public async Task<ActionResult<ApiResponse<ProductResponseDto>>> Update(int id, [FromBody] ProductRequestDto dto)
+    {
+        var result = await _productService.UpdateAsync(id, dto);
+        if (result.IsFailure)
+            return BadRequest(result);
+
+        return Ok(ApiResponse<ProductResponseDto>.Ok(result.Value));
+    }
+    [HttpPost("variants")]
+    public async Task<ActionResult<ApiResponse<ProductVariantResponseDto>>> CreateVariant([FromBody] CreateProductVariantDto dto)
+    {
+        var result = await _productService.CreateProductVariantAsync(dto);
+        if (result.IsFailure)
+            return BadRequest(result);
+
+        return Ok(ApiResponse<ProductVariantResponseDto>.Ok(result.Value));
+    }
 }

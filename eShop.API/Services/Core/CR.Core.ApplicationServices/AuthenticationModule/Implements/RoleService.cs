@@ -53,7 +53,7 @@ public class RoleService : CoreServiceBase, IRoleService
         _logger.LogInformation("{Method} called", nameof(GetCurrentUserAuthorizationAsync));
 
         var userId = _httpContext.GetCurrentUserId();
-        if (userId == null)
+        if (userId <= 0)
             return Result<UserAuthorizationDto>.Failure(
                 ErrorCode.UserNotFound,
                 this.GetCurrentMethodInfo(),

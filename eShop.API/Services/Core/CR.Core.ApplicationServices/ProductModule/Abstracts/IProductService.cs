@@ -8,6 +8,8 @@ public interface IProductService
 {
     Task<PaginatedResult<ProductResponseDto>> GetAllAsync(int Page, int size, int? categoryId = null);
     Task<ProductResponseDto> CreateAsync(ProductRequestDto dto);
-    // Task<ProductResponseDto> UpdateAsync(ProductRequestDto dto);
+    Task<Result<ProductResponseDto>> UpdateAsync(int id, ProductRequestDto dto);
     Task<Result<ProductResponseDto>> GetByIdAsync(int id);
+    /// <summary>Tạo Variant mới cho Product đã tồn tại. <c>dto.ProductId</c> là bắt buộc.</summary>
+    Task<Result<ProductVariantResponseDto>> CreateProductVariantAsync(CreateProductVariantDto dto);
 }

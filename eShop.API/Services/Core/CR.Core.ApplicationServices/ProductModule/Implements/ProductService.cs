@@ -7,7 +7,6 @@ using CR.Core.Domain.Catalog;
 using CR.Core.Dtos.Product;
 using CR.DtoBase;
 using CR.Utils.DataUtils;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.EntityFrameworkCore;
 
 namespace CR.Core.ApplicationServices.Common.ServiceImplementations;
@@ -40,9 +39,11 @@ public class ProductService : ServiceBase<CoreDbContext>, IProductService
 
         var result = await _dbContext.Products
             .Include(p => p.Category)
+            .Include(p => p.Variants)
             .FirstAsync(p => p.Id == product.Id);
 
-        _logger.LogInformation("Product created: Id={Id}, Name={Name}", result.Id, result.Name);
+        _logger.LogInformation("Product created: Id={Id}, Name={Name}, Variants={Count}",
+            result.Id, result.Name, result.Variants.Count);
 
         return _mapper.Map<ProductResponseDto>(result);
     }
@@ -114,8 +115,86 @@ public class ProductService : ServiceBase<CoreDbContext>, IProductService
         return Result<ProductResponseDto>.Success(resultDto);
     }
 
-    // public async Task<Result<ProductResponseDto>> UpdateAsync(ProductRequestDto input)
-    // {
+    public async Task<Result<ProductVariantResponseDto>> CreateProductVariantAsync(CreateProductVariantDto dto)
+    {
+        _logger.LogInformation("Method Name: {Method}, ProductId={ProductId}, SKU={SKU}",
+            nameof(CreateProductVariantAsync), dto.ProductId, dto.SKU);
 
-    // }
+        if (dto.ProductId is null or <= 0)
+            return Result<ProductVariantResponseDto>.Failure(
+                ErrorCode.InvalidInput, this.GetCurrentMethodInfo(),
+                "ProductId is required.");
+        var productExists = await _dbContext.Products
+            .AnyAsync(p => p.Id == dto.ProductId && !p.Deleted);
+
+        if (!productExists)
+            return Result<ProductVariantResponseDto>.Failure(
+                ErrorCode.InvalidInput, this.GetCurrentMethodInfo(),
+                $"Product with Id {dto.ProductId} does not exist.");
+
+        var skuExists = await _dbContext.ProductVariants
+            .AnyAsync(v => v.SKU == dto.SKU && !v.Deleted);
+
+        if (skuExists)
+            return Result<ProductVariantResponseDto>.Failure(
+                ErrorCode.InvalidInput, this.GetCurrentMethodInfo(),
+                $"SKU '{dto.SKU}' already exists.");
+
+        var variant = _mapper.Map<ProductVariant>(dto);
+        variant.ProductId = dto.ProductId.Value;
+
+        _dbContext.ProductVariants.Add(variant);
+        await _dbContext.SaveChangesAsync();
+
+        var saved = await _dbContext.ProductVariants
+            .Include(v => v.VariantAttributes.Where(va => !va.Deleted))
+                .ThenInclude(va => va.Attribute)
+            .Include(v => v.VariantAttributes.Where(va => !va.Deleted))
+                .ThenInclude(va => va.AttributeValue)
+            .FirstAsync(v => v.Id == variant.Id);
+
+        _logger.LogInformation("ProductVariant created: Id={Id}, SKU={SKU}, ProductId={ProductId}",
+            saved.Id, saved.SKU, saved.ProductId);
+
+        return Result<ProductVariantResponseDto>.Success(
+            _mapper.Map<ProductVariantResponseDto>(saved));
+    }
+
+    public async Task<Result<ProductResponseDto>> UpdateAsync(int id, ProductRequestDto dto)
+    {
+        _logger.LogInformation("Method Name: {Method}, ProductId={ProductId}", nameof(UpdateAsync), id);
+
+        var product = await _dbContext.Products
+            .Include(p => p.Category)
+            .Include(p => p.Variants)
+            .FirstOrDefaultAsync(p => p.Id == id && !p.Deleted);
+
+        if (product == null)
+        {
+            return Result<ProductResponseDto>.Failure(ErrorCode.InvalidInput, this.GetCurrentMethodInfo(), "Product not found");
+        }
+
+        var categoryExists = await _dbContext.Categories.AnyAsync(c => c.Id == dto.CategoryId && !c.Deleted);
+        if (!categoryExists)
+        {
+            return Result<ProductResponseDto>.Failure(ErrorCode.InvalidInput, this.GetCurrentMethodInfo(), $"Category with Id {dto.CategoryId} does not exist.");
+        }
+
+        // Cập nhật thông tin cơ bản
+        product.Name = dto.Name;
+        product.CategoryId = dto.CategoryId;
+        product.BasePrice = dto.Price;
+        product.Description = dto.Description;
+        product.Slug = GenerateSlug(dto.Name);
+
+        // UpdateAsync này tạm thời CHỈ cập nhật thông tin Product cơ bản. 
+        // Các Variants được quản lý độc lập qua luồng POST /api/Product/variants, 
+        // hoặc  có thể gọi endpoint cập nhật/xóa variant riêng.
+
+        _dbContext.Products.Update(product);
+        await _dbContext.SaveChangesAsync();
+
+        var resultDto = _mapper.Map<ProductResponseDto>(product);
+        return Result<ProductResponseDto>.Success(resultDto);
+    }
 }

@@ -8,7 +8,7 @@ public class OrderResponseDto : BaseResponseDto
 {
     public int UserId { get; set; }
     public string? status { get; set; }
-    public string StatusDisplay => status.ToString();
+    public string StatusDisplay => status?.ToString() ?? string.Empty;
     public decimal Total { get; set; }
     public List<OrderItemResponseDto> Items { get; set; } = new();
 

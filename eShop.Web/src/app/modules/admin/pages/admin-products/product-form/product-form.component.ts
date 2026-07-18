@@ -168,9 +168,38 @@ export class ProductFormComponent {
   }
   addVariant() {
     if (this.newVariant.sku) {
-      this.variants.update(arr => [...arr, { ...this.newVariant, isActive: true, isDefault: arr.length === 0, attributes: [] }]);
-      this.newVariant = { sku: '', priceAdjustment: 0, stockQuantity: 0 };
-      this.showVariantForm = false;
+      if (this.isEdit && this.form.id) {
+        // Luồng 2: Gọi API trực tiếp để tạo Variant cho Product đã tồn tại
+        this.saving.set(true);
+        const dto = {
+          productId: this.form.id,
+          sku: this.newVariant.sku,
+          priceAdjustment: this.newVariant.priceAdjustment,
+          stockQuantity: this.newVariant.stockQuantity,
+          isDefault: this.variants().length === 0,
+          isActive: true,
+          attributes: []
+        };
+        
+        this.productService.createProductVariant(dto).subscribe({
+          next: (res) => {
+            this.variants.update(arr => [...arr, res]);
+            this.newVariant = { sku: '', priceAdjustment: 0, stockQuantity: 0 };
+            this.showVariantForm = false;
+            this.saving.set(false);
+            // Optionally emit saved event if you want the parent to reload
+            this.saved.emit(false); 
+          },
+          error: () => {
+            this.saving.set(false);
+          }
+        });
+      } else {
+        // Luồng 1: Chỉ lưu vào mảng tạm thời, gửi đi khi nhấn Save Product
+        this.variants.update(arr => [...arr, { ...this.newVariant, isActive: true, isDefault: arr.length === 0, attributes: [] }]);
+        this.newVariant = { sku: '', priceAdjustment: 0, stockQuantity: 0 };
+        this.showVariantForm = false;
+      }
     }
   }
 }
