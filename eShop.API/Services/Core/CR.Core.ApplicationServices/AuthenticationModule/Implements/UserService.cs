@@ -233,5 +233,29 @@ namespace CR.Core.ApplicationServices.AuthenticationModule.Implements
 
             return Result<bool>.Success(true);
         }
+
+        public async Task<Result<UserDto>> GetUserByIdAsync(int userId)
+        {
+            var user = await _dbContext.Users
+                .Include(u => u.Profile)
+                .FirstOrDefaultAsync(u => u.Id == userId && !u.Deleted);
+            
+            if (user == null)
+            {
+                return Result<UserDto>.Failure(ErrorCode.UserNotFound, this.GetCurrentMethodInfo());
+            }
+
+            return Result<UserDto>.Success(new UserDto
+            {
+                Id = user.Id,
+                Username = user.Username,
+                Email = user.Email,
+                FullName = user.Profile?.FullName,
+                Phone = user.Profile?.PhoneNumber,
+                UserType = user.UserType,
+                Status = user.Status,
+                IsPasswordTemp = user.IsTempPassword
+            });
+        }
     }
 }

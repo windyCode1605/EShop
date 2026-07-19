@@ -20,5 +20,6 @@ namespace CR.Core.ApplicationServices.AuthenticationModule.Abstracts
         Task<Result> LoginInfor(int userId);
 
         Task<Result<bool>> AssignRoleToUser(int userId, int roleId);
+        Task<Result<UserDto>> GetUserByIdAsync(int userId);
     }
 }

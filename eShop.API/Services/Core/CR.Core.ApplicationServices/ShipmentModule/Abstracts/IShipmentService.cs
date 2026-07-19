@@ -31,4 +31,7 @@ public interface IShipmentService
     /// <param name="newStatus"></param>
     /// <returns></returns>
     Task<Result>                    UpdateShipmentStatus(int ShipmentID, string newStatus); // Cập nhật trạng thái vận chuyển (ví dụ: "In Transit", "Delivered", "Returned")
+    Task<Result>                    CreateInitialShipmentAsync(int orderId, string receiverName, string receiverPhone, string shippingAddress, string shippingProvider, decimal shippingFee);
+    Task<Result>                    UpdateShipmentStatusByOrderIdAsync(int orderId, string newStatus);
+    Task<Result>                    UpdateTrackingByOrderIdAsync(int orderId, string trackingNumber, string shippingProvider);
 }

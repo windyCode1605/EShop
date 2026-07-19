@@ -42,10 +42,10 @@ export class OrderHistoryComponent implements OnInit {
   fetchOrders() {
     this.isLoading.set(true);
     this.hasError.set(false);
-    
+
     // Fetch page 1, size 10 for demo. We can add pagination later.
-    const params = { pageIndex: 1, pageSize: 20 };
-    
+    const params = { pageNumber: 1, pageSize: 20 };
+
     this.orderService.getMyOrders(params).subscribe({
       next: (res) => {
         if (res.isSuccess && res.value) {

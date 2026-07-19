@@ -80,8 +80,8 @@ namespace CR.Core.ApplicationServices.PaymentModule.Implement
                     this.GetCurrentMethodInfo()
                 );
             }
-            var payment =  order.Payments.FirstOrDefault();
-            if(payment == null )
+            var payment = order.Payments.FirstOrDefault();
+            if (payment == null)
             {
                 return Result<PaymentUrlDto>.Failure(
                     ErrorCode.PaymentNotFound,
@@ -109,7 +109,7 @@ namespace CR.Core.ApplicationServices.PaymentModule.Implement
             var order = await _dbContext.Orders
                 .Include(o => o.Payments)
                 .Include(o => o.Shipments)
-                .FirstOrDefaultAsync(o => o.OrderCode == input.OrderCode && !o.Deleted); 
+                .FirstOrDefaultAsync(o => o.OrderCode == input.OrderCode && !o.Deleted);
             if (order == null)
             {
                 return Result.Failure(
@@ -117,7 +117,7 @@ namespace CR.Core.ApplicationServices.PaymentModule.Implement
                     this.GetCurrentMethodInfo()
                 );
             }
-            var payment = order.Payments.FirstOrDefault( p =>
+            var payment = order.Payments.FirstOrDefault(p =>
                 p.Status == PaymentStatus.Processing);
             if (payment == null)
             {
@@ -129,7 +129,7 @@ namespace CR.Core.ApplicationServices.PaymentModule.Implement
             using var transaction = await _dbContext.Database.BeginTransactionAsync();
             try
             {
-                if(input.IsSuccess)
+                if (input.IsSuccess)
                 {
                     // ---- Thanh toán thành công ----
                     payment.Status = PaymentStatus.Success;
@@ -163,7 +163,7 @@ namespace CR.Core.ApplicationServices.PaymentModule.Implement
                     if (couponUsage != null)
                     {
                         couponUsage.Coupon.UsedCount = Math.Max(0, couponUsage.Coupon.UsedCount - 1); // Giảm UsedCount của coupon đi 1 (không để âm)
-                        _dbContext.CouponUsages.Remove(couponUsage); 
+                        _dbContext.CouponUsages.Remove(couponUsage);
                     }
                     _logger.LogWarning("Đơn hàng {OrderCode} thanh toán thất bại. Code: {Code}", order.OrderCode, input.ResponseCode);
 
@@ -191,12 +191,12 @@ namespace CR.Core.ApplicationServices.PaymentModule.Implement
                 .Include(o => o.Payments)
                 .FirstOrDefault(o =>
                     o.Id == orderId && !o.Deleted);
-            if (order == null) 
+            if (order == null)
                 return Result.Failure(
                     ErrorCode.OrderNotFound,
                     this.GetCurrentMethodInfo()
                     );
-            var payment = order.Payments.FirstOrDefault(p => 
+            var payment = order.Payments.FirstOrDefault(p =>
             p.Method == PaymentMethod.BankTransfer && p.Status == PaymentStatus.Pending);
             if (payment == null)
             {
@@ -220,14 +220,14 @@ namespace CR.Core.ApplicationServices.PaymentModule.Implement
             var payment = _dbContext.Payments
                 .Include(p => p.Order)
                 .FirstOrDefault(p => p.OrderId == orderId);
-            if(payment == null) 
+            if (payment == null)
             {
                 return Result.Failure(
                     ErrorCode.PaymentNotFound,
                     this.GetCurrentMethodInfo()
                 );
             }
-            if(payment.Status != PaymentStatus.Success)
+            if (payment.Status != PaymentStatus.Success)
             {
                 return Result.Failure(
                     ErrorCode.PaymentCannotRefund,
@@ -237,7 +237,7 @@ namespace CR.Core.ApplicationServices.PaymentModule.Implement
             // TODO Production: Goi API của VNPay/MoMo để thực hiện hoàn tiền thực tế
             payment.Status = PaymentStatus.Refunded;
             var order = await _dbContext.Orders.FirstAsync(o => o.Id == orderId);
-            if(order != null) order.ModifiedDate = DateTimeUtils.GetDate();
+            if (order != null) order.ModifiedDate = DateTimeUtils.GetDate();
             _logger.LogInformation("Đơn hàng {OrderCode} đã được hoàn tiền. Lý do: {reason}", payment.Order.OrderCode, reason);
             await _dbContext.SaveChangesAsync();
             return Result.Success();
@@ -246,6 +246,32 @@ namespace CR.Core.ApplicationServices.PaymentModule.Implement
         {
             // TODO: Thay bằng SDK thực tế của VNPay/MoMo
             return $"https://payment.example.com/{method.ToLower()}?order={orderCode}&amount={amount}";
+        }
+        public async Task<Result> CreateInitialPaymentAsync(int OrderId, decimal amount, string PaymentMethod)
+        {
+            _dbContext.Payments.Add(new Domain.Payment.Payments
+            {
+                OrderId = OrderId,
+                Amount = amount,
+                Status = PaymentStatus.Pending.ToString(),
+                Method = PaymentMethod,
+                PaidAt = null,
+            });
+            return Result.Success();
+        }
+
+        public async Task<Result> UpdatePaymentStatusByOrderIdAsync(int orderId, string newStatus)
+        {
+            var payment = await _dbContext.Payments.FirstOrDefaultAsync(p => p.OrderId == orderId);
+            if (payment != null && payment.Status == PaymentStatus.Pending.ToString())
+            {
+                payment.Status = newStatus;
+                if (newStatus == PaymentStatus.Success.ToString())
+                {
+                    payment.PaidAt = DateTimeUtils.GetDate();
+                }
+            }
+            return Result.Success();
         }
     }
 }

@@ -4,28 +4,30 @@ using CR.DtoBase;
 namespace CR.Core.ApplicationServices.PaymentModule.Abstracts;
 public interface IPaymentService
 {
-    Task<Result<PaymentDto>>        GetOrderById(int orderId);
+    Task<Result<PaymentDto>> GetOrderById(int orderId);
     /// <summary>
     /// Tạo URL thanh toán cho đơn hàng (dùng cho online payment)
     /// </summary>
     /// <param name="orderId"></param>
     /// <returns></returns>
-    Task<Result<PaymentUrlDto>>     CreatePaymentUrl(int orderId);     
+    Task<Result<PaymentUrlDto>> CreatePaymentUrl(int orderId);
     /// <summary>
     /// Xử lý callback từ payment gateway (VNPay/MoMo webhook)
     /// </summary> <param name="input"></param>
     /// <returns></returns>             
-    Task<Result>                    HandleGatewayCallback(GatewayCallbackDto input);// Xử lý callback từ payment gateway (VNPay/MoMo webhook)
+    Task<Result> HandleGatewayCallback(GatewayCallbackDto input);// Xử lý callback từ payment gateway (VNPay/MoMo webhook)
     /// <summary>
     /// Admin xác nhận đã nhận được chuyển khoản ngân hàng (dùng cho offline payment)
     /// </summary>
     /// <param name="orderId"></param>
     /// <returns></returns>
-    Task<Result>                    ConfirmBankTransfer(int orderId);               // Xác nhận đã nhận được chuyển khoản ngân hàng (dùng cho offline payment)  
+    Task<Result> ConfirmBankTransfer(int orderId);               // Xác nhận đã nhận được chuyển khoản ngân hàng (dùng cho offline payment)  
     /// <summary>
     /// Hoàn tiền cho đơn hàng (có thể dùng cho cả online và offline payment)
     /// </summary>
     /// <param name="orderId"></param>
     /// <param name="reason"></param>
-    Task<Result>                    RefundPayment(int orderId, string reason);      // Hoàn tiền cho đơn hàng (có thể dùng cho cả online và offline payment)
+    Task<Result> RefundPayment(int orderId, string reason);      // Hoàn tiền cho đơn hàng (có thể dùng cho cả online và offline payment)
+    Task<Result> CreateInitialPaymentAsync(int orderId, decimal amount, string PaymentMethod);
+    Task<Result> UpdatePaymentStatusByOrderIdAsync(int orderId, string newStatus);
 }

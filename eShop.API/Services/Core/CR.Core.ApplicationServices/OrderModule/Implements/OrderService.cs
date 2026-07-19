@@ -15,15 +15,37 @@ using CR.InfrastructureBase;
 using CR.Utils.DataUtils;
 using Microsoft.EntityFrameworkCore;
 using CR.Constants.Orders;
+using CR.Core.ApplicationServices.CartModule.Abstracts;
+using CR.Core.ApplicationServices.AddressModule.Abstracts;
+using CR.Core.ApplicationServices.PaymentModule.Abstracts;
+using CR.Core.ApplicationServices.AuthenticationModule.Abstracts;
+using CR.Core.ApplicationServices.ShipmentModule.Abstracts;
 
 
 namespace CR.Core.ApplicationServices.OrderModule.Implements;
 
 public class OrderService : CoreServiceBase, IOrderService
 {
-    public OrderService(ILogger<OrderService> logger, IHttpContextAccessor httpContext)
+    private readonly ICartService _cartService;
+    private readonly IAddressService _addressService;
+    private readonly IPaymentService _paymentService;
+    private readonly IUserService _userService;
+    private readonly IShipmentService _shipmentService;
+    public OrderService(
+        ILogger<OrderService> logger,
+        IHttpContextAccessor httpContext,
+        ICartService cartService,
+        IAddressService addressService,
+        IPaymentService paymentService,
+        IUserService userService,
+        IShipmentService shipmentService)
     : base(logger, httpContext)
     {
+        _cartService = cartService;
+        _addressService = addressService;
+        _paymentService = paymentService;
+        _userService = userService;
+        _shipmentService = shipmentService;
     }
 
     public async Task<Result<OrderDto>> CreateOrder(CreateOrderDto input)
@@ -31,10 +53,10 @@ public class OrderService : CoreServiceBase, IOrderService
         _logger.LogInformation("{method} called with input: {@input}", nameof(CreateOrder), input);
         var userId = _httpContext.GetCurrentUserId();
 
-        var cart = await _dbContext.Carts.Include(c => c.Items)
-                                         .ThenInclude(ci => ci.ProductVariant)
-                                         .ThenInclude(pv => pv.Product)
-                                         .FirstOrDefaultAsync(c => c.UserId == userId);
+        var cartResult = await _cartService.GetCartAsync();
+        if (cartResult.IsFailure)
+            return Result<OrderDto>.Failure(cartResult.ErrorCode, cartResult.GetCurrentMethodInfo());
+        var cart = cartResult.Value;
         if (cart == null || cart.Items.Count == 0)
         {
             return Result<OrderDto>.Failure(ErrorCode.CartEmpty, this.GetCurrentMethodInfo());
@@ -43,16 +65,15 @@ public class OrderService : CoreServiceBase, IOrderService
         var stockErrors = new List<string>();
         foreach (var item in cart.Items)
         {
-            var variant = item.ProductVariant;
-            if (variant == null || variant.Deleted || variant.Product.Deleted)
+            if (!item.IsAvailable)
             {
-                stockErrors.Add($"Sản phẩm '{variant?.Product?.Name ?? "Không xác định"}' không tồn tại hoặc đã ngừng kinh doanh.");
+                stockErrors.Add($"Sản phẩm '{item.ProductName ?? "Không xác định"}' không tồn tại hoặc đã ngừng kinh doanh.");
                 continue;
             }
 
-            if (variant.StockQuantity < item.Quantity)
+            if (item.MaxQuantity < item.Quantity)
             {
-                stockErrors.Add($"'{variant.Product.Name} - Size/Màu: {variant.SKU}': Chỉ còn {variant.StockQuantity} sản phẩm.");
+                stockErrors.Add($"'{item.ProductName} - Size/Màu: {item.SKU}': Chỉ còn {item.MaxQuantity} sản phẩm.");
             }
         }
 
@@ -67,13 +88,19 @@ public class OrderService : CoreServiceBase, IOrderService
 
         if (input.AddressId.HasValue)
         {
-            var address = await _dbContext.Addresses.FirstOrDefaultAsync(a => a.Id == input.AddressId.Value && a.UserId == userId && !a.IsDeleted);
+            var addressResult = await _addressService.GetAddressesByUserIdAsync();
+            if (addressResult.IsFailure)
+                return Result<OrderDto>.Failure(addressResult.ErrorCode, addressResult.GetCurrentMethodInfo());
+
+            var address = addressResult.Value.FirstOrDefault(a => a.Id == input.AddressId.Value);
             if (address == null)
                 return Result<OrderDto>.Failure(ErrorCode.AddressNotFound, this.GetCurrentMethodInfo(), $"Địa chỉ với ID {input.AddressId.Value} không tồn tại.");
 
-            var userProfile = await _dbContext.UserProfiles.FirstOrDefaultAsync(up => up.UserId == userId);
-            receiverName = address.ReceiverName ?? userProfile?.FullName ?? "Khách hàng";
-            receiverPhone = address.ReceiverPhone ?? userProfile?.PhoneNumber ?? string.Empty;
+            var userResult = await _userService.GetUserByIdAsync(userId);
+            var userProfile = userResult.IsSuccess ? userResult.Value : null;
+
+            receiverName = !string.IsNullOrWhiteSpace(address.ReceiverName) ? address.ReceiverName : (userProfile?.FullName ?? "Khách hàng");
+            receiverPhone = !string.IsNullOrWhiteSpace(address.ReceiverPhone) ? address.ReceiverPhone : (userProfile?.Phone ?? string.Empty);
             shippingAddressSnapshot = $"{address.Street}, {address.City}, {address.Province}";
         }
         else
@@ -88,7 +115,7 @@ public class OrderService : CoreServiceBase, IOrderService
             shippingAddressSnapshot = $"{input.Street}, {input.City}, {input.Province}";
         }
 
-        var tempSubtotal = cart.Items.Sum(ci => (ci.ProductVariant.Product.BasePrice + ci.ProductVariant.PriceAdjustment) * ci.Quantity);
+        var tempSubtotal = cart.Subtotal;
 
         decimal discountAmount = 0;
         Coupons? coupons = null;
@@ -156,20 +183,25 @@ public class OrderService : CoreServiceBase, IOrderService
                 OrderId = order.Id,
                 ProductVariantId = ci.ProductVariantId,
                 Quantity = ci.Quantity,
-                ProductName = ci.ProductVariant.Product.Name,
-                VariantSKU = ci.ProductVariant.SKU,
-                UnitPrice = ci.ProductVariant.Product.BasePrice + ci.ProductVariant.PriceAdjustment
+                ProductName = ci.ProductName,
+                VariantSKU = ci.SKU,
+                UnitPrice = ci.UnitPrice
             }).ToList();
 
             _dbContext.OrderItems.AddRange(orderItems);
 
+            var variantIds = cart.Items.Select(i => i.ProductVariantId).ToList();
+            var variants = await _dbContext.ProductVariants
+                .Where(v => variantIds.Contains(v.Id))
+                .ToListAsync();
+
             foreach (var ci in cart.Items)
             {
-                var variant = ci.ProductVariant;
-                if (variant.StockQuantity < ci.Quantity)
+                var variant = variants.FirstOrDefault(v => v.Id == ci.ProductVariantId);
+                if (variant == null || variant.StockQuantity < ci.Quantity)
                 {
                     await transaction.RollbackAsync();
-                    return Result<OrderDto>.Failure(ErrorCode.InsufficientStock, this.GetCurrentMethodInfo(), $"Sản phẩm '{variant.Product.Name}' vừa hết hàng.");
+                    return Result<OrderDto>.Failure(ErrorCode.InsufficientStock, this.GetCurrentMethodInfo(), $"Sản phẩm '{ci.ProductName}' vừa hết hàng.");
                 }
                 variant.StockQuantity -= ci.Quantity;
             }
@@ -187,29 +219,23 @@ public class OrderService : CoreServiceBase, IOrderService
                 });
             }
 
-            _dbContext.Payments.Add(new Payments
+            var paymentResult = await _paymentService.CreateInitialPaymentAsync(order.Id, order.TotalAmount, input.PaymentMethod);
+            if (!paymentResult.IsSuccess)
             {
-                OrderId = order.Id,
-                Amount = order.TotalAmount,
-                Status = PaymentStatus.Pending.ToString(),
-                Method = input.PaymentMethod,
-                PaidAt = null
-            });
+                await transaction.RollbackAsync();
+                return Result<OrderDto>.Failure(paymentResult.ErrorCode, this.GetCurrentMethodInfo());
+            }
 
-            _dbContext.Shipments.Add(new Shipment
+            var shipmentResult = await _shipmentService.CreateInitialShipmentAsync(order.Id, receiverName, receiverPhone, shippingAddressSnapshot, input.ShippingProvider ?? "Standard", shippingFee);
+            if (!shipmentResult.IsSuccess)
             {
-                OrderId = order.Id,
-                ShippingProvider = input.ShippingProvider ?? "Standard",
-                ShippingFee = shippingFee,
-                ReceiverName = receiverName,
-                ReceiverPhone = receiverPhone,
-                ShippingAddress = shippingAddressSnapshot,
-                Status = ShipmentStatus.Pending.ToString(),
-                CreatedDate = DateTimeUtils.GetDate(),
-            });
+                await transaction.RollbackAsync();
+                return Result<OrderDto>.Failure(shipmentResult.ErrorCode, this.GetCurrentMethodInfo());
+            }
 
-            _dbContext.CartItems.RemoveRange(cart.Items);
-            cart.LastUpdatedAt = DateTimeUtils.GetDate();
+            var cartItemsToRemoveResult = await _cartService.ClearCart();
+            if (!cartItemsToRemoveResult.IsSuccess)
+                return Result<OrderDto>.Failure(cartItemsToRemoveResult.ErrorCode, this.GetCurrentMethodInfo());
 
             await _dbContext.SaveChangesAsync();
             await transaction.CommitAsync();
@@ -282,7 +308,8 @@ public class OrderService : CoreServiceBase, IOrderService
             var payment = order.Payments.FirstOrDefault();
             if (payment != null)
             {
-                payment.Status = payment.Status == PaymentStatus.Success ? PaymentStatus.Refunded : PaymentStatus.Failed;
+                var newPaymentStatus = payment.Status == PaymentStatus.Success.ToString() ? PaymentStatus.Refunded.ToString() : PaymentStatus.Failed.ToString();
+                await _paymentService.UpdatePaymentStatusByOrderIdAsync(orderId, newPaymentStatus);
             }
 
             await _dbContext.SaveChangesAsync();
@@ -325,16 +352,15 @@ public class OrderService : CoreServiceBase, IOrderService
     {
         var userID = _httpContext.GetCurrentUserId();
 
-        // 1. Base Query chỉ dùng để lọc (Không Include bảng con)
+
         var baseQuery = _dbContext.Orders
             .AsNoTracking()
             .Where(o => o.UserId == userID && !o.Deleted && (string.IsNullOrEmpty(input.Status)
             || o.Status == input.Status));
 
-        // 2. Đếm tổng số lượng dựa trên Base Query (Rất nhanh)
+
         var totalItems = await baseQuery.CountAsync();
 
-        // 3. Fetch dữ liệu thật: Kế thừa Base Query, thêm Include, OrderBy và Paging
         var orders = await baseQuery
             .Include(o => o.OrderItems)
             .Include(o => o.Payments)
@@ -420,46 +446,29 @@ public class OrderService : CoreServiceBase, IOrderService
             {
                 if (string.IsNullOrWhiteSpace(input.TrackingNumber) || string.IsNullOrWhiteSpace(input.ShippingProvider))
                     return Result.Failure(ErrorCode.BadRequest, this.GetCurrentMethodInfo(), "Bắt buộc phải nhập mã vận đơn và đơn vị vận chuyển");
-                var shipment = await _dbContext.Shipments.FirstOrDefaultAsync(s => s.OrderId == orderId && !s.Deleted);
-                if (shipment != null)
-                {
-                    shipment.Status = ShipmentStatus.InTransit.ToString();
-                    shipment.TrackingNumber = input.TrackingNumber;
-                    shipment.ShippingProvider = input.ShippingProvider;
-                    shipment.ModifiedDate = DateTimeUtils.GetDate();
-                }
+                
+                await _shipmentService.UpdateTrackingByOrderIdAsync(orderId, input.TrackingNumber, input.ShippingProvider);
             }
             else if (input.NewStatus == OrderStatusConst.Delivered)
             {
-                var shipment = await _dbContext.Shipments.FirstOrDefaultAsync(s => s.OrderId == orderId && !s.Deleted);
-                if (shipment != null)
-                {
-                    shipment.Status = ShipmentStatus.InTransit.ToString();
-                    shipment.ModifiedDate = DateTimeUtils.GetDate();
-                    shipment.ActualDelivery = DateTimeUtils.GetDate();
-                }
+                await _shipmentService.UpdateShipmentStatusByOrderIdAsync(orderId, ShipmentStatus.Delivered.ToString());
+
                 var payment = order.Payments?.FirstOrDefault();
-                if (payment != null && payment.Status == PaymentStatus.Pending)
+                if (payment != null && payment.Status == PaymentStatus.Pending.ToString())
                 {
-                    payment.Status = PaymentStatus.Success;
-                    payment.PaidAt = DateTimeUtils.GetDate();
+                    await _paymentService.UpdatePaymentStatusByOrderIdAsync(orderId, PaymentStatus.Success.ToString());
                 }
             }
             else if (input.NewStatus == OrderStatusConst.Returned)
             {
                 // 1. Cập nhật Shipment thành Returned
-                var shipment = await _dbContext.Shipments.FirstOrDefaultAsync(s => s.OrderId == orderId && !s.Deleted);
-                if (shipment != null)
-                {
-                    shipment.Status = ShipmentStatus.Returned;
-                    shipment.ModifiedDate = DateTimeUtils.GetDate();
-                }
+                await _shipmentService.UpdateShipmentStatusByOrderIdAsync(orderId, ShipmentStatus.Returned.ToString());
 
                 // 2. Đánh dấu Payment là Failed (nếu chưa thanh toán)
                 var payment = order.Payments?.FirstOrDefault();
-                if (payment != null && payment.Status == PaymentStatus.Pending)
+                if (payment != null && payment.Status == PaymentStatus.Pending.ToString())
                 {
-                    payment.Status = PaymentStatus.Failed;
+                    await _paymentService.UpdatePaymentStatusByOrderIdAsync(orderId, PaymentStatus.Failed.ToString());
                 }
 
                 // 3. Hoàn lại số lượng tồn kho (Restock)

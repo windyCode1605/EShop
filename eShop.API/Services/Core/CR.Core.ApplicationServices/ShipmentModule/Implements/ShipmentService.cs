@@ -181,5 +181,49 @@ namespace CR.Core.ApplicationServices.ShipmentModule.Implements
             ActualDelivery = s.ActualDelivery,
             CreatedDate = s.CreatedDate,
         };
+
+        public async Task<Result> CreateInitialShipmentAsync(int orderId, string receiverName, string receiverPhone, string shippingAddress, string shippingProvider, decimal shippingFee)
+        {
+            _dbContext.Shipments.Add(new Shipment
+            {
+                OrderId = orderId,
+                ShippingProvider = shippingProvider,
+                ShippingFee = shippingFee,
+                ReceiverName = receiverName,
+                ReceiverPhone = receiverPhone,
+                ShippingAddress = shippingAddress,
+                Status = ShipmentStatus.Pending.ToString(),
+                CreatedDate = DateTimeUtils.GetDate(),
+            });
+            return await Task.FromResult(Result.Success());
+        }
+
+        public async Task<Result> UpdateShipmentStatusByOrderIdAsync(int orderId, string newStatus)
+        {
+            var shipment = await _dbContext.Shipments.FirstOrDefaultAsync(s => s.OrderId == orderId && !s.Deleted);
+            if (shipment != null)
+            {
+                shipment.Status = newStatus;
+                shipment.ModifiedDate = DateTimeUtils.GetDate();
+                if (newStatus == ShipmentStatus.Delivered.ToString())
+                {
+                    shipment.ActualDelivery = DateTimeUtils.GetDate();
+                }
+            }
+            return Result.Success();
+        }
+
+        public async Task<Result> UpdateTrackingByOrderIdAsync(int orderId, string trackingNumber, string shippingProvider)
+        {
+            var shipment = await _dbContext.Shipments.FirstOrDefaultAsync(s => s.OrderId == orderId && !s.Deleted);
+            if (shipment != null)
+            {
+                shipment.Status = ShipmentStatus.InTransit.ToString();
+                shipment.TrackingNumber = trackingNumber;
+                shipment.ShippingProvider = shippingProvider;
+                shipment.ModifiedDate = DateTimeUtils.GetDate();
+            }
+            return Result.Success();
+        }
     }
 }
