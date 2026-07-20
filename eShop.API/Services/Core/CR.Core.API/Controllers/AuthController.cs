@@ -407,8 +407,7 @@ public class AuthorizationController : AuthorizationControllerBase
                 new Dictionary<string, string?>
                 {
                     [OpenIddictServerAspNetCoreConstants.Properties.Error] = Errors.InvalidGrant,
-                    [OpenIddictServerAspNetCoreConstants.Properties.ErrorDescription] =
-                    _localization.Localize(_mapErrorCode.GetErrorMessageKey(ex.ErrorCode), ex.ListParam)
+                    [OpenIddictServerAspNetCoreConstants.Properties.ErrorDescription] = _localization.Localize($"error_{ex.ErrorCode}")
                 }
             );
             return Forbid(properties, OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);

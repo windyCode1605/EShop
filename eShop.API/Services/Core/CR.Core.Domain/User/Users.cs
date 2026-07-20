@@ -10,7 +10,7 @@ namespace CR.Core.Domain.User
     [Table(nameof(Users), Schema = DbSchemas.Default)]
     [Index(nameof(Email), IsUnique = true)]
     [Index(nameof(Username), IsUnique = true)]
-    public class Users 
+    public class Users
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -19,7 +19,7 @@ namespace CR.Core.Domain.User
         // --- ACCOUNT INFO ---
         [Required, MaxLength(128), Unicode(false)]
         public string Username { get; set; } = null!;
-        
+
         [Required, MaxLength(128), Unicode(false)]
         public string Email { get; set; } = null!;
 
@@ -30,7 +30,7 @@ namespace CR.Core.Domain.User
         [Required, MaxLength(256), Unicode(false)]
         public string PasswordHash { get; set; } = null!;
         public bool IsTempPassword { get; set; }
-        
+
         [MaxLength(128), Unicode(false)]
         public string? PinCode { get; set; }
         public bool IsTempPin { get; set; }
@@ -38,17 +38,17 @@ namespace CR.Core.Domain.User
         public UserTypeEnum UserType { get; set; }
         public int Status { get; set; }
         public bool IsFirstTime { get; set; }
-        
+
         public int LoginFailCount { get; set; }
         public DateTime? DateTimeLoginFailCount { get; set; }
         public DateTime? TimeLockUser { get; set; }
-        
+
         public DateTime? LastLogin { get; set; }
         public bool IsOtpVerified { get; set; }
 
-        // --- NAVIGATION PROPERTIES ---
+
         // LIÊN KẾT 1-1 SANG BẢNG PROFILE
-        public virtual UserProfile Profile { get; set; } = null!; 
+        public virtual UserProfile Profile { get; set; } = null!;
 
         public List<UserRole> UserRoles { get; set; } = new();
         public List<NotificationToken> NotificationTokens { get; set; } = new();
@@ -66,7 +66,7 @@ namespace CR.Core.Domain.User
         public DateTime? DeletedDate { get; set; }
         public int? DeletedBy { get; set; }
         public bool Deleted { get; set; }
-        
+
         [Timestamp]
         public byte[] RowVersion { get; set; } = null!;
     }

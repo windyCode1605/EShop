@@ -47,6 +47,7 @@ import { filter } from 'rxjs';
 
           <ng-container *ngIf="isLoggedIn(); else loginBtn">
             <div class="shell-nav__user">
+              <a routerLink="/profile" class="shell-nav__user-name" routerLinkActive="is-active">Hồ sơ của tôi</a>
               <a routerLink="/order" class="shell-nav__user-name" routerLinkActive="is-active">Đơn hàng của tôi</a>
               <button (click)="logout()" class="shell-nav__logout">
                 Đăng xuất

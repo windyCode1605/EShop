@@ -1,6 +1,8 @@
 using CR.Core.ApplicationServices.AuthenticationModule.Abstracts;
 using CR.Core.ApplicationServices.AuthenticationModule.Implements;
 using CR.Core.ApplicationServices.Common.ServiceImplementations;
+using CR.Core.ApplicationServices.CustomerModule.Abstracts;
+using CR.Core.ApplicationServices.CustomerModule.Implements;
 using CR.Core.ApplicationServices.OtpModule.Abstracts;
 using CR.Core.ApplicationServices.OtpModule.Implements;
 using CR.Core.ApplicationServices.ProductModule.Abstracts;
@@ -23,6 +25,9 @@ public static class ApplicationServicesConfig
 
         // Product services
         services.AddScoped<IProductService, ProductService>();
+
+        // Customer services
+        services.AddScoped<ICustomerService, CustomerService>();
 
         // Quét assembly hiện tại để nạp các AutoMapper Profile.
         services.AddAutoMapper(cfg => { }, typeof(ApplicationServicesConfig).Assembly);

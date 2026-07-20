@@ -17,6 +17,10 @@ export const API_ENDPOINTS = {
         SET_DEFAULT: (id: string | number) => `/api/Address/${id}/default`,
     },
 
+    CUSTOMER: {
+        ME: '/api/Customer/me',
+    },
+
     CART: {
         ...createCrudEndpoints('/api/Cart'),
         ADD_TO_CART: '/api/Cart/add-to-cart',

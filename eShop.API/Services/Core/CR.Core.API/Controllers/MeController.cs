@@ -3,6 +3,7 @@ using CR.Core.ApplicationServices.AuthenticationModule.RoleDtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using CR.WebAPIBase.Responses;
+using CR.Core.API.Extensions; // <--- Import extension method mới
 
 namespace CR.Core.API.Controllers;
 
@@ -34,9 +35,8 @@ public class MeController : ControllerBase
     public async Task<IActionResult> GetMyPermissions()
     {
         var result = await _roleService.GetCurrentUserAuthorizationAsync();
-        if (result.IsFailure)
-            return BadRequest(ApiResponse<UserAuthorizationDto>.Fail("Lấy quyền thất bại", result.ErrorCode));
-
-        return Ok(ApiResponse<UserAuthorizationDto>.Ok(result.Value, "Success"));
+        
+        // Tự động map ErrorCode -> Message nếu có lỗi (Dùng Extension)
+        return result.ToActionResult(this, "Lấy quyền thành công");
     }
 }

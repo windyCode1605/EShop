@@ -45,6 +45,11 @@ export const routes: Routes = [
     loadChildren: () => import('./modules/checkout/checkout.routes').then((m) => m.CHECKOUT_ROUTES)
   },
   {
+    path: 'profile',
+    canActivate: [authGuard],
+    loadChildren: () => import('./modules/profile/profile.routes').then((m) => m.PROFILE_ROUTES)
+  },
+  {
     path: 'admin',
     canActivate: [authGuard, roleGuard],
     loadChildren: () => import('./modules/admin/admin.routes').then((m) => m.ADMIN_ROUTES)

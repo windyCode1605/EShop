@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Localization DictionaryName="vi-VN">
+  <Texts>
+    <Text Name="error_400" value="Dữ liệu đầu vào không hợp lệ." />
+
+    <!-- Authentication & User (1xxx) -->
+    <Text Name="error_1000" value="Tên đăng nhập hoặc mật khẩu không đúng." />
+    <Text Name="error_1001" value="Người dùng không tồn tại." />
+    <Text Name="error_1003" value="Tài khoản chưa được kích hoạt hoặc đã bị khóa." />
+    <Text Name="error_1004" value="Loại tài khoản không hợp lệ." />
+    <Text Name="error_1005" value="Mật khẩu cũ không chính xác." />
+    <Text Name="error_1006" value="Người dùng không có quyền thực hiện thao tác này." />
+    <Text Name="error_1008" value="Trạng thái tài khoản không hợp lệ." />
+    <Text Name="error_1009" value="Tài khoản đã được xác thực." />
+    <Text Name="error_1010" value="Tài khoản đang yêu cầu xác thực." />
+    <Text Name="error_1011" value="Tài khoản đã được đăng ký." />
+    <Text Name="error_1013" value="Mã OTP không hợp lệ." />
+    <Text Name="error_1014" value="Mã OTP đã hết hạn." />
+    <Text Name="error_1018" value="Email cá nhân đã tồn tại." />
+    <Text Name="error_1023" value="Mật khẩu ứng dụng không chính xác." />
+    <Text Name="error_1025" value="Loại người dùng đăng nhập không hợp lệ." />
+    <Text Name="error_1027" value="Tài khoản đã bị khóa." />
+    <Text Name="error_1028" value="Mật khẩu hiện tại không chính xác." />
+    <Text Name="error_1029" value="Tài khoản bị khóa do đăng nhập sai nhiều lần." />
+    <Text Name="error_1030" value="Không tìm thấy thông tin hồ sơ người dùng." />
+
+    <!-- System (2xxx) -->
+    <Text Name="error_2000" value="Biến hệ thống chưa được cấu hình." />
+
+    <!-- Unknown (4xxx) -->
+    <Text Name="error_4013" value="Lỗi hệ thống không xác định." />
+
+    <!-- Cart & Stock (5xxx) -->
+    <Text Name="error_5000" value="Giỏ hàng hiện đang trống." />
+    <Text Name="error_5001" value="Sản phẩm không đủ số lượng tồn kho." />
+
+    <!-- Address (6xxx) -->
+    <Text Name="error_6000" value="Địa chỉ không tồn tại." />
+    <Text Name="error_6001" value="Địa chỉ giao hàng là bắt buộc khi tạo đơn hàng." />
+
+    <!-- Coupon (7xxx) -->
+    <Text Name="error_7000" value="Mã giảm giá không tồn tại." />
+    <Text Name="error_7001" value="Mã giảm giá đã hết hạn sử dụng." />
+    <Text Name="error_7002" value="Mã giảm giá đã đạt giới hạn sử dụng." />
+    <Text Name="error_7003" value="Đơn hàng không đạt giá trị tối thiểu để áp dụng mã giảm giá này." />
+
+    <!-- Paging (8xxx) -->
+    <Text Name="error_8000" value="Thông tin phân trang không hợp lệ." />
+
+    <!-- Order (9xxx) -->
+    <Text Name="error_9000" value="Đơn hàng không tồn tại." />
+    <Text Name="error_9001" value="Trạng thái đơn hàng không hợp lệ." />
+    <Text Name="error_9002" value="Đơn hàng không thể hủy (đang giao hoặc đã giao)." />
+
+    <!-- Shipment (10xxx) -->
+    <Text Name="error_10000" value="Thông tin vận chuyển không tồn tại." />
+
+    <!-- Product Variant (11xxx) -->
+    <Text Name="error_11000" value="Biến thể sản phẩm không tồn tại." />
+
+    <!-- Role & Permission (12xxx) -->
+    <Text Name="error_12001" value="Vai trò không tồn tại." />
+    <Text Name="error_12002" value="Người dùng chưa được gán vai trò nào." />
+    <Text Name="error_12003" value="Dữ liệu đầu vào không hợp lệ." />
+    <Text Name="error_12004" value="Khóa quyền (PermissionKey) không tồn tại." />
+
+    <!-- Payment (13xxx) -->
+    <Text Name="error_13000" value="Thông tin thanh toán không tồn tại." />
+    <Text Name="error_13001" value="Không thể hoàn tiền cho đơn hàng này." />
+  </Texts>
+</Localization>
