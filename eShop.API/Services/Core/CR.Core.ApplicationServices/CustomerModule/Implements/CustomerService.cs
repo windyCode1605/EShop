@@ -23,9 +23,7 @@ namespace CR.Core.ApplicationServices.CustomerModule.Implements
             .FirstOrDefaultAsync(up => up.UserId == userId);
             if (userProfile == null)
             {
-                return Result<CR.Core.Domain.User.UserProfile>.Failure(
-                    ErrorCode.UserProfileNotFound, this.GetCurrentMethodInfo()
-                );
+                return Result<CR.Core.Domain.User.UserProfile>.Success(null);
             }
             return Result<CR.Core.Domain.User.UserProfile>.Success(userProfile);
         }
@@ -37,9 +35,14 @@ namespace CR.Core.ApplicationServices.CustomerModule.Implements
             .FirstOrDefaultAsync(up => up.UserId == userId);
 
             if (userProfile == null)
-                return Result<CR.Core.Domain.User.UserProfile>.Failure(
-                    ErrorCode.UserProfileNotFound, this.GetCurrentMethodInfo()
-                );
+            {
+                userProfile = new CR.Core.Domain.User.UserProfile 
+                { 
+                    UserId = userId,
+                    PhoneNumber = dto.PhoneNumber ?? string.Empty
+                };
+                _dbContext.UserProfiles.Add(userProfile);
+            }
             if (dto.FullName != null)
                 userProfile.FullName = dto.FullName;
 

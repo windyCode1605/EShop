@@ -2,6 +2,7 @@ import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { TokenService } from '../../core/service-proxies/token.service';
+import { CartService } from '../../modules/cart/services/cart.service';
 import { filter } from 'rxjs';
 
 @Component({
@@ -33,27 +34,47 @@ import { filter } from 'rxjs';
           <div class="search-shortcut">⌘K</div>
         </div>
 
-        <!-- Actions: Cart & Auth -->
+        <!-- Actions: Icons -->
         <div class="shell-nav__actions">
-          <a routerLink="/cart" class="shell-nav__cart">
+          
+          <!-- Hỗ trợ khách hàng -->
+          <button class="shell-nav__icon-btn" title="Hỗ trợ khách hàng">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M15.05 5A5 5 0 0 1 19 8.95M15.05 1A9 9 0 0 1 23 8.94m-1 7.98v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+            </svg>
+          </button>
+
+          <!-- Giỏ hàng -->
+          <a routerLink="/cart" class="shell-nav__icon-btn relative" title="Giỏ hàng">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle>
               <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
             </svg>
-            Giỏ hàng
+            <span *ngIf="totalItems() > 0" class="absolute top-1 right-0 bg-zinc-900 text-white text-[10px] font-bold h-4 min-w-[16px] px-1 rounded-full flex items-center justify-center translate-x-1 -translate-y-1 border-2 border-[#F9FAFB] shadow-sm">
+              {{ totalItems() > 99 ? '99+' : totalItems() }}
+            </span>
           </a>
           
           <div class="shell-nav__divider"></div>
 
           <ng-container *ngIf="isLoggedIn(); else loginBtn">
-            <div class="shell-nav__user">
-              <a routerLink="/profile" class="shell-nav__user-name" routerLinkActive="is-active">Hồ sơ của tôi</a>
-              <a routerLink="/order" class="shell-nav__user-name" routerLinkActive="is-active">Đơn hàng của tôi</a>
-              <button (click)="logout()" class="shell-nav__logout">
-                Đăng xuất
-              </button>
-            </div>
+            <!-- Hồ sơ (bao gồm Đơn hàng bên trong) -->
+            <a routerLink="/profile" class="shell-nav__icon-btn" routerLinkActive="is-active" title="Hồ sơ của tôi">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+            </a>
+            <!-- Đăng xuất -->
+            <button (click)="logout()" class="shell-nav__icon-btn logout-btn" title="Đăng xuất">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                <polyline points="16 17 21 12 16 7"></polyline>
+                <line x1="21" y1="12" x2="9" y2="12"></line>
+              </svg>
+            </button>
           </ng-container>
+          
           <ng-template #loginBtn>
             <a routerLink="/account/login" class="shell-nav__cta">
               Đăng nhập
@@ -207,51 +228,31 @@ import { filter } from 'rxjs';
         gap: 24px;
         flex-shrink: 0;
       }
-      .shell-nav__cart {
-        font-size: 14px;
-        font-weight: 500;
-        color: var(--color-text-primary);
-        text-decoration: none;
+      .shell-nav__icon-btn {
         display: flex;
         align-items: center;
-        gap: 8px;
-        transition: color 0.2s ease;
-      }
-      .shell-nav__cart:hover {
-        color: var(--color-accent);
-      }
-      .shell-nav__divider {
-        width: 1px;
-        height: 16px;
-        background: var(--color-border);
-      }
-      .shell-nav__user {
-        display: flex;
-        align-items: center;
-        gap: 16px;
-      }
-      .shell-nav__user-name {
-        font-size: 14px;
-        font-weight: 500;
-        color: var(--color-text-primary);
-        text-decoration: none;
-        transition: color 0.2s ease;
-      }
-      .shell-nav__user-name:hover,
-      .shell-nav__user-name.is-active {
-        color: var(--color-accent);
-      }
-      .shell-nav__logout {
-        font-size: 14px;
-        font-weight: 500;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
         color: var(--color-text-secondary);
-        background: none;
+        background: transparent;
         border: none;
         cursor: pointer;
-        transition: color 0.2s ease;
+        transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
       }
-      .shell-nav__logout:hover {
+      .shell-nav__icon-btn:hover,
+      .shell-nav__icon-btn.is-active {
         color: var(--color-text-primary);
+        background: var(--color-surface-secondary, #F4F4F5);
+        transform: scale(1.05);
+      }
+      .shell-nav__icon-btn:active {
+        transform: scale(0.95);
+      }
+      .logout-btn:hover {
+        color: #ef4444;
+        background: #fef2f2;
       }
 
       .shell-nav__cta {
@@ -277,8 +278,10 @@ import { filter } from 'rxjs';
 export class NavbarComponent implements OnInit {
   private tokenService = inject(TokenService);
   private router = inject(Router);
+  private cartService = inject(CartService);
   
   isLoggedIn = signal<boolean>(false);
+  totalItems = this.cartService.totalItems;
 
   ngOnInit() {
     this.checkAuthStatus();
@@ -293,7 +296,13 @@ export class NavbarComponent implements OnInit {
 
   checkAuthStatus() {
     const token = this.tokenService.getToken();
+    const wasLoggedIn = this.isLoggedIn();
     this.isLoggedIn.set(!!token);
+    
+    // Nếu vừa đăng nhập hoặc load lần đầu, gọi API lấy số lượng giỏ hàng
+    if (!!token && !wasLoggedIn) {
+      this.cartService.getMyCart().subscribe();
+    }
   }
 
   logout() {

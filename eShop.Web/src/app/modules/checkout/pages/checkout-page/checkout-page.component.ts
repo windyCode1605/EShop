@@ -137,9 +137,9 @@ export class CheckoutPageComponent implements OnInit {
         this.addressForm.markAllAsTouched();
         return;
       }
-      
+
       const newAddr = this.addressForm.value as any;
-      
+
       this.addressService.createNewAddress(newAddr).subscribe({
         next: (res) => {
           if (res.success && res.data) {
@@ -150,7 +150,7 @@ export class CheckoutPageComponent implements OnInit {
             }
             this.currentStep.set(2);
           } else {
-             alert('Có lỗi xảy ra khi tạo địa chỉ mới.');
+            alert('Có lỗi xảy ra khi tạo địa chỉ mới.');
           }
         },
         error: (err) => {
@@ -186,11 +186,11 @@ export class CheckoutPageComponent implements OnInit {
 
     const selectedId = this.selectedAddressId();
     const savedAddr = this.savedAddresses().find((a: Address) => a.id === selectedId);
-    
+
     if (!savedAddr) {
-       alert('Vui lòng chọn địa chỉ hợp lệ.');
-       this.isLoading.set(false);
-       return;
+      alert('Vui lòng chọn địa chỉ hợp lệ.');
+      this.isLoading.set(false);
+      return;
     }
 
     const payload: CreateOrderRequest = {
@@ -211,15 +211,15 @@ export class CheckoutPageComponent implements OnInit {
     this.orderService.createOrder(payload).subscribe({
       next: (res) => {
         this.isLoading.set(false);
-        if (res.isSuccess || res.value) {
+        if (res.isSuccess || res.success) {
           alert('Đặt hàng thành công!');
-          // Redirect to success or tracking page later
           const orderId = res.value?.id || res.data?.id;
           if (orderId) {
-             this.router.navigate(['/order', orderId]);
+            this.router.navigate(['/order', orderId]);
           }
         } else {
-          alert('Có lỗi xảy ra: ' + res.otherData);
+          const errorMsg = res.message || (res.errors && res.errors.length > 0 ? res.errors[0] : 'Lỗi không xác định');
+          alert('Có lỗi xảy ra: ' + errorMsg);
         }
       },
       error: (err) => {

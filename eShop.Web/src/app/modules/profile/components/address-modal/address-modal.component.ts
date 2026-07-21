@@ -9,7 +9,6 @@ import { MessageService } from 'primeng/api';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './address-modal.component.html',
-  styleUrl: './address-modal.component.scss'
 })
 export class AddressModalComponent {
   @Input() isOpen = false;
@@ -47,9 +46,9 @@ export class AddressModalComponent {
     const dto: SaveAddressRequestDto = this.addressForm.value;
 
     this.addressService.saveAddress(dto).subscribe({
-      next: (res) => {
+      next: (res: any) => {
         this.isSaving = false;
-        if (res.isSuccess) {
+        if (res.isSuccess || res.success) {
           this.messageService.add({ severity: 'success', summary: 'Thành công', detail: 'Đã thêm địa chỉ' });
           this.addressForm.reset({ isDefault: false });
           this.saved.emit();
