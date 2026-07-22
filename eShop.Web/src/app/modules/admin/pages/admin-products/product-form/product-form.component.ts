@@ -14,6 +14,7 @@ import {
 } from '../../../models/admin-product.model';
 import { IAdminCategory } from '../../../models/admin-category.model';
 import { AdminProductService } from '../../../services/admin-product.service';
+import { UploadService } from '../../../../../core/services/upload.service';
 
 type FormTab = 'info' | 'images' | 'attributes' | 'variants';
 
@@ -32,7 +33,7 @@ export class ProductFormComponent {
     if (val) {
       this.isEdit = true;
       this.form = { ...val };
-      this.images.set(val.variants?.flatMap(v => v.imageUrl ? [{ imageUrl: v.imageUrl, isPrimary: false }] : []) as any || []);
+      this.images.set(val.variants?.flatMap(v => (v.imageUrls && v.imageUrls.length > 0) ? [{ imageUrl: v.imageUrls[0], isPrimary: false }] : []) as any || []);
       this.attributes.set([]);
       this.variants.set(val.variants || []);
     } else {
@@ -80,7 +81,10 @@ export class ProductFormComponent {
   newVariantAttrValues: string[] = [];
   newVariantAttrCustom: string[] = [];
 
-  constructor(private productService: AdminProductService) {}
+  constructor(
+    private productService: AdminProductService,
+    private uploadService: UploadService
+  ) {}
 
   setTab(tab: FormTab) { this.activeTab = tab; }
 
@@ -166,6 +170,65 @@ export class ProductFormComponent {
   setDefaultVariant(vi: number) {
     this.variants.update(arr => arr.map((v, i) => ({ ...v, isDefault: i === vi })));
   }
+
+  saveVariant(vi: number) {
+    const variant = this.variants()[vi];
+    if (this.isEdit && variant.id) {
+      this.saving.set(true);
+      const dto = {
+        sku: variant.sku,
+        priceAdjustment: variant.priceAdjustment,
+        stockQuantity: variant.stockQuantity,
+        imageUrls: variant.imageUrls || []
+      };
+      
+      this.productService.updateProductVariant(variant.id, dto).subscribe({
+        next: (res: any) => {
+          this.variants.update(arr => {
+            const copy = [...arr];
+            copy[vi] = res;
+            return copy;
+          });
+          this.saving.set(false);
+          this.saved.emit(false);
+        },
+        error: () => this.saving.set(false)
+      });
+    }
+  }
+
+  onVariantImageUpload(event: any, vi: number) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    this.saving.set(true);
+    this.uploadService.uploadImage(file).subscribe({
+      next: (res: any) => {
+        this.variants.update(arr => {
+          const copy = [...arr];
+          if (!copy[vi].imageUrls) copy[vi].imageUrls = [];
+          copy[vi].imageUrls.push(res.url);
+          return copy;
+        });
+        this.saving.set(false);
+      },
+      error: (err: any) => {
+        console.error('Upload failed', err);
+        this.saving.set(false);
+      }
+    });
+  }
+
+  removeVariantImage(vi: number, imgIndex: number) {
+    this.variants.update(arr => {
+      const copy = [...arr];
+      if (copy[vi].imageUrls) {
+        copy[vi].imageUrls.splice(imgIndex, 1);
+      }
+      return copy;
+    });
+  }
+
   addVariant() {
     if (this.newVariant.sku) {
       if (this.isEdit && this.form.id) {

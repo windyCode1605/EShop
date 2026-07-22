@@ -353,9 +353,9 @@ export class ProductPageComponent implements OnInit, OnDestroy {
     return map[color.toLowerCase()] ?? '#71717a';
   }
 
-  getProductImage(product: IProduct): string {
-    return product.image
-      ?? 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=800';
+  getProductImage(product: any): string {
+    return product.imageUrls?.[0] || product.image
+      || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=800';
   }
 
   formatPrice(value: number): string {

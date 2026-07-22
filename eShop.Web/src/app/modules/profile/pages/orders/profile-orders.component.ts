@@ -2,11 +2,12 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { OrderService } from '../../../../modules/order/services/order.service';
 import { OrderDetailsModalComponent } from '../../components/order-details-modal/order-details-modal.component';
+import { CancelOrderModalComponent, CancelOrderResult } from '../../components/cancel-order-modal/cancel-order-modal.component';
 
 @Component({
   selector: 'app-profile-orders',
   standalone: true,
-  imports: [CommonModule, OrderDetailsModalComponent],
+  imports: [CommonModule, OrderDetailsModalComponent, CancelOrderModalComponent],
   template: `
     <section class="flex flex-col gap-6">
       <div class="flex items-center justify-between mb-2">
@@ -67,12 +68,17 @@ import { OrderDetailsModalComponent } from '../../components/order-details-modal
                     </div>
                   </div>
                 </div>
-                
-                <button type="button" (click)="openOrderDetails(order)" 
-                        class="shrink-0 px-5 py-2.5 bg-white border border-zinc-200 text-zinc-900 text-sm font-medium rounded-[12px] hover:border-zinc-900 hover:bg-zinc-50 transition-all duration-250 flex items-center gap-2 group-hover:shadow-sm">
-                  Xem chi tiết
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="transition-transform group-hover:translate-x-0.5"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
-                </button>
+                <div class="flex items-center gap-3">
+                  <button *ngIf="order.status === 'PENDING'" type="button" (click)="openCancelModal(order)"
+                          class="shrink-0 px-5 py-2.5 bg-white border border-red-200 text-red-600 text-sm font-medium rounded-[12px] hover:border-red-300 hover:bg-red-50 transition-all duration-250 flex items-center gap-2">
+                    Hủy đơn
+                  </button>
+                  <button type="button" (click)="openOrderDetails(order)" 
+                          class="shrink-0 px-5 py-2.5 bg-white border border-zinc-200 text-zinc-900 text-sm font-medium rounded-[12px] hover:border-zinc-900 hover:bg-zinc-50 transition-all duration-250 flex items-center gap-2 group-hover:shadow-sm">
+                    Xem chi tiết
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="transition-transform group-hover:translate-x-0.5"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                  </button>
+                </div>
               </div>
 
             </div>
@@ -109,8 +115,18 @@ import { OrderDetailsModalComponent } from '../../components/order-details-modal
     <app-order-details-modal 
       [isOpen]="isModalOpen()" 
       [order]="selectedOrder()"
-      (closed)="closeModal()">
+      (closed)="closeModal()"
+      (cancelClicked)="onCancelFromDetails($event)">
     </app-order-details-modal>
+
+    <!-- Modal Hủy đơn hàng -->
+    <app-cancel-order-modal
+      [isOpen]="isCancelModalOpen()"
+      [order]="cancellingOrder()"
+      [isSubmitting]="isCancelling()"
+      (closed)="closeCancelModal()"
+      (confirmed)="onConfirmCancel($event)">
+    </app-cancel-order-modal>
   `
 })
 export class ProfileOrdersComponent implements OnInit {
@@ -121,6 +137,10 @@ export class ProfileOrdersComponent implements OnInit {
   
   isModalOpen = signal(false);
   selectedOrder = signal<any>(null);
+
+  isCancelModalOpen = signal(false);
+  cancellingOrder = signal<any>(null);
+  isCancelling = signal(false);
 
   ngOnInit() {
     this.loadOrders();
@@ -158,6 +178,40 @@ export class ProfileOrdersComponent implements OnInit {
   closeModal() {
     this.isModalOpen.set(false);
     // Optional: setTimeout(() => this.selectedOrder.set(null), 300) to clear after animation
+  }
+
+  openCancelModal(order: any) {
+    this.cancellingOrder.set(order);
+    this.isCancelModalOpen.set(true);
+  }
+
+  onCancelFromDetails(order: any) {
+    this.closeModal();
+    // Wait for the details modal to close before opening cancel modal for better UX
+    setTimeout(() => {
+      this.openCancelModal(order);
+    }, 250);
+  }
+
+  closeCancelModal() {
+    this.isCancelModalOpen.set(false);
+  }
+
+  onConfirmCancel(result: CancelOrderResult) {
+    this.isCancelling.set(true);
+    this.orderService.cancelOrder(result.orderId, result.reason).subscribe({
+      next: (res) => {
+        this.isCancelling.set(false);
+        if (res.isSuccess || res.success) {
+          this.closeCancelModal();
+          this.loadOrders(); // Reload to get updated status
+        }
+      },
+      error: () => {
+        this.isCancelling.set(false);
+        // Should handle error displaying here
+      }
+    });
   }
 
   getStatusText(status: string): string {

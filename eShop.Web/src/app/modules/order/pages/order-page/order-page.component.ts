@@ -41,8 +41,9 @@ export class OrderPageComponent implements OnInit {
     this.hasError.set(false);
     this.orderService.getOrderById(id).subscribe({
       next: (res) => {
-        if (res.isSuccess && res.value) {
-          this.order.set(res.value);
+        const data = res.value || res.data;
+        if ((res.isSuccess || res.success) && data) {
+          this.order.set(data);
         } else {
           this.hasError.set(true);
         }

@@ -334,16 +334,52 @@
                   </div>
                 </div>
                 <div style="display:flex;gap:16px">
-                  <label class="toggle" style="display:flex;align-items:center;gap:10px;cursor:pointer">
-                    <input type="checkbox" [(ngModel)]="variant.isActive">
-                    <span class="toggle-slider"></span>
+                  <label style="display:flex;align-items:center;gap:10px;cursor:pointer">
+                    <div class="toggle">
+                      <input type="checkbox" [(ngModel)]="variant.isActive">
+                      <span class="toggle-slider"></span>
+                    </div>
                     <span style="font-size:13px;font-weight:500;color:#18181B">Hiển thị</span>
                   </label>
-                  <label class="toggle" style="display:flex;align-items:center;gap:10px;cursor:pointer">
-                    <input type="checkbox" [(ngModel)]="variant.isDefault" (change)="setDefaultVariant(vi)">
-                    <span class="toggle-slider"></span>
+                  <label style="display:flex;align-items:center;gap:10px;cursor:pointer">
+                    <div class="toggle">
+                      <input type="checkbox" [(ngModel)]="variant.isDefault" (change)="setDefaultVariant(vi)">
+                      <span class="toggle-slider"></span>
+                    </div>
                     <span style="font-size:13px;font-weight:500;color:#18181B">Mặc định</span>
                   </label>
+                </div>
+                <!-- Variant Images Grid (Bento style) -->
+                <div class="variant-images-section" style="margin-top:24px">
+                  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+                    <div style="font-size:13px;font-weight:600;color:#18181B">Bộ sưu tập ảnh</div>
+                    <label class="btn-add-variant-img" style="cursor:pointer;font-size:13px;color:#2563EB;font-weight:500">
+                      + Tải ảnh lên
+                      <input type="file" accept="image/*" style="display:none" (change)="onVariantImageUpload($event, vi)">
+                    </label>
+                  </div>
+                  
+                  <div *ngIf="!variant.imageUrls || variant.imageUrls.length === 0" style="padding:32px 0;text-align:center;border:1px dashed #E4E4E7;border-radius:12px;background:#FAFAFA">
+                    <p style="font-size:13px;color:#A1A1AA">Chưa có ảnh riêng cho biến thể này</p>
+                  </div>
+
+                  <div class="image-grid" *ngIf="variant.imageUrls && variant.imageUrls.length > 0" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:12px">
+                    <div class="img-card" *ngFor="let url of variant.imageUrls; let imgIdx = index" style="position:relative;aspect-ratio:1;border-radius:12px;overflow:hidden;border:1px solid #E4E4E7">
+                      <img [src]="url" style="width:100%;height:100%;object-fit:cover" alt="Variant Image">
+                      <button class="btn-remove-img" (click)="removeVariantImage(vi, imgIdx)" style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.5);color:white;border:none;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;cursor:pointer">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <line x1="18" y1="6" x2="6" y2="18"></line>
+                          <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                
+                <div style="display:flex;justify-content:flex-end;margin-top:24px;padding-top:16px;border-top:1px solid #E4E4E7" *ngIf="isEdit">
+                  <button class="btn btn-primary" style="padding:6px 16px;font-size:13px;border-radius:8px" (click)="saveVariant(vi)" [disabled]="saving()">
+                    Lưu biến thể
+                  </button>
                 </div>
               </div>
             </div>

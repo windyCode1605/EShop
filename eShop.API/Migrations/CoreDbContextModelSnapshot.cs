@@ -561,6 +561,9 @@ namespace eShop.API.Migrations
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("ProductVariantId")
+                        .HasColumnType("int");
+
                     b.Property<int>("SortOrder")
                         .HasColumnType("int");
 
@@ -572,6 +575,8 @@ namespace eShop.API.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ProductId");
+
+                    b.HasIndex("ProductVariantId");
 
                     b.ToTable("ProductImage", "dbo");
                 });
@@ -1918,7 +1923,13 @@ namespace eShop.API.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("CR.Core.Domain.Catalog.ProductVariant", "ProductVariant")
+                        .WithMany("Images")
+                        .HasForeignKey("ProductVariantId");
+
                     b.Navigation("Product");
+
+                    b.Navigation("ProductVariant");
                 });
 
             modelBuilder.Entity("CR.Core.Domain.Catalog.ProductVariant", b =>
@@ -2197,6 +2208,8 @@ namespace eShop.API.Migrations
 
             modelBuilder.Entity("CR.Core.Domain.Catalog.ProductVariant", b =>
                 {
+                    b.Navigation("Images");
+
                     b.Navigation("VariantAttributes");
                 });
 

@@ -1,10 +1,8 @@
-using CR.Constants.ErrorCodes;
 using CR.Core.ApplicationServices.Common;
 using CR.Core.ApplicationServices.CustomerModule.Abstracts;
 using CR.Core.Dtos.CustomerModule;
 using CR.DtoBase;
 using CR.InfrastructureBase;
-using CR.Utils.DataUtils;
 using Microsoft.EntityFrameworkCore;
 
 namespace CR.Core.ApplicationServices.CustomerModule.Implements
@@ -36,8 +34,8 @@ namespace CR.Core.ApplicationServices.CustomerModule.Implements
 
             if (userProfile == null)
             {
-                userProfile = new CR.Core.Domain.User.UserProfile 
-                { 
+                userProfile = new CR.Core.Domain.User.UserProfile
+                {
                     UserId = userId,
                     PhoneNumber = dto.PhoneNumber ?? string.Empty
                 };

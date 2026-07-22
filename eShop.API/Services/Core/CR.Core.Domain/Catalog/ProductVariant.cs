@@ -29,5 +29,6 @@ namespace CR.Core.Domain.Catalog
 
         public virtual Product Product { get; set; } = null!;
         public virtual ICollection<ProductVariantAttribute> VariantAttributes { get; set; } = new List<ProductVariantAttribute>();
+        public virtual ICollection<ProductImage> Images { get; set; } = new List<ProductImage>();
     }
 }

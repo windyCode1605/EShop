@@ -57,4 +57,14 @@ public class ProductController : ControllerBase
 
         return Ok(ApiResponse<ProductVariantResponseDto>.Ok(result.Value));
     }
+
+    [HttpPut("variants/{variantId}")]
+    public async Task<ActionResult<ApiResponse<ProductVariantResponseDto>>> UpdateVariant(int variantId, [FromBody] UpdateProductVariantDto dto)
+    {
+        var result = await _productService.UpdateProductVariantAsync(variantId, dto);
+        if (result.IsFailure)
+            return BadRequest(result);
+
+        return Ok(ApiResponse<ProductVariantResponseDto>.Ok(result.Value));
+    }
 }

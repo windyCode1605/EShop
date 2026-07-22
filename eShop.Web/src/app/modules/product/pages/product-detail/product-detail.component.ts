@@ -75,6 +75,11 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
 
   productImages = computed(() => {
     const p = this.product();
+    const v = this.selectedVariant();
+    
+    // 1. Variant image (if available)
+    if (v?.imageUrls && v.imageUrls.length > 0) return v.imageUrls;
+
     // Fallback editorial images per product type
     const fallbacks = [
       'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=800',
@@ -82,6 +87,9 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
       'https://images.unsplash.com/photo-1556228578-8c89e6adf883?auto=format&fit=crop&q=80&w=800',
       'https://images.unsplash.com/photo-1491553895911-0055eca6402d?auto=format&fit=crop&q=80&w=800',
     ];
+    // 2. Product images
+    if (p?.imageUrls && p.imageUrls.length > 0) return p.imageUrls;
+    // 3. Fallback
     if (p?.image) return [p.image, ...fallbacks.slice(0, 3)];
     return fallbacks;
   });

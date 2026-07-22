@@ -14,8 +14,8 @@ import { filter } from 'rxjs';
       <div class="page-shell shell-nav__inner">
         <!-- Logo -->
         <a class="shell-nav__brand" routerLink="/">
-          <span class="shell-nav__mark">A</span>
-          <span class="shell-nav__name">Atelier</span>
+          <span class="shell-nav__mark">QN</span>
+          <span class="shell-nav__name">Quang Nguyên SHOP</span>
         </a>
 
         <!-- Main Links -->
@@ -279,13 +279,13 @@ export class NavbarComponent implements OnInit {
   private tokenService = inject(TokenService);
   private router = inject(Router);
   private cartService = inject(CartService);
-  
+
   isLoggedIn = signal<boolean>(false);
   totalItems = this.cartService.totalItems;
 
   ngOnInit() {
     this.checkAuthStatus();
-    
+
     // Listen to router changes to re-check auth status (in case of login/logout redirects)
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
@@ -298,7 +298,7 @@ export class NavbarComponent implements OnInit {
     const token = this.tokenService.getToken();
     const wasLoggedIn = this.isLoggedIn();
     this.isLoggedIn.set(!!token);
-    
+
     // Nếu vừa đăng nhập hoặc load lần đầu, gọi API lấy số lượng giỏ hàng
     if (!!token && !wasLoggedIn) {
       this.cartService.getMyCart().subscribe();
@@ -319,4 +319,4 @@ export class NavbarComponent implements OnInit {
       this.router.navigate(['/product'], { queryParams: { q: keyword } });
     }
   }
-}
+}

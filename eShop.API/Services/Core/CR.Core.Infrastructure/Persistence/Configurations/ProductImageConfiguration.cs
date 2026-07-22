@@ -17,6 +17,11 @@ namespace CR.Core.Infrastructure.Persistence.Configurations
                    .WithMany(p => p.Images)
                    .HasForeignKey(pi => pi.ProductId)
                    .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(pi => pi.ProductVariant)
+                  .WithMany(v => v.Images)
+                  .HasForeignKey(pi => pi.ProductVariantId)
+                  .OnDelete(DeleteBehavior.ClientSetNull);
         }
     }
 }

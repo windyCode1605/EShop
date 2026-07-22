@@ -35,4 +35,8 @@ export class OrderService {
   getMyOrders(params: any = {}): Observable<any> {
     return this.http.get<any>(API_ENDPOINTS.ORDER.MY_ORDERS, { params });
   }
+
+  cancelOrder(id: number, reason: string): Observable<any> {
+    return this.http.post<any>(`${API_ENDPOINTS.ORDER.CANCEL(id)}?reason=${encodeURIComponent(reason)}`, {});
+  }
 }

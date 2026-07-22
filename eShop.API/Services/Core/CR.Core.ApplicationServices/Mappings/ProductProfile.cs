@@ -30,7 +30,8 @@ public class ProductProfile : Profile
 
         // ProductVariant -> ProductVariantResponseDto
         CreateMap<ProductVariant, ProductVariantResponseDto>()
-            .ForMember(dest => dest.Attributes, opt => opt.MapFrom(src => src.VariantAttributes));
+            .ForMember(dest => dest.Attributes, opt => opt.MapFrom(src => src.VariantAttributes))
+            .ForMember(dest => dest.ImageUrls, opt => opt.MapFrom(src => src.Images.Where(i => !i.Deleted).OrderBy(i => i.SortOrder).Select(i => i.Url).ToList()));
 
         // Product -> ProductResponseDto
         CreateMap<Product, ProductResponseDto>()
@@ -39,6 +40,7 @@ public class ProductProfile : Profile
             .ForMember(dest => dest.AI_Description, opt => opt.Ignore())
             .ForMember(dest => dest.AI_Generated, opt => opt.Ignore())
             .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category.Name))
-            .ForMember(dest => dest.Variants, opt => opt.MapFrom(src => src.Variants));
+            .ForMember(dest => dest.Variants, opt => opt.MapFrom(src => src.Variants))
+            .ForMember(dest => dest.ImageUrls, opt => opt.MapFrom(src => src.Images.Where(i => !i.Deleted).OrderBy(i => i.SortOrder).Select(i => i.Url).ToList()));
     }
 }

@@ -201,7 +201,7 @@ export class AdminProductService {
    * TODO: Kết nối khi backend sẵn sàng
    */
   updateProductVariant(id: number, dto: IProductVariantUpdateDto): Observable<IAdminProductVariant> {
-    return this.http.put<IAdminProductVariant>(API_ENDPOINTS.ADMIN.PRODUCT_VARIANT.UPDATE(id), dto);
+    return this.http.put<IAdminProductVariant>(API_ENDPOINTS.PRODUCT.VARIANT_UPDATE(id), dto);
   }
 
   /**

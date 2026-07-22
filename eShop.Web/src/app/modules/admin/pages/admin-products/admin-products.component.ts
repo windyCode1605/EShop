@@ -174,7 +174,7 @@ export class AdminProductsComponent implements OnInit, OnDestroy {
   }
 
   getProductImage(p: IAdminProduct): string {
-    return p.variants?.[0]?.imageUrl || 'assets/placeholder.png';
+    return p.variants?.[0]?.imageUrls?.[0] || 'assets/placeholder.png';
   }
 
   openCreateForm(): void {

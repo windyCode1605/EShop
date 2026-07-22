@@ -263,3 +263,36 @@
 
   </div>
 </div>
+
+<!-- Premium Success Modal -->
+<div *ngIf="isSuccessModalOpen()" class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
+  <!-- Backdrop with glassmorphism -->
+  <div class="absolute inset-0 bg-zinc-900/60 backdrop-blur-md transition-opacity"></div>
+  
+  <!-- Modal Content -->
+  <div class="relative w-full max-w-md bg-white rounded-[32px] shadow-2xl p-8 md:p-10 text-center flex flex-col items-center transform scale-100 transition-all duration-300" (click)="$event.stopPropagation()">
+    
+    <!-- Success Icon (Green checkmark) -->
+    <div class="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center mb-6 shadow-[0_0_40px_rgba(16,185,129,0.2)]">
+      <div class="w-14 h-14 bg-emerald-500 rounded-full flex items-center justify-center text-white shadow-lg shadow-emerald-500/30">
+        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+      </div>
+    </div>
+    
+    <!-- Title & Message -->
+    <h3 class="text-2xl font-bold tracking-tight text-zinc-900 mb-2">Đơn hàng thành công!</h3>
+    <p class="text-zinc-500 text-sm leading-relaxed mb-8 max-w-[260px]">
+      Cảm ơn bạn đã mua sắm. Đơn hàng của bạn đã được tiếp nhận và đang trong quá trình xử lý.
+    </p>
+    
+    <!-- Actions -->
+    <div class="flex flex-col w-full gap-3">
+      <button type="button" (click)="goToOrder()" class="w-full py-3.5 bg-zinc-900 text-white font-medium text-sm rounded-[16px] hover:bg-zinc-800 hover:-translate-y-[1px] transition-all duration-250 shadow-md shadow-zinc-900/10">
+        Xem chi tiết đơn hàng
+      </button>
+      <button type="button" (click)="continueShopping()" class="w-full py-3.5 bg-zinc-50 text-zinc-600 font-medium text-sm rounded-[16px] hover:bg-zinc-100 hover:text-zinc-900 transition-all duration-250">
+        Tiếp tục mua sắm
+      </button>
+    </div>
+  </div>
+</div>

@@ -17,4 +17,6 @@ public class ProductVariantResponseDto
 
     /// <summary>Danh sách thuộc tính động (từ ProductVariantAttribute + Attribute + AttributeValue).</summary>
     public List<VariantAttributeDto> Attributes { get; set; } = new();
+
+    public List<string> ImageUrls { get; set; } = new();
 }

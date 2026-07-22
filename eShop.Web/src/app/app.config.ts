@@ -4,6 +4,13 @@ import { provideHttpClient, withInterceptors, withInterceptorsFromDi } from '@an
 import { MessageService } from 'primeng/api';
 import { CookieService } from 'ngx-cookie-service';
 
+// Add the Firebase imports here:
+import { provideFirebaseApp, initializeApp } from '@angular/fire/app';
+import { provideMessaging, getMessaging } from '@angular/fire/messaging';
+import { environment } from './my-lib/shared/enviroments/enviroment';
+import { provideStorage, getStorage } from '@angular/fire/storage';
+
+
 import { routes } from './app.routes';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { apiUrlInterceptor } from './core/interceptors/api-url.interceptor';
@@ -16,6 +23,11 @@ export const appConfig: ApplicationConfig = {
       withInterceptorsFromDi()
     ),
     MessageService,
-    CookieService
+    CookieService,
+
+    // Firebase Providers
+    provideFirebaseApp(() => initializeApp(environment.firebase)),
+    provideStorage(() => getStorage()),
+    provideMessaging(() => getMessaging())
   ]
 };

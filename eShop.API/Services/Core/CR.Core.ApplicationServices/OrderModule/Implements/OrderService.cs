@@ -308,8 +308,30 @@ public class OrderService : CoreServiceBase, IOrderService
             var payment = order.Payments.FirstOrDefault();
             if (payment != null)
             {
-                var newPaymentStatus = payment.Status == PaymentStatus.Success.ToString() ? PaymentStatus.Refunded.ToString() : PaymentStatus.Failed.ToString();
-                await _paymentService.UpdatePaymentStatusByOrderIdAsync(orderId, newPaymentStatus);
+                if (payment.Status == PaymentStatus.Success.ToString())
+                {
+                    payment.Status = PaymentStatus.Refunded.ToString();
+                    payment.RefundedAmount = payment.Amount;
+                    payment.RefundedAt = DateTimeUtils.GetDate();
+                    payment.RefundReason = reason ?? "Khách hàng hủy đơn";
+
+                    // Ghi vào bảng OrderRefunds
+                    foreach (var item in order.OrderItems)
+                    {
+                        var orderRefund = new OrderRefund
+                        {
+                            OrderItemId = item.Id,
+                            RefundQuantity = item.Quantity,
+                            Reason = reason ?? "Khách hàng hủy đơn",
+                            Status = "APPROVED"
+                        };
+                        _dbContext.OrderRefunds.Add(orderRefund);
+                    }
+                }
+                else if (payment.Status == PaymentStatus.Pending.ToString())
+                {
+                    payment.Status = PaymentStatus.Failed.ToString();
+                }
             }
 
             await _dbContext.SaveChangesAsync();
@@ -446,7 +468,7 @@ public class OrderService : CoreServiceBase, IOrderService
             {
                 if (string.IsNullOrWhiteSpace(input.TrackingNumber) || string.IsNullOrWhiteSpace(input.ShippingProvider))
                     return Result.Failure(ErrorCode.BadRequest, this.GetCurrentMethodInfo(), "Bắt buộc phải nhập mã vận đơn và đơn vị vận chuyển");
-                
+
                 await _shipmentService.UpdateTrackingByOrderIdAsync(orderId, input.TrackingNumber, input.ShippingProvider);
             }
             else if (input.NewStatus == OrderStatusConst.Delivered)
@@ -461,22 +483,43 @@ public class OrderService : CoreServiceBase, IOrderService
             }
             else if (input.NewStatus == OrderStatusConst.Returned)
             {
-                // 1. Cập nhật Shipment thành Returned
+
                 await _shipmentService.UpdateShipmentStatusByOrderIdAsync(orderId, ShipmentStatus.Returned.ToString());
-
-                // 2. Đánh dấu Payment là Failed (nếu chưa thanh toán)
-                var payment = order.Payments?.FirstOrDefault();
-                if (payment != null && payment.Status == PaymentStatus.Pending.ToString())
-                {
-                    await _paymentService.UpdatePaymentStatusByOrderIdAsync(orderId, PaymentStatus.Failed.ToString());
-                }
-
-                // 3. Hoàn lại số lượng tồn kho (Restock)
                 var orderItems = await _dbContext.OrderItems
                     .Include(oi => oi.ProductVariant)
                     .Where(oi => oi.OrderId == orderId)
                     .ToListAsync();
 
+                var payment = order.Payments?.FirstOrDefault();
+                if (payment != null)
+                {
+                    if (payment.Status == PaymentStatus.Pending.ToString())
+                    {
+                        await _paymentService.UpdatePaymentStatusByOrderIdAsync(orderId, PaymentStatus.Failed.ToString());
+                    }
+                    else if (payment.Status == PaymentStatus.Success.ToString())
+                    {
+                        payment.Status = PaymentStatus.Refunded.ToString();
+                        payment.RefundedAmount = payment.Amount;
+                        payment.RefundedAt = DateTimeUtils.GetDate();
+                        payment.RefundReason = input.Reason ?? "Khách hàng trả hàng";
+
+                        // Ghi vào bảng OrderRefunds
+                        foreach (var item in orderItems)
+                        {
+                            var orderRefund = new OrderRefund
+                            {
+                                OrderItemId = item.Id,
+                                RefundQuantity = item.Quantity,
+                                Reason = input.Reason ?? "Khách hàng trả hàng",
+                                Status = "APPROVED"
+                            };
+                            _dbContext.OrderRefunds.Add(orderRefund);
+                        }
+                    }
+                }
+
+                // 4. Hoàn lại số lượng tồn kho (Restock)
                 foreach (var item in orderItems)
                 {
                     if (item.ProductVariant != null)

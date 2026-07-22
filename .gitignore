@@ -46,3 +46,6 @@ tmp/
 *.tmp
 
 .fake
+No_KT.md
+DATABASE_ERD.md
+DATABASE_SCHEMA_COMPLETE.md

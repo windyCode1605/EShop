@@ -32,6 +32,20 @@ public class ProductService : ServiceBase<CoreDbContext>, IProductService
 
         var product = _mapper.Map<Product>(dto);
 
+        if (dto.ImageUrls != null && dto.ImageUrls.Any())
+        {
+            product.Images = new List<ProductImage>();
+
+            for (int i = 0; i < dto.ImageUrls.Count; i++)
+            {
+                product.Images.Add(new ProductImage
+                {
+                    Url = dto.ImageUrls[i],
+                    SortOrder = i,
+                    IsPrimary = (i == 0)
+                });
+            }
+        }
         product.Slug = GenerateSlug(dto.Name);
 
         _dbContext.Products.Add(product);
@@ -160,6 +174,61 @@ public class ProductService : ServiceBase<CoreDbContext>, IProductService
             _mapper.Map<ProductVariantResponseDto>(saved));
     }
 
+    public async Task<Result<ProductVariantResponseDto>> UpdateProductVariantAsync(int variantId, UpdateProductVariantDto dto)
+    {
+        _logger.LogInformation("Method Name: {Method}, VariantId={VariantId}", nameof(UpdateProductVariantAsync), variantId);
+
+        var variant = await _dbContext.ProductVariants
+            .Include(v => v.Images)
+            .Include(v => v.VariantAttributes.Where(va => !va.Deleted))
+                .ThenInclude(va => va.Attribute)
+            .Include(v => v.VariantAttributes.Where(va => !va.Deleted))
+                .ThenInclude(va => va.AttributeValue)
+            .FirstOrDefaultAsync(v => v.Id == variantId && !v.Deleted);
+
+        if (variant == null)
+            return Result<ProductVariantResponseDto>.Failure(ErrorCode.InvalidInput, this.GetCurrentMethodInfo(), "Variant not found");
+
+        var skuExists = await _dbContext.ProductVariants
+            .AnyAsync(v => v.SKU == dto.SKU && v.Id != variantId && !v.Deleted);
+
+        if (skuExists)
+            return Result<ProductVariantResponseDto>.Failure(
+                ErrorCode.InvalidInput, this.GetCurrentMethodInfo(),
+                $"SKU '{dto.SKU}' already exists.");
+
+        variant.SKU = dto.SKU;
+        variant.PriceAdjustment = dto.PriceAdjustment;
+        variant.StockQuantity = dto.StockQuantity;
+
+        if (variant.Images != null && variant.Images.Any())
+        {
+            _dbContext.RemoveRange(variant.Images);
+            variant.Images.Clear();
+        }
+
+        if (dto.ImageUrls != null && dto.ImageUrls.Any())
+        {
+            variant.Images = new List<ProductImage>();
+            for (int i = 0; i < dto.ImageUrls.Count; i++)
+            {
+                variant.Images.Add(new ProductImage
+                {
+                    ProductId = variant.ProductId,
+                    Url = dto.ImageUrls[i],
+                    SortOrder = i,
+                    IsPrimary = (i == 0)
+                });
+            }
+        }
+
+        _dbContext.ProductVariants.Update(variant);
+        await _dbContext.SaveChangesAsync();
+
+        var resultDto = _mapper.Map<ProductVariantResponseDto>(variant);
+        return Result<ProductVariantResponseDto>.Success(resultDto);
+    }
+
     public async Task<Result<ProductResponseDto>> UpdateAsync(int id, ProductRequestDto dto)
     {
         _logger.LogInformation("Method Name: {Method}, ProductId={ProductId}", nameof(UpdateAsync), id);
@@ -167,6 +236,7 @@ public class ProductService : ServiceBase<CoreDbContext>, IProductService
         var product = await _dbContext.Products
             .Include(p => p.Category)
             .Include(p => p.Variants)
+            .Include(p => p.Images)
             .FirstOrDefaultAsync(p => p.Id == id && !p.Deleted);
 
         if (product == null)

@@ -13,6 +13,7 @@ public class ProductResponseDto : BaseResponseDto
     public bool AI_Generated { get; set; }
     public int CategoryId { get; set; }
     public string CategoryName { get; set; } = string.Empty;
+    public List<string> ImageUrls { get; set; } = new();
 
     /// <summary>Danh sách variants của sản phẩm (Size, Color, Stock riêng từng loại).</summary>
     public List<ProductVariantResponseDto> Variants { get; set; } = [];

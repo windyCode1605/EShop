@@ -124,7 +124,14 @@ import { CommonModule } from '@angular/common';
         </div>
 
         <!-- Footer -->
-        <div class="p-4 border-t border-zinc-100 bg-zinc-50/50 flex justify-end">
+        <div class="p-4 border-t border-zinc-100 bg-zinc-50/50 flex items-center" 
+             [ngClass]="order?.status === 'PENDING' ? 'justify-between' : 'justify-end'">
+          <button *ngIf="order?.status === 'PENDING'" 
+                  type="button" 
+                  (click)="cancel()" 
+                  class="px-5 py-2.5 bg-white border border-red-200 text-red-600 text-sm font-medium rounded-[12px] hover:bg-red-50 hover:border-red-300 transition-colors">
+            Hủy đơn hàng
+          </button>
           <button type="button" (click)="close()" class="px-6 py-2.5 bg-zinc-900 text-white text-sm font-medium rounded-[12px] hover:bg-zinc-800 transition-colors">
             Đóng
           </button>
@@ -152,9 +159,14 @@ export class OrderDetailsModalComponent {
   @Input() isOpen = false;
   @Input() order: any = null;
   @Output() closed = new EventEmitter<void>();
+  @Output() cancelClicked = new EventEmitter<any>();
 
   close() {
     this.closed.emit();
+  }
+
+  cancel() {
+    this.cancelClicked.emit(this.order);
   }
 
   getStatusText(status: string): string {

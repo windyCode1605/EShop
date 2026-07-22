@@ -27,6 +27,8 @@ export class CheckoutPageComponent implements OnInit {
   currentStep = signal<1 | 2>(1);
   cartSummary = signal<any>(null);
   isLoading = signal(false);
+  isSuccessModalOpen = signal(false);
+  successOrderId = signal<number | null>(null);
 
   // State Địa chỉ - lấy trực tiếp từ Signal của Service
   savedAddresses = this.addressService.savedAddresses;
@@ -212,10 +214,10 @@ export class CheckoutPageComponent implements OnInit {
       next: (res) => {
         this.isLoading.set(false);
         if (res.isSuccess || res.success) {
-          alert('Đặt hàng thành công!');
           const orderId = res.value?.id || res.data?.id;
           if (orderId) {
-            this.router.navigate(['/order', orderId]);
+            this.successOrderId.set(orderId);
+            this.isSuccessModalOpen.set(true);
           }
         } else {
           const errorMsg = res.message || (res.errors && res.errors.length > 0 ? res.errors[0] : 'Lỗi không xác định');
@@ -228,5 +230,16 @@ export class CheckoutPageComponent implements OnInit {
         alert('Lỗi kết nối khi gọi API tạo đơn hàng!');
       }
     });
+  }
+
+  goToOrder() {
+    const id = this.successOrderId();
+    if (id) {
+      this.router.navigate(['/order', id]);
+    }
+  }
+
+  continueShopping() {
+    this.router.navigate(['/product']);
   }
 }

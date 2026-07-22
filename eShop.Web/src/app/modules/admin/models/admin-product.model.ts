@@ -58,7 +58,7 @@ export interface IAdminProductVariant {
   stockQuantity: number;
   isDefault: boolean;
   isActive: boolean;
-  imageUrl?: string;         // ảnh riêng của variant
+  imageUrls?: string[];         // mảng ảnh riêng của variant
   attributes: IProductVariantAttribute[];
 }
 
@@ -119,7 +119,7 @@ export interface IProductVariantCreateDto {
   stockQuantity: number;
   isDefault: boolean;
   isActive: boolean;
-  imageUrl?: string;
+  imageUrls?: string[];
   attributes: {
     attributeId: number;
     attributeValueId?: number;

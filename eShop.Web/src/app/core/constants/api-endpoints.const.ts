@@ -56,6 +56,7 @@ export const API_ENDPOINTS = {
     PRODUCT: {
         ...createCrudEndpoints('/api/Product'),
         VARIANT_CREATE: '/api/Product/variants',
+        VARIANT_UPDATE: (id: string | number) => `/api/Product/variants/${id}`,
     },
 
     SHIPMENT: {

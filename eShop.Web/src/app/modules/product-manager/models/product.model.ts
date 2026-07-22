@@ -21,6 +21,7 @@ export interface IProductVariant {
   color?: string;
   priceAdjustment: number;
   stockQuantity: number;
+  imageUrls?: string[];
   attributes: IVariantAttribute[];
 }
 
@@ -42,6 +43,7 @@ export interface IProduct {
   aI_Generated?: boolean;
   sku?: string;
   image?: string;
+  imageUrls?: string[];
   isActive?: boolean;
   updatedAt?: string | Date;
   variants?: IProductVariant[];
@@ -63,6 +65,7 @@ export class ProductModel implements IProduct {
   aI_Generated?: boolean;
   sku?: string;
   image?: string;
+  imageUrls?: string[];
   isActive?: boolean;
   updatedAt?: string | Date;
 

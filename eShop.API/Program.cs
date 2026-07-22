@@ -25,6 +25,8 @@ using CR.Core.ApplicationServices.AddressModule.Implements;
 using CR.Core.ApplicationServices.AddressModule.Abstracts;
 using CR.Core.ApplicationServices.AttributeModule.Abstract;
 using CR.Core.ApplicationServices.AttributeModule.Implements;
+using FirebaseAdmin;
+using Google.Apis.Auth.OAuth2;
 
 
 // ===============================================
@@ -70,6 +72,20 @@ foreach (var mapping in configMappings)
     }
 }
 
+var ServiceAccountPath = Path.Combine(builder.Environment.ContentRootPath,
+    builder.Configuration["Firebase:ServiceAccountKeyPath"]);
+if (File.Exists(ServiceAccountPath))
+{
+    FirebaseApp.Create(new AppOptions
+    {
+        Credential = GoogleCredential.FromFile(ServiceAccountPath),
+        ProjectId = builder.Configuration["Firebase:projectId"]
+    });
+}
+else
+{
+    Console.WriteLine("CẢNH BÁO: Không tìm thấy file Firebase Service Account! Gửi thông báo có thể bị lỗi.");
+}
 // ===============================================
 // 1. LOGGING SETUP
 // ===============================================
@@ -262,6 +278,9 @@ builder.Services.AddScoped<IAttributeValueService, AttributeValueService>();
 
 // builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 
+builder.Services.AddSingleton<eShop.API.Services.Shared.FirebaseStorageService>();
+builder.Services.AddSingleton<eShop.API.Services.Shared.FirebaseNotificationService>();
+
 // Nơi bạn đã đóng gói các DI khác thông qua Extension Method
 builder.Services.AddApplicationServices();
 
@@ -323,7 +342,13 @@ app.UseMiddleware<GlobalExceptionMiddleware>();
 
 // 2. HTTPS & Static Files
 app.UseHttpsRedirection();
-app.UseStaticFiles();
+var webRootPath = app.Environment.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+if (!Directory.Exists(webRootPath)) Directory.CreateDirectory(webRootPath);
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(webRootPath),
+    RequestPath = ""
+});
 
 // 3. Routing & CORS
 app.UseRouting();

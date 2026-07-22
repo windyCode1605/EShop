@@ -1,19 +1,17 @@
 // Checkout Page Styles
 $text-primary: #111111;
-$text-muted:   #6B6864;
-$text-faint:   #9D9890;
-$surface:      #FFFFFF;
-$surface-alt:  #F6F5F3;
-$canvas:       #FAF9F7;
-$border:       #E5E3DF;
-$accent:       #C9A961;
-$accent-dark:  #A88A3E;
-$error:        #DC2626;
-$ease-spring:  cubic-bezier(0.22, 1, 0.36, 1);
+$text-muted: #6B6864;
+$text-faint: #9D9890;
+$surface: #FFFFFF;
+$surface-alt: #F6F5F3;
+$canvas: #FAF9F7;
+$border: #E5E3DF;
+$accent: #C9A961;
+$accent-dark: #A88A3E;
+$error: #DC2626;
+$ease-spring: cubic-bezier(0.22, 1, 0.36, 1);
 
-// ─────────────────────────────────────────────────────────────
-// SHELL
-// ─────────────────────────────────────────────────────────────
+
 .checkout-shell {
   min-height: 100dvh;
   background: $canvas;
@@ -21,9 +19,6 @@ $ease-spring:  cubic-bezier(0.22, 1, 0.36, 1);
   flex-direction: column;
 }
 
-// ─────────────────────────────────────────────────────────────
-// HEADER
-// ─────────────────────────────────────────────────────────────
 .checkout-header {
   background: $surface;
   border-bottom: 1px solid $border;
@@ -49,7 +44,8 @@ $ease-spring:  cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .checkout-header__logo-mark {
-  width: 32px; height: 32px;
+  width: 32px;
+  height: 32px;
   background: $text-primary;
   border-radius: 9px;
   display: flex;
@@ -68,9 +64,7 @@ $ease-spring:  cubic-bezier(0.22, 1, 0.36, 1);
   text-transform: uppercase;
 }
 
-// ─────────────────────────────────────────────────────────────
-// STEPPER
-// ─────────────────────────────────────────────────────────────
+
 .checkout-stepper {
   display: flex;
   align-items: center;
@@ -83,7 +77,8 @@ $ease-spring:  cubic-bezier(0.22, 1, 0.36, 1);
   gap: 8px;
 
   &__circle {
-    width: 28px; height: 28px;
+    width: 28px;
+    height: 28px;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -109,7 +104,10 @@ $ease-spring:  cubic-bezier(0.22, 1, 0.36, 1);
       color: white;
       border-color: $text-primary;
     }
-    .stepper-item__label { color: $text-primary; }
+
+    .stepper-item__label {
+      color: $text-primary;
+    }
   }
 
   &--done {
@@ -143,9 +141,6 @@ $ease-spring:  cubic-bezier(0.22, 1, 0.36, 1);
   }
 }
 
-// ─────────────────────────────────────────────────────────────
-// BODY
-// ─────────────────────────────────────────────────────────────
 .checkout-body {
   max-width: 1180px;
   margin: 0 auto;
@@ -248,7 +243,8 @@ $ease-spring:  cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   &__radio {
-    width: 18px; height: 18px;
+    width: 18px;
+    height: 18px;
     border-radius: 50%;
     border: 1.5px solid $border;
     flex-shrink: 0;
@@ -258,16 +254,21 @@ $ease-spring:  cubic-bezier(0.22, 1, 0.36, 1);
     justify-content: center;
     transition: border-color 150ms ease;
 
-    .address-card--selected & { border-color: $text-primary; }
+    .address-card--selected & {
+      border-color: $text-primary;
+    }
   }
 
   &__radio-dot {
-    width: 8px; height: 8px;
+    width: 8px;
+    height: 8px;
     border-radius: 50%;
     background: $text-primary;
   }
 
-  &__content { flex: 1; }
+  &__content {
+    flex: 1;
+  }
 
   &__top {
     display: flex;
@@ -283,7 +284,10 @@ $ease-spring:  cubic-bezier(0.22, 1, 0.36, 1);
     color: $text-primary;
   }
 
-  &__sep { color: $text-faint; font-size: 12px; }
+  &__sep {
+    color: $text-faint;
+    font-size: 12px;
+  }
 
   &__phone {
     font-size: 13px;
@@ -327,9 +331,14 @@ $ease-spring:  cubic-bezier(0.22, 1, 0.36, 1);
     border: 1px dashed $border;
     border-radius: 10px;
 
-    svg { color: $text-faint; flex-shrink: 0; }
+    svg {
+      color: $text-faint;
+      flex-shrink: 0;
+    }
 
-    span { flex: 1; }
+    span {
+      flex: 1;
+    }
   }
 
   &__cancel {
@@ -359,7 +368,9 @@ $ease-spring:  cubic-bezier(0.22, 1, 0.36, 1);
   flex-direction: column;
   gap: 8px;
 
-  &--full { grid-column: 1 / -1; }
+  &--full {
+    grid-column: 1 / -1;
+  }
 
   &__label {
     font-size: 11px;
@@ -369,7 +380,8 @@ $ease-spring:  cubic-bezier(0.22, 1, 0.36, 1);
     letter-spacing: 0.1em;
   }
 
-  &__input, &__textarea {
+  &__input,
+  &__textarea {
     padding: 10px 0;
     font-size: 15px;
     font-family: 'Outfit', sans-serif;
@@ -382,7 +394,10 @@ $ease-spring:  cubic-bezier(0.22, 1, 0.36, 1);
     width: 100%;
     transition: border-color 200ms ease;
 
-    &::placeholder { color: $text-faint; font-size: 14px; }
+    &::placeholder {
+      color: $text-faint;
+      font-size: 14px;
+    }
 
     &:focus {
       border-color: $text-primary;
@@ -425,7 +440,10 @@ $ease-spring:  cubic-bezier(0.22, 1, 0.36, 1);
   cursor: pointer;
   transition: all 200ms ease;
 
-  &:hover { border-color: darken($border, 10%); background: $canvas; }
+  &:hover {
+    border-color: darken($border, 10%);
+    background: $canvas;
+  }
 
   &--selected {
     border-color: $text-primary;
@@ -433,7 +451,9 @@ $ease-spring:  cubic-bezier(0.22, 1, 0.36, 1);
     box-shadow: 0 0 0 1px $text-primary;
   }
 
-  &__radio { display: none; }
+  &__radio {
+    display: none;
+  }
 
   &__content {
     display: flex;
@@ -442,7 +462,11 @@ $ease-spring:  cubic-bezier(0.22, 1, 0.36, 1);
     width: 100%;
   }
 
-  &__provider { display: flex; align-items: center; gap: 8px; }
+  &__provider {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
 
   &__name {
     font-size: 14px;
@@ -476,7 +500,10 @@ $ease-spring:  cubic-bezier(0.22, 1, 0.36, 1);
   color: $text-muted;
   margin-top: 10px;
 
-  svg { color: $text-faint; flex-shrink: 0; }
+  svg {
+    color: $text-faint;
+    flex-shrink: 0;
+  }
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -498,7 +525,10 @@ $ease-spring:  cubic-bezier(0.22, 1, 0.36, 1);
   cursor: pointer;
   transition: all 200ms ease;
 
-  &:hover { border-color: darken($border, 10%); background: $canvas; }
+  &:hover {
+    border-color: darken($border, 10%);
+    background: $canvas;
+  }
 
   &--selected {
     border-color: $text-primary;
@@ -512,10 +542,13 @@ $ease-spring:  cubic-bezier(0.22, 1, 0.36, 1);
     pointer-events: none;
   }
 
-  &__radio { display: none; }
+  &__radio {
+    display: none;
+  }
 
   &__icon {
-    width: 40px; height: 40px;
+    width: 40px;
+    height: 40px;
     background: $surface-alt;
     border: 1px solid $border;
     border-radius: 10px;
@@ -594,14 +627,20 @@ $ease-spring:  cubic-bezier(0.22, 1, 0.36, 1);
   justify-content: space-between;
   align-items: center;
 
-  &__label { font-size: 13.5px; color: $text-muted; }
+  &__label {
+    font-size: 13.5px;
+    color: $text-muted;
+  }
 
   &__value {
     font-size: 13.5px;
     font-weight: 500;
     color: $text-primary;
 
-    &--muted { color: $text-faint; font-style: italic; }
+    &--muted {
+      color: $text-faint;
+      font-style: italic;
+    }
   }
 }
 
@@ -670,7 +709,9 @@ $ease-spring:  cubic-bezier(0.22, 1, 0.36, 1);
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
     }
 
-    &:active:not(:disabled) { transform: translateY(0); }
+    &:active:not(:disabled) {
+      transform: translateY(0);
+    }
 
     &:disabled {
       opacity: 0.4;
@@ -718,14 +759,18 @@ $ease-spring:  cubic-bezier(0.22, 1, 0.36, 1);
   font-size: 12px;
   color: $text-faint;
 
-  svg { color: $text-faint; flex-shrink: 0; }
+  svg {
+    color: $text-faint;
+    flex-shrink: 0;
+  }
 }
 
 // ─────────────────────────────────────────────────────────────
 // SPINNERS
 // ─────────────────────────────────────────────────────────────
 .spinner-ring-dark {
-  width: 18px; height: 18px;
+  width: 18px;
+  height: 18px;
   border: 2px solid rgba(255, 255, 255, 0.3);
   border-top-color: white;
   border-radius: 50%;
@@ -733,16 +778,35 @@ $ease-spring:  cubic-bezier(0.22, 1, 0.36, 1);
   display: inline-block;
 }
 
-@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 
 // ─────────────────────────────────────────────────────────────
 // ANIMATIONS
 // ─────────────────────────────────────────────────────────────
 @keyframes fade-up {
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.animate-fade-up { animation: fade-up 0.4s cubic-bezier(0.22, 1, 0.36, 1) both; }
-.stagger-1 { animation-delay: 0.08s; }
-.stagger-2 { animation-delay: 0.14s; }
+.animate-fade-up {
+  animation: fade-up 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.stagger-1 {
+  animation-delay: 0.08s;
+}
+
+.stagger-2 {
+  animation-delay: 0.14s;
+}
