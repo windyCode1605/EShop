@@ -41,11 +41,11 @@ export class AppSessionService {
     }
     getUserByToken(): Observable<any> {
         return this.http
-            .get<{ data: any }>(`${this.apiUrl}/core/user/find-by-user`)
+            .get<{ data: any }>(`${this.apiUrl}/me/permissions`)
     }
     private fetchUserProfile(): Observable<UserProfile> {
         return this.http
-            .get<{ data: any }>(`${this.apiUrl}/core/user/find-by-user`)
+            .get<{ data: any }>(`${this.apiUrl}/me/permissions`)
             .pipe(
                 map(({ data: u }) => ({
                     userId: u.id,

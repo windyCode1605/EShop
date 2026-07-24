@@ -10,52 +10,52 @@ import { AddressModalComponent } from '../../components/address-modal/address-mo
   standalone: true,
   imports: [CommonModule, ToastModule, AddressModalComponent],
   template: `
-    <section class="flex flex-col gap-6">
-      <div class="flex items-center justify-between mb-2">
-        <h2 class="text-xl font-medium tracking-tight">Sổ địa chỉ</h2>
+    <section class="flex flex-col gap-8">
+      <div class="flex items-center justify-between mb-2 border-b border-zinc-200/60 pb-6">
+        <h2 class="text-2xl font-medium tracking-tight text-[#18181B]">Sổ địa chỉ</h2>
         <button type="button" (click)="openAddressModal()" 
-                class="text-sm font-medium text-zinc-500 hover:text-zinc-900 flex items-center gap-2 transition-colors duration-250">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-          Thêm mới
+                class="text-[13px] font-medium text-[#18181B] bg-white border border-zinc-200 hover:bg-zinc-50 px-4 py-2 rounded-xl flex items-center gap-2 transition-all duration-300 hover:shadow-sm">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          Thêm địa chỉ
         </button>
       </div>
 
       <!-- Address List -->
-      <div class="flex flex-col gap-4">
+      <div class="flex flex-col gap-5">
         <ng-container *ngIf="!isLoadingAddresses(); else skeletonList">
           
           <ng-container *ngIf="addresses().length > 0; else emptyAddress">
             <div *ngFor="let addr of addresses()" 
-                 class="group relative p-5 md:p-6 rounded-[20px] border transition-all duration-300 hover:scale-[1.01] hover:shadow-sm"
-                 [ngClass]="addr.isDefault ? 'bg-white border-zinc-900 shadow-[0_2px_12px_rgba(0,0,0,0.03)]' : 'bg-white/50 border-zinc-200/80 hover:bg-white'">
+                 class="group relative p-6 md:p-8 rounded-[24px] border transition-all duration-300 hover:scale-[1.01] hover:shadow-[0_8px_30px_rgba(0,0,0,0.04)]"
+                 [ngClass]="addr.isDefault ? 'bg-white border-[#18181B] shadow-[0_4px_24px_rgba(0,0,0,0.04)]' : 'bg-white/50 border-zinc-200/80 hover:bg-white'">
               
-              <div class="flex justify-between items-start mb-3">
-                <span class="font-medium text-zinc-900 text-base">{{ addr.receiverName }}</span>
-                <span *ngIf="addr.isDefault" class="px-2 py-1 bg-zinc-900 text-white text-[10px] uppercase tracking-[0.1em] rounded-md font-semibold shrink-0 transition-opacity">MẶC ĐỊNH</span>
+              <div class="flex justify-between items-start mb-4">
+                <span class="font-medium text-[#18181B] text-lg tracking-tight">{{ addr.receiverName }}</span>
+                <span *ngIf="addr.isDefault" class="px-2.5 py-1 bg-[#18181B] text-white text-[10px] uppercase tracking-widest rounded-[6px] font-semibold shrink-0">MẶC ĐỊNH</span>
               </div>
               
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 text-sm">
-                <div class="flex items-center gap-2">
-                  <span class="text-zinc-500 w-16 shrink-0">Tỉnh:</span>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 text-[14px]">
+                <div class="flex items-start gap-2">
+                  <span class="text-zinc-400 w-[72px] shrink-0 font-medium">Tỉnh:</span>
                   <span class="text-zinc-900 truncate" [title]="addr.province">{{ addr.province }}</span>
                 </div>
-                <div class="flex items-center gap-2">
-                  <span class="text-zinc-500 w-[72px] shrink-0">Thành phố:</span>
+                <div class="flex items-start gap-2">
+                  <span class="text-zinc-400 w-[72px] shrink-0 font-medium">Thành phố:</span>
                   <span class="text-zinc-900 truncate" [title]="addr.city">{{ addr.city || '---' }}</span>
                 </div>
-                <div class="flex items-center gap-2">
-                  <span class="text-zinc-500 w-16 shrink-0">Đường:</span>
+                <div class="flex items-start gap-2">
+                  <span class="text-zinc-400 w-[72px] shrink-0 font-medium">Đường:</span>
                   <span class="text-zinc-900 truncate" [title]="addr.street">{{ addr.street }}</span>
                 </div>
-                <div class="flex items-center gap-2">
-                  <span class="text-zinc-500 w-[72px] shrink-0">Sđt:</span>
-                  <span class="text-zinc-900 truncate">{{ addr.receiverPhone }}</span>
+                <div class="flex items-start gap-2">
+                  <span class="text-zinc-400 w-[72px] shrink-0 font-medium">Sđt:</span>
+                  <span class="text-zinc-900 font-medium tracking-wide">{{ addr.receiverPhone }}</span>
                 </div>
               </div>
 
-              <div class="mt-4 flex items-center gap-4 text-sm font-medium">
+              <div class="mt-6 pt-4 border-t border-zinc-100 flex items-center gap-4 text-sm font-medium">
                 <button *ngIf="!addr.isDefault" (click)="setAsDefault(addr.id)" 
-                        class="text-zinc-400 hover:text-zinc-900 transition-colors duration-250 underline underline-offset-4 decoration-transparent hover:decoration-zinc-300">
+                        class="text-zinc-400 hover:text-[#18181B] transition-colors duration-250 hover:underline underline-offset-4 decoration-zinc-300">
                   Đặt làm mặc định
                 </button>
               </div>
@@ -68,14 +68,14 @@ import { AddressModalComponent } from '../../components/address-modal/address-mo
 
     <!-- Empty State -->
     <ng-template #emptyAddress>
-      <div class="py-16 px-8 border border-zinc-200 border-dashed rounded-[24px] text-center bg-zinc-50/50 flex flex-col items-center justify-center">
-        <div class="w-12 h-12 rounded-full bg-white border border-zinc-200 flex items-center justify-center text-zinc-400 mb-4 shadow-sm">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+      <div class="py-20 px-8 border border-zinc-200 border-dashed rounded-[24px] text-center bg-white/50 flex flex-col items-center justify-center">
+        <div class="w-14 h-14 rounded-full bg-white border border-zinc-200 flex items-center justify-center text-zinc-400 mb-5 shadow-sm">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
         </div>
-        <h3 class="text-zinc-900 font-medium mb-1">Chưa có địa chỉ</h3>
-        <p class="text-sm text-zinc-500 mb-6 max-w-[200px] leading-relaxed">Thêm địa chỉ giao hàng để thanh toán nhanh chóng hơn.</p>
-        <button type="button" (click)="openAddressModal()" class="px-6 py-2.5 bg-zinc-900 text-white text-sm font-medium rounded-[14px] hover:bg-zinc-800 hover:scale-[1.02] transition-transform duration-250">
-          Thêm địa chỉ
+        <h3 class="text-xl tracking-tight text-[#18181B] font-medium mb-2">Chưa có địa chỉ</h3>
+        <p class="text-[15px] text-zinc-500 mb-8 max-w-[250px] leading-relaxed">Thêm địa chỉ giao hàng để trải nghiệm mua sắm nhanh chóng hơn.</p>
+        <button type="button" (click)="openAddressModal()" class="px-8 py-3.5 bg-[#18181B] text-white text-[14px] font-medium rounded-[14px] hover:bg-black hover:scale-[1.02] hover:shadow-lg transition-all duration-300">
+          Thêm địa chỉ mới
         </button>
       </div>
     </ng-template>

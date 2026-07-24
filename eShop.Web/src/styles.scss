@@ -384,3 +384,81 @@ a {
 .stagger-3 { animation-delay: 0.15s; }
 .stagger-4 { animation-delay: 0.20s; }
 .stagger-5 { animation-delay: 0.25s; }
+
+/* ─────────────────────────────────────────────────────────────
+   ADMIN DESIGN TOKENS — Theme-aware custom properties
+   These react to html.dark / html.light set by ThemeService.
+───────────────────────────────────────────────────────────── */
+:root,
+html.light {
+  /* Admin surfaces */
+  --admin-canvas:      #F4F4F5;
+  --admin-surface:     #FFFFFF;
+  --admin-surface-alt: #F9F9FA;
+  --admin-border:      #E4E4E7;
+  --admin-border-sub:  #F0F0F1;
+
+  /* Admin text */
+  --admin-text-primary:   #18181B;
+  --admin-text-secondary: #71717A;
+  --admin-text-muted:     #A1A1AA;
+
+  /* Admin interactive */
+  --admin-input-bg:     #FFFFFF;
+  --admin-input-border: #E4E4E7;
+  --admin-btn-bg:       #FFFFFF;
+  --admin-btn-text:     #18181B;
+  --admin-btn-border:   #E4E4E7;
+  --admin-btn-hover-bg: #F4F4F5;
+
+  /* Table */
+  --admin-table-header:   #F9F9FA;
+  --admin-table-row-odd:  #FFFFFF;
+  --admin-table-row-even: #FAFAFA;
+  --admin-table-row-hover:#F4F4F5;
+
+  /* Status chips */
+  --admin-badge-bg: rgba(0,0,0,0.04);
+
+  /* Modal */
+  --admin-modal-bg:     #FFFFFF;
+  --admin-modal-border: #E4E4E7;
+  --admin-overlay:      rgba(0,0,0,0.35);
+}
+
+html.dark {
+  /* Admin surfaces */
+  --admin-canvas:      #08090D;
+  --admin-surface:     #0F1117;
+  --admin-surface-alt: #141620;
+  --admin-border:      rgba(255,255,255,0.07);
+  --admin-border-sub:  rgba(255,255,255,0.04);
+
+  /* Admin text */
+  --admin-text-primary:   #F1F5F9;
+  --admin-text-secondary: #71717A;
+  --admin-text-muted:     #52525B;
+
+  /* Admin interactive */
+  --admin-input-bg:     #141620;
+  --admin-input-border: rgba(255,255,255,0.08);
+  --admin-btn-bg:       #141620;
+  --admin-btn-text:     #A1A1AA;
+  --admin-btn-border:   rgba(255,255,255,0.08);
+  --admin-btn-hover-bg: rgba(255,255,255,0.05);
+
+  /* Table */
+  --admin-table-header:   #141620;
+  --admin-table-row-odd:  #0F1117;
+  --admin-table-row-even: #11131B;
+  --admin-table-row-hover:rgba(99,102,241,0.05);
+
+  /* Status chips */
+  --admin-badge-bg: rgba(255,255,255,0.06);
+
+  /* Modal */
+  --admin-modal-bg:     #0F1117;
+  --admin-modal-border: rgba(255,255,255,0.09);
+  --admin-overlay:      rgba(0,0,0,0.7);
+}
+

@@ -14,9 +14,23 @@ import { filter } from 'rxjs';
       <div class="page-shell shell-nav__inner">
         <!-- Logo -->
         <a class="shell-nav__brand" routerLink="/">
-          <span class="shell-nav__mark">QN</span>
-          <span class="shell-nav__name">Quang Nguyên SHOP</span>
+          <!-- MQN SVG Mark: Navy + Gold brand identity -->
+          <svg width="38" height="38" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg" class="shell-nav__mark-svg">
+            <!-- Outer gold ring -->
+            <circle cx="22" cy="22" r="20" stroke="#C9A961" stroke-width="1.5" fill="none" opacity="0.55"/>
+            <!-- M strokes — Navy -->
+            <path d="M7 31 L7 13 L16 23 L25 13 L25 31" stroke="#0F3460" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            <!-- Q arc — Gold -->
+            <path d="M29 17 Q38 17 38 24 Q38 31 29 31 L29 17" stroke="#C9A961" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            <!-- Q tail — Gold -->
+            <path d="M34 28 L39 34" stroke="#C9A961" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <div class="shell-nav__brand-text">
+            <span class="shell-nav__name">QUANG NGUYÊN</span>
+            <span class="shell-nav__sub">MAI QUANG NGUYÊN</span>
+          </div>
         </a>
+
 
         <!-- Main Links -->
         <div class="shell-nav__links">
@@ -112,25 +126,39 @@ import { filter } from 'rxjs';
         gap: 10px;
         text-decoration: none;
         flex-shrink: 0;
+        transition: opacity 200ms ease;
       }
-      .shell-nav__mark {
-        width: 36px; height: 36px;
-        background: var(--color-text-primary);
-        border-radius: 10px;
+      .shell-nav__brand:hover {
+        opacity: 0.85;
+      }
+      .shell-nav__mark-svg {
+        flex-shrink: 0;
+        filter: drop-shadow(0 1px 4px rgba(201, 169, 97, 0.18));
+        transition: filter 250ms ease;
+      }
+      .shell-nav__brand:hover .shell-nav__mark-svg {
+        filter: drop-shadow(0 2px 8px rgba(201, 169, 97, 0.32));
+      }
+      .shell-nav__brand-text {
         display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 800;
-        font-size: 17px;
-        color: white;
-        letter-spacing: -1px;
+        flex-direction: column;
+        gap: 1px;
       }
       .shell-nav__name {
-        font-size: 12px;
-        font-weight: 600;
-        letter-spacing: 0.2em;
-        color: var(--color-text-muted);
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 0.18em;
+        color: #0F3460;
         text-transform: uppercase;
+        line-height: 1;
+      }
+      .shell-nav__sub {
+        font-size: 9px;
+        font-weight: 500;
+        letter-spacing: 0.1em;
+        color: #A88A3E;
+        text-transform: uppercase;
+        line-height: 1;
       }
 
       /* LINKS */

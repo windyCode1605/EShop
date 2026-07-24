@@ -66,6 +66,7 @@ namespace CR.Constants.ErrorCodes
         public const int UserHasNoRoleAssigned = 12002;
         public const int InvalidInput = 12003;
         public const int PermissionKeyInvalid = 12004;
+        public const int RoleAlreadyExists = 12005;
 
         //  Payment (13xxx) — tách riêng khỏi Order để tránh trùng mã 
         public const int PaymentNotFound = 13000;

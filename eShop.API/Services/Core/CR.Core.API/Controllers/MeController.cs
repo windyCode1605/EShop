@@ -1,5 +1,5 @@
 using CR.Core.ApplicationServices.AuthenticationModule.Abstracts;
-using CR.Core.ApplicationServices.AuthenticationModule.RoleDtos;
+using CR.Core.ApplicationServices.AuthenticationModule.Dtos.UserActionDtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using CR.WebAPIBase.Responses;
@@ -16,11 +16,11 @@ namespace CR.Core.API.Controllers;
 [Authorize]
 public class MeController : ControllerBase
 {
-    private readonly IRoleService _roleService;
+    private readonly IUserService _userService;
 
-    public MeController(IRoleService roleService)
+    public MeController(IUserService userService)
     {
-        _roleService = roleService;
+        _userService = userService;
     }
 
     /// <summary>
@@ -34,7 +34,7 @@ public class MeController : ControllerBase
     [HttpGet("permissions")]
     public async Task<IActionResult> GetMyPermissions()
     {
-        var result = await _roleService.GetCurrentUserAuthorizationAsync();
+        var result = await _userService.GetCurrentUserAuthorizationAsync();
         
         // Tự động map ErrorCode -> Message nếu có lỗi (Dùng Extension)
         return result.ToActionResult(this, "Lấy quyền thành công");

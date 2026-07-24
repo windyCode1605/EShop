@@ -12,31 +12,31 @@ import { ToastModule } from 'primeng/toast';
   template: `
     <section>
       <div class="flex items-center justify-between mb-8">
-        <h2 class="text-xl font-medium tracking-tight">Thông tin chung</h2>
+        <h2 class="text-2xl font-medium tracking-tight text-[#18181B]">Thông tin chung</h2>
       </div>
       
-      <div class="bg-white rounded-[24px] p-8 md:p-10 border border-zinc-200/80 shadow-[0_2px_12px_rgba(0,0,0,0.02)]">
+      <div class="bg-white rounded-[24px] p-8 md:p-10 border border-zinc-200/60 shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
         <form *ngIf="profileForm" [formGroup]="profileForm" (ngSubmit)="onSaveProfile()">
-          <div class="grid gap-6">
+          <div class="grid gap-8">
             
             <div class="form-group group">
-              <label class="block text-sm font-medium text-zinc-600 mb-2 group-focus-within:text-zinc-900 transition-colors">Họ và tên</label>
+              <label class="block text-[13px] font-semibold text-zinc-500 mb-2 group-focus-within:text-[#18181B] transition-colors uppercase tracking-wide">Họ và tên</label>
               <input type="text" formControlName="fullName" 
-                     class="w-full px-5 py-3.5 rounded-[16px] bg-zinc-50/50 border border-zinc-200 focus:bg-white focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 outline-none transition-all duration-250" 
+                     class="w-full px-5 py-3.5 rounded-[16px] bg-zinc-50/50 border border-zinc-200 focus:bg-white focus:border-[#18181B] focus:ring-1 focus:ring-[#18181B] outline-none transition-all duration-300 text-[15px]" 
                      placeholder="Nhập họ và tên của bạn" />
             </div>
 
             <div class="form-group group">
-              <label class="block text-sm font-medium text-zinc-600 mb-2 group-focus-within:text-zinc-900 transition-colors">Số điện thoại</label>
+              <label class="block text-[13px] font-semibold text-zinc-500 mb-2 group-focus-within:text-[#18181B] transition-colors uppercase tracking-wide">Số điện thoại</label>
               <input type="text" formControlName="phoneNumber" 
-                     class="w-full px-5 py-3.5 rounded-[16px] bg-zinc-50/50 border border-zinc-200 focus:bg-white focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 outline-none transition-all duration-250" 
+                     class="w-full px-5 py-3.5 rounded-[16px] bg-zinc-50/50 border border-zinc-200 focus:bg-white focus:border-[#18181B] focus:ring-1 focus:ring-[#18181B] outline-none transition-all duration-300 text-[15px]" 
                      placeholder="Nhập số điện thoại" />
             </div>
 
             <!-- Submit Button -->
             <div class="pt-6 mt-2 border-t border-zinc-100 flex justify-end">
               <button type="submit" [disabled]="profileForm.invalid || isSavingProfile()" 
-                      class="w-full sm:w-auto px-8 py-3.5 bg-zinc-900 text-white rounded-[14px] text-sm font-medium hover:bg-zinc-800 hover:scale-[1.02] active:translate-y-[1px] transition-transform duration-250 disabled:opacity-50 disabled:hover:scale-100">
+                      class="w-full sm:w-auto px-8 py-3.5 bg-[#18181B] text-white rounded-[14px] text-sm font-medium hover:bg-black hover:scale-[1.02] hover:shadow-lg active:scale-[0.98] transition-all duration-300 disabled:opacity-50 disabled:hover:scale-100 disabled:hover:shadow-none">
                 {{ isSavingProfile() ? 'Đang lưu...' : 'Lưu thay đổi' }}
               </button>
             </div>
@@ -48,14 +48,14 @@ import { ToastModule } from 'primeng/toast';
         <div *ngIf="!profileForm" class="animate-pulse flex flex-col gap-8">
           <div>
             <div class="h-4 w-20 bg-zinc-100 rounded mb-3"></div>
-            <div class="h-14 bg-zinc-100 rounded-[16px]"></div>
+            <div class="h-[52px] bg-zinc-100 rounded-[16px]"></div>
           </div>
           <div>
             <div class="h-4 w-24 bg-zinc-100 rounded mb-3"></div>
-            <div class="h-14 bg-zinc-100 rounded-[16px]"></div>
+            <div class="h-[52px] bg-zinc-100 rounded-[16px]"></div>
           </div>
           <div class="pt-6 mt-2 border-t border-zinc-100 flex justify-end">
-            <div class="h-12 w-full sm:w-32 bg-zinc-100 rounded-[14px]"></div>
+            <div class="h-[52px] w-full sm:w-32 bg-zinc-100 rounded-[14px]"></div>
           </div>
         </div>
       </div>

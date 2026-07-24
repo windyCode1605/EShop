@@ -11,7 +11,7 @@ import { CancelOrderModalComponent, CancelOrderResult } from '../../components/c
   template: `
     <section class="flex flex-col gap-6">
       <div class="flex items-center justify-between mb-2">
-        <h2 class="text-xl font-medium tracking-tight">Lịch sử đơn hàng</h2>
+        <h2 class="text-2xl font-medium tracking-tight text-[#18181B]">Lịch sử đơn hàng</h2>
       </div>
 
       <!-- Filters (Optional, keeping it simple for now) -->

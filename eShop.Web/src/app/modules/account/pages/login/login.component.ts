@@ -31,8 +31,6 @@ export class LoginPageComponent implements OnInit , AfterViewInit{
       setTimeout(() => this.usernameInput?.nativeElement?.focus(), 0);  // Tập trung vào trường username sau khi view đã được khởi tạo 
   }
   login(): void {
-    console.log('Đang đăng nhập...');
-    console.log('Thông tin đăng nhập:', this.authService.authenticateModel);
     this.submitting = true;
     this.authService.authenticate(() => (this.submitting = false), this.returnUrl);
   }

@@ -1,6 +1,5 @@
 using CR.Core.ApplicationServices.OrderModule.Abstracts;
 using CR.Core.ApplicationServices.OrderModule.Dtos;
-using CR.DtoBase;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using CR.Core.API.Extensions;

@@ -21,8 +21,21 @@ export const ADMIN_ROUTES: Routes = [
       {
         path: 'categories',
         loadComponent: () => import('./pages/admin-categories/admin-categories.component').then((m) => m.AdminCategoriesComponent)
+      },
+      {
+        path: 'customers',
+        loadComponent: () => import('./pages/admin-customers/admin-customers.component').then((m) => m.AdminCustomersComponent)
+      },
+      {
+        path: 'settings',
+        loadComponent: () => import('./pages/admin-settings/admin-settings.component').then((m) => m.AdminSettingsComponent)
+      },
+      {
+        path: 'roles',
+        loadComponent: () => import('./pages/admin-roles/admin-roles.component').then((m) => m.AdminRolesComponent)
       }
     ]
   }
 ];
 
+// Trigger reload

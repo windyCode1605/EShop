@@ -27,6 +27,10 @@ using CR.Core.ApplicationServices.AttributeModule.Abstract;
 using CR.Core.ApplicationServices.AttributeModule.Implements;
 using FirebaseAdmin;
 using Google.Apis.Auth.OAuth2;
+using CR.Core.ApplicationServices.AuthenticationModule.Abstracts;
+using CR.Core.ApplicationServices.AuthenticationModule.Implements;
+using CR.Core.ApplicationServices.RoleModule;
+using CR.Core.ApplicationServices.RoleModule.Implement;
 
 
 // ===============================================
@@ -260,7 +264,6 @@ builder.Services.AddSingleton<ILocalization>(sp => sp.GetRequiredService<Localiz
 
 // Authorization Cache
 builder.Services.AddScoped<CR.Core.ApplicationServices.AuthenticationModule.Abstracts.IPermissionCacheService, CR.Core.ApplicationServices.AuthenticationModule.Implements.PermissionCacheService>();
-builder.Services.AddScoped<CR.Core.ApplicationServices.AuthenticationModule.Abstracts.IRoleService, CR.Core.ApplicationServices.AuthenticationModule.Implements.RoleService>();
 builder.Services.AddSingleton<Microsoft.AspNetCore.Authorization.IAuthorizationPolicyProvider, CR.Core.API.Authorization.PermissionPolicyProvider>();
 builder.Services.AddScoped<Microsoft.AspNetCore.Authorization.IAuthorizationHandler, CR.Core.API.Authorization.PermissionAuthorizationHandler>();
 
@@ -275,6 +278,8 @@ builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IAddressService, AddressService>();
 builder.Services.AddScoped<IAttributeService, AttributeService>();
 builder.Services.AddScoped<IAttributeValueService, AttributeValueService>();
+builder.Services.AddScoped<CR.Core.ApplicationServices.RoleModule.Abstracts.IRoleService, CR.Core.ApplicationServices.RoleModule.Implement.RoleService>();
+builder.Services.AddScoped<CR.Core.ApplicationServices.RoleModule.IPermissionService, CR.Core.ApplicationServices.RoleModule.Implement.PermissionService>();
 
 // builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 

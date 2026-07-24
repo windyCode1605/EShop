@@ -111,20 +111,28 @@ export class AppAuthService {
             this._appSessionService.init(),
             this._permissionStore.load()
         ]).then(() => {
-            this.navigateAfterLogin(returnUrl);
+            this.navigateAfterLogin(returnUrl, accessToken);
         }).catch(err => {
             console.error('[AppAuthService] Lỗi khi tải thông tin sau đăng nhập:', err);
-            this.navigateAfterLogin(returnUrl);
+            this.navigateAfterLogin(returnUrl, accessToken);
         });
     }
 
-    private navigateAfterLogin(returnUrl?: string): void {
-        console.log('[DEBUG 5] Chuẩn bị chuyển trang. TokenService.isAdmin() =', this._tokenService.isAdmin()); // <--- THÊM DÒNG NÀY
+    private navigateAfterLogin(returnUrl?: string, accessToken?: string): void {
+        const isAdmin = this._tokenService.isAdmin(accessToken);
+
+        // Nếu là Admin và returnUrl là trang chủ/trang khách hàng mặc định do authGuard đẩy về,
+        // thì ưu tiên chuyển hướng thẳng vào trang quản trị thay vì trang khách hàng.
+        if (isAdmin && returnUrl && (returnUrl === '/' || returnUrl.startsWith('/dashboard'))) {
+            returnUrl = undefined;
+        }
+
         if (returnUrl) {
             this._router.navigateByUrl(returnUrl).catch(err => console.error('Navigation error:', err));
             return;
         }
-        if (this._tokenService.isAdmin()) {
+
+        if (isAdmin) {
             this._router.navigate(['/admin/dashboard']).catch(err => console.error('Navigation error:', err));
         } else {
             this._router.navigate(['/']).catch(err => console.error('Navigation error:', err));

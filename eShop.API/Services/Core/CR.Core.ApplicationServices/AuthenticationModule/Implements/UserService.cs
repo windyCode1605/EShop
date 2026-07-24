@@ -19,15 +19,18 @@ namespace CR.Core.ApplicationServices.AuthenticationModule.Implements
     {
         private readonly IOtpService _otpService;
         private readonly PasswordHasher<Users> _passwordHasher;
+        private readonly IPermissionCacheService _permissionCacheService;
 
         public UserService(
             ILogger<UserService> logger,
             IWebHostEnvironment environment,
             IHttpContextAccessor httpContext,
-            IOtpService otpService
+            IOtpService otpService,
+            IPermissionCacheService permissionCacheService
         ) : base(logger, httpContext)
         {
             _otpService = otpService;
+            _permissionCacheService = permissionCacheService;
             // Khởi tạo Hasher chuẩn của Microsoft Identity
             _passwordHasher = new PasswordHasher<Users>();
         }
@@ -255,6 +258,46 @@ namespace CR.Core.ApplicationServices.AuthenticationModule.Implements
                 UserType = user.UserType,
                 Status = user.Status,
                 IsPasswordTemp = user.IsTempPassword
+            });
+        }
+
+        /// <summary>
+        /// Lấy thông tin phân quyền của user đang đăng nhập hiện tại.
+        /// Gom tất cả permissions từ nhiều roles của user (nếu user có nhiều roles).
+        /// Cache-Aside: lấy từ Redis trước, cache miss mới query DB.
+        /// </summary>
+        public async Task<Result<UserAuthorizationDto>> GetCurrentUserAuthorizationAsync()
+        {
+            _logger.LogInformation("{Method} called", nameof(GetCurrentUserAuthorizationAsync));
+
+            var userId = _httpContext.GetCurrentUserId();
+            if (userId <= 0)
+                return Result<UserAuthorizationDto>.Failure(
+                    ErrorCode.UserNotFound,
+                    this.GetCurrentMethodInfo(),
+                    "Không tìm thấy user id"
+                );
+
+            var userRoles = await _dbContext.UserRoles
+                .Include(ur => ur.Role)
+                .Where(ur => ur.UserId == userId && !ur.Deleted)
+                .Select(ur => new { ur.RoleId, ur.Role.Name })
+                .ToListAsync();
+
+            var roleNames = userRoles.Select(r => r.Name).ToList();
+            var allPermissions = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var role in userRoles)
+            {
+                var permissions = await _permissionCacheService.GetRolePermissionsAsync(role.RoleId);
+                foreach (var p in permissions)
+                    allPermissions.Add(p);
+            }
+
+            return Result<UserAuthorizationDto>.Success(new UserAuthorizationDto
+            {
+                Roles = roleNames,
+                Permissions = allPermissions.ToList()
             });
         }
     }

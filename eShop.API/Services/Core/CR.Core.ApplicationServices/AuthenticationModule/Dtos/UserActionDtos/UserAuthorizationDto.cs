@@ -1,4 +1,4 @@
-namespace CR.Core.ApplicationServices.AuthenticationModule.RoleDtos;
+namespace CR.Core.ApplicationServices.AuthenticationModule.Dtos.UserActionDtos;
 
 /// <summary>
 /// DTO phẳng trả về cho Frontend: danh sách tên Role và toàn bộ Permission đã được gom từ nhiều Role.

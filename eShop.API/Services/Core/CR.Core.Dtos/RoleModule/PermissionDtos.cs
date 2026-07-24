@@ -1,4 +1,4 @@
-namespace CR.Core.ApplicationServices.AuthenticationModule.RoleDtos;
+namespace CR.Core.Dtos.RoleModule;
 
 /// <summary>
 /// Đại diện cho một Permission trong danh mục, dùng cho màn hình Admin quản lý quyền.

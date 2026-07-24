@@ -1,5 +1,6 @@
-using CR.Core.ApplicationServices.AuthenticationModule.Abstracts;
-using CR.Core.ApplicationServices.AuthenticationModule.RoleDtos;
+using CR.Core.ApplicationServices.RoleModule;
+using CR.Core.ApplicationServices.RoleModule.Abstracts;
+using CR.Core.Dtos.RoleModule;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using CR.WebAPIBase.Responses;
@@ -16,10 +17,12 @@ namespace CR.Core.API.Controllers;
 public class AdminRoleController : ControllerBase
 {
     private readonly IRoleService _roleService;
+    private readonly IPermissionService _permissionService;
 
-    public AdminRoleController(IRoleService roleService)
+    public AdminRoleController(IRoleService roleService, IPermissionService permissionService)
     {
         _roleService = roleService;
+        _permissionService = permissionService;
     }
 
     /// <summary>
@@ -77,7 +80,7 @@ public class AdminRoleController : ControllerBase
     [Authorize(Policy = "Permission:Identity.Roles.View")]
     public async Task<IActionResult> GetAllPermissions()
     {
-        var result = await _roleService.GetAllPermissionsGroupedAsync();
+        var result = await _permissionService.GetAllPermissionsGroupedAsync();
         if (result.IsFailure)
             return BadRequest(ApiResponse<object>.Fail("Lấy danh sách quyền thất bại", result.ErrorCode));
 
