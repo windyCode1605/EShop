@@ -99,19 +99,22 @@ foreach (var mapping in configMappings)
     }
 }
 
-var ServiceAccountPath = Path.Combine(builder.Environment.ContentRootPath,
-    builder.Configuration["Firebase:ServiceAccountKeyPath"]);
-if (File.Exists(ServiceAccountPath))
+var firebaseKeyPath = builder.Configuration["Firebase:ServiceAccountKeyPath"];
+if (!string.IsNullOrEmpty(firebaseKeyPath))
 {
-    FirebaseApp.Create(new AppOptions
+    var ServiceAccountPath = Path.Combine(builder.Environment.ContentRootPath, firebaseKeyPath);
+    if (File.Exists(ServiceAccountPath))
     {
-        Credential = GoogleCredential.FromFile(ServiceAccountPath),
-        ProjectId = builder.Configuration["Firebase:projectId"]
-    });
+        FirebaseApp.Create(new AppOptions
+        {
+            Credential = GoogleCredential.FromFile(ServiceAccountPath),
+            ProjectId = builder.Configuration["Firebase:projectId"]
+        });
+    }
 }
 else
 {
-    Console.WriteLine("CẢNH BÁO: Không tìm thấy file Firebase Service Account! Gửi thông báo có thể bị lỗi.");
+    Console.WriteLine("[STARTUP WARNING] Không tìm thấy Firebase:ServiceAccountKeyPath trong biến môi trường! Bỏ qua Firebase.");
 }
 // ===============================================
 // 1. LOGGING SETUP
