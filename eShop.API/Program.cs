@@ -51,6 +51,16 @@ if (File.Exists(envPath))
     Console.WriteLine($"[DEBUG] .env file loaded successfully");
 }
 
+// =====================================================================
+// Fix CRITICAL: Tắt inotify file-watcher TRƯỚC KHI CreateBuilder chạy
+// Render Free Tier Linux giới hạn 128 inotify instances (dùng chung với
+// các service khác trên cùng host). ASP.NET Core đọc key
+// "hostBuilder:reloadConfigOnChange" từ env var có prefix DOTNET_ để
+// quyết định có gắn FileSystemWatcher vào config files hay không.
+// Phải set trước khi WebApplication.CreateBuilder() được gọi.
+// =====================================================================
+Environment.SetEnvironmentVariable("DOTNET_hostBuilder__reloadConfigOnChange", "false");
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Render inject PORT env var - phải bind đúng port này để Render phát hiện service đã live
@@ -58,10 +68,7 @@ var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
 builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 Console.WriteLine($"[DEBUG] Binding to port: {port}");
 
-// Fix: Tắt file-watching cho config files
-// Render Free Tier (Linux) giới hạn 128 inotify instances.
-// ASP.NET Core mặc định bật reloadOnChange=true → tạo FileSystemWatcher → tiêu thụ inotify.
-// Tắt đi để tránh crash "inotify instances has been reached".
+// Double-safety: clear sources và re-add không có reloadOnChange
 builder.Configuration.Sources.Clear();
 builder.Configuration
     .AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
