@@ -260,7 +260,7 @@ public class OrderService : CoreServiceBase, IOrderService
         {
             await transaction.RollbackAsync();
             _logger.LogError(ex, "Lỗi Database/System khi tạo đơn cho User: {UserId}", userId);
-            return Result<OrderDto>.Failure(ErrorCode.UnknownError, this.GetCurrentMethodInfo(), "Hệ thống gặp sự cố. Vui lòng thử lại sau.");
+            return Result<OrderDto>.Failure(ErrorCode.UnknownError, this.GetCurrentMethodInfo(), $"[DEV ONLY] Lỗi hệ thống: {ex.InnerException?.Message ?? ex.Message}");
         }
     }
 
