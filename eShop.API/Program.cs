@@ -53,6 +53,11 @@ if (File.Exists(envPath))
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Render inject PORT env var - phải bind đúng port này để Render phát hiện service đã live
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+Console.WriteLine($"[DEBUG] Binding to port: {port}");
+
 // Override configuration from environment variables
 var configMappings = new Dictionary<string, string>
 {
@@ -353,7 +358,12 @@ if (app.Environment.IsDevelopment())
 app.UseMiddleware<GlobalExceptionMiddleware>();
 
 // 2. HTTPS & Static Files
-app.UseHttpsRedirection();
+// Tắt HTTPS redirect trên Cloud (Render/Vercel xử lý TLS ở proxy level)
+// Chỉ redirect HTTPS ở local Development
+if (app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 var webRootPath = app.Environment.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
 if (!Directory.Exists(webRootPath)) Directory.CreateDirectory(webRootPath);
 app.UseStaticFiles(new StaticFileOptions
