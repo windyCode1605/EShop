@@ -445,4 +445,5 @@ app.UseAuthorization();
 // 5. Endpoints
 app.MapControllers();
 
-app.Run();
+var portStr = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+app.Run($"http://0.0.0.0:{portStr}");
