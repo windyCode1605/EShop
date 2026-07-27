@@ -58,6 +58,17 @@ var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
 builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 Console.WriteLine($"[DEBUG] Binding to port: {port}");
 
+// Fix: Tắt file-watching cho config files
+// Render Free Tier (Linux) giới hạn 128 inotify instances.
+// ASP.NET Core mặc định bật reloadOnChange=true → tạo FileSystemWatcher → tiêu thụ inotify.
+// Tắt đi để tránh crash "inotify instances has been reached".
+builder.Configuration.Sources.Clear();
+builder.Configuration
+    .AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
+    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: false)
+    .AddEnvironmentVariables()
+    .AddCommandLine(args);
+
 // Override configuration from environment variables
 var configMappings = new Dictionary<string, string>
 {
