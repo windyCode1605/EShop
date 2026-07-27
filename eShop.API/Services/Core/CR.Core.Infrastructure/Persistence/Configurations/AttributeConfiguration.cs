@@ -9,7 +9,7 @@ namespace CR.Core.Infrastructure.Persistence.Configurations
     {
         public void Configure(EntityTypeBuilder<CatalogAttribute> entity)
         {
-            entity.ToTable("Attribute", schema: "dbo", t => t.HasCheckConstraint("CK_Attribute_Type", "AttributeType IN ('Text', 'Number', 'Color', 'Boolean')"));
+            entity.ToTable("Attribute", schema: "dbo", t => t.HasCheckConstraint("CK_Attribute_Type", "\"AttributeType\" IN ('Text', 'Number', 'Color', 'Boolean')"));
             entity.HasKey(a => a.Id);
 
             entity.Property(a => a.Name).IsRequired().HasMaxLength(100);

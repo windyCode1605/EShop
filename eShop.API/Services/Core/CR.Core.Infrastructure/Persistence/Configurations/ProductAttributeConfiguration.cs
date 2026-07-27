@@ -14,7 +14,7 @@ namespace CR.Core.Infrastructure.Persistence.Configurations
 
             entity.HasIndex(pa => new { pa.ProductId, pa.AttributeId }).IsUnique();
 
-            entity.ToTable(t => t.HasCheckConstraint("CK_PA_ValueXor", "(AttributeValueId IS NOT NULL AND CustomValue IS NULL) OR (AttributeValueId IS NULL AND CustomValue IS NOT NULL)"));
+            entity.ToTable(t => t.HasCheckConstraint("CK_PA_ValueXor", "(\"AttributeValueId\" IS NOT NULL AND \"CustomValue\" IS NULL) OR (\"AttributeValueId\" IS NULL AND \"CustomValue\" IS NOT NULL)"));
 
             entity.HasQueryFilter(pa => !pa.Deleted);
 

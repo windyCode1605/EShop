@@ -39,7 +39,7 @@ namespace eShop.API.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Attribute", x => x.Id);
-                    table.CheckConstraint("CK_Attribute_Type", "AttributeType IN ('Text', 'Number', 'Color', 'Boolean')");
+                    table.CheckConstraint("CK_Attribute_Type", "\"AttributeType\" IN ('Text', 'Number', 'Color', 'Boolean')");
                 });
 
             migrationBuilder.CreateTable(
@@ -153,7 +153,7 @@ namespace eShop.API.Migrations
                     DisplayName = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     PermissionGroup = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     Description = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
-                    CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "GETUTCDATE()"),
+                    CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "NOW() AT TIME ZONE 'UTC'"),
                     CreatedBy = table.Column<int>(type: "integer", nullable: true)
                 },
                 constraints: table =>
@@ -608,7 +608,7 @@ namespace eShop.API.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_ProductAttribute", x => x.Id);
-                    table.CheckConstraint("CK_PA_ValueXor", "(AttributeValueId IS NOT NULL AND CustomValue IS NULL) OR (AttributeValueId IS NULL AND CustomValue IS NOT NULL)");
+                    table.CheckConstraint("CK_PA_ValueXor", "(\"AttributeValueId\" IS NOT NULL AND \"CustomValue\" IS NULL) OR (\"AttributeValueId\" IS NULL AND \"CustomValue\" IS NOT NULL)");
                     table.ForeignKey(
                         name: "FK_ProductAttribute_AttributeValue_AttributeValueId",
                         column: x => x.AttributeValueId,
@@ -870,7 +870,7 @@ namespace eShop.API.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_ProductVariantAttribute", x => x.Id);
-                    table.CheckConstraint("CK_PVA_ValueXor", "(AttributeValueId IS NOT NULL AND CustomValue IS NULL) OR (AttributeValueId IS NULL AND CustomValue IS NOT NULL)");
+                    table.CheckConstraint("CK_PVA_ValueXor", "(\"AttributeValueId\" IS NOT NULL AND \"CustomValue\" IS NULL) OR (\"AttributeValueId\" IS NULL AND \"CustomValue\" IS NOT NULL)");
                     table.ForeignKey(
                         name: "FK_ProductVariantAttribute_AttributeValue_AttributeValueId",
                         column: x => x.AttributeValueId,

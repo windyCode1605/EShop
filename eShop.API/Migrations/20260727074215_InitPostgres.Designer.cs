@@ -11,7 +11,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace eShop.API.Migrations
 {
     [DbContext(typeof(CoreDbContext))]
-    [Migration("20260727063329_InitPostgres")]
+    [Migration("20260727074215_InitPostgres")]
     partial class InitPostgres
     {
         /// <inheritdoc />
@@ -253,7 +253,7 @@ namespace eShop.API.Migrations
 
                     b.ToTable("Attribute", "dbo", t =>
                         {
-                            t.HasCheckConstraint("CK_Attribute_Type", "AttributeType IN ('Text', 'Number', 'Color', 'Boolean')");
+                            t.HasCheckConstraint("CK_Attribute_Type", "\"AttributeType\" IN ('Text', 'Number', 'Color', 'Boolean')");
                         });
                 });
 
@@ -525,7 +525,7 @@ namespace eShop.API.Migrations
 
                     b.ToTable("ProductAttribute", "dbo", t =>
                         {
-                            t.HasCheckConstraint("CK_PA_ValueXor", "(AttributeValueId IS NOT NULL AND CustomValue IS NULL) OR (AttributeValueId IS NULL AND CustomValue IS NOT NULL)");
+                            t.HasCheckConstraint("CK_PA_ValueXor", "(\"AttributeValueId\" IS NOT NULL AND \"CustomValue\" IS NULL) OR (\"AttributeValueId\" IS NULL AND \"CustomValue\" IS NOT NULL)");
                         });
                 });
 
@@ -697,7 +697,7 @@ namespace eShop.API.Migrations
 
                     b.ToTable("ProductVariantAttribute", "dbo", t =>
                         {
-                            t.HasCheckConstraint("CK_PVA_ValueXor", "(AttributeValueId IS NOT NULL AND CustomValue IS NULL) OR (AttributeValueId IS NULL AND CustomValue IS NOT NULL)");
+                            t.HasCheckConstraint("CK_PVA_ValueXor", "(\"AttributeValueId\" IS NOT NULL AND \"CustomValue\" IS NULL) OR (\"AttributeValueId\" IS NULL AND \"CustomValue\" IS NOT NULL)");
                         });
                 });
 
@@ -1297,7 +1297,7 @@ namespace eShop.API.Migrations
                     b.Property<DateTime>("CreatedDate")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("NOW() AT TIME ZONE 'UTC'");
 
                     b.Property<string>("Description")
                         .HasMaxLength(500)

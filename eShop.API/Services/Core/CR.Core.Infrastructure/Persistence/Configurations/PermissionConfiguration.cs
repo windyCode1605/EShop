@@ -31,7 +31,7 @@ namespace CR.Core.Infrastructure.Persistence.Configurations
 
             builder.Property(p => p.CreatedDate)
                 .IsRequired()
-                .HasDefaultValueSql("GETUTCDATE()");
+                .HasDefaultValueSql("NOW() AT TIME ZONE 'UTC'");
 
             // Relationship Permission (1) - RolePermission (N)
             builder.HasMany(p => p.RolePermissions)
