@@ -3,7 +3,7 @@ namespace CR.Constants.Common.Database
     public static class DbSchemas
     {
         public const string TableMigrationsHistory = "__EFMigrationsHistory";
-        public const string Default = "dbo";
+        public const string Default = "public";
         public const string CRCore = "core";
         public const string CRLearn = "learn";
         public const string CRExam = "exam";
