@@ -206,7 +206,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("WebClient", policy =>
     {
-        policy.WithOrigins("http://localhost:4200")
+        policy.WithOrigins("http://localhost:4200", "https://eshop-z32w.onrender.com")
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
@@ -305,17 +305,10 @@ using (var scope = app.Services.CreateScope())
     var localization = scope.ServiceProvider.GetRequiredService<CR.ApplicationBase.Localization.LocalizationBase>();
     localization.LoadDictionary("eShop.API.Resources");
 
-    try
-    {
-        var db = scope.ServiceProvider.GetRequiredService<CoreDbContext>();
-        await db.Database.MigrateAsync();
-        // Tự động Seed Data mỗi lần chạy
-        await DataSeeder.SeedAsync(db);
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"[WARNING] Database Migration/Seeding skipped: {ex.Message}");
-    }
+    var db = scope.ServiceProvider.GetRequiredService<CoreDbContext>();
+    await db.Database.MigrateAsync();
+    // Tự động Seed Data mỗi lần chạy
+    await DataSeeder.SeedAsync(db);
 
     var applicationManager = scope.ServiceProvider.GetRequiredService<IOpenIddictApplicationManager>();
 
@@ -348,11 +341,12 @@ using (var scope = app.Services.CreateScope())
 // ===============================================
 // 8. HTTP REQUEST PIPELINE (THỨ TỰ CHUẨN)
 // ===============================================
+//
+app.UseSwagger();
+app.UseSwaggerUI();
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
-    app.UseSwagger();
-    app.UseSwaggerUI();
 }
 
 // 1. Exception Handling
