@@ -3,11 +3,13 @@ import { CommonModule } from '@angular/common';
 import { RouterOutlet, RouterModule } from '@angular/router';
 import { ThemeService } from '../../../core/services/theme.service';
 import { AppAuthService } from '../../../core/auth/app-auth.service';
+import { HasPermissionDirective } from '../../../shared/directives/has-permission.directive';
+import { PERMISSIONS } from '../../../core/constants/permissions.const';
 
 @Component({
   selector: 'app-admin-layout',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, RouterModule],
+  imports: [CommonModule, RouterOutlet, RouterModule, HasPermissionDirective],
   template: `
     <div [class]="isDark() ? 'dark' : 'light'"
          class="min-h-[100dvh] flex font-sans selection:bg-indigo-500/30 transition-colors duration-300"
@@ -43,7 +45,7 @@ import { AppAuthService } from '../../../core/auth/app-auth.service';
             <div class="text-[10px] font-semibold uppercase tracking-widest mb-2 px-1"
                  [style.color]="isDark() ? '#3f3f46' : '#A1A1AA'">Tổng quan</div>
             <ul class="flex flex-col gap-0.5">
-              <li>
+              <li *hasPermission="PERMISSIONS.DASHBOARD.VIEW">
                 <a routerLink="/admin/dashboard"
                    [routerLinkActive]="isDark() ? 'bg-white/10 text-white ring-1 ring-white/10' : 'bg-zinc-100 text-zinc-900 ring-1 ring-zinc-200'"
                    class="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-200 outline-none"
@@ -60,7 +62,7 @@ import { AppAuthService } from '../../../core/auth/app-auth.service';
             <div class="text-[10px] font-semibold uppercase tracking-widest mb-2 px-1"
                  [style.color]="isDark() ? '#3f3f46' : '#A1A1AA'">Danh mục</div>
             <ul class="flex flex-col gap-0.5">
-              <li>
+              <li *hasPermission="PERMISSIONS.CATALOG.CATEGORIES_VIEW">
                 <a routerLink="/admin/categories"
                    [routerLinkActive]="isDark() ? 'bg-white/10 text-white ring-1 ring-white/10' : 'bg-zinc-100 text-zinc-900 ring-1 ring-zinc-200'"
                    class="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-200 outline-none"
@@ -69,7 +71,7 @@ import { AppAuthService } from '../../../core/auth/app-auth.service';
                   Danh mục
                 </a>
               </li>
-              <li>
+              <li *hasPermission="PERMISSIONS.CATALOG.PRODUCTS_VIEW">
                 <a routerLink="/admin/products"
                    [routerLinkActive]="isDark() ? 'bg-white/10 text-white ring-1 ring-white/10' : 'bg-zinc-100 text-zinc-900 ring-1 ring-zinc-200'"
                    class="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-200 outline-none"
@@ -86,7 +88,7 @@ import { AppAuthService } from '../../../core/auth/app-auth.service';
             <div class="text-[10px] font-semibold uppercase tracking-widest mb-2 px-1"
                  [style.color]="isDark() ? '#3f3f46' : '#A1A1AA'">Vận hành</div>
             <ul class="flex flex-col gap-0.5">
-              <li>
+              <li *hasPermission="PERMISSIONS.SALES.ORDERS_VIEW">
                 <a routerLink="/admin/orders"
                    [routerLinkActive]="isDark() ? 'bg-white/10 text-white ring-1 ring-white/10' : 'bg-zinc-100 text-zinc-900 ring-1 ring-zinc-200'"
                    class="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-200 outline-none"
@@ -95,7 +97,7 @@ import { AppAuthService } from '../../../core/auth/app-auth.service';
                   Đơn hàng
                 </a>
               </li>
-              <li>
+              <li *hasPermission="PERMISSIONS.CUSTOMERS.VIEW">
                 <a routerLink="/admin/customers"
                    [routerLinkActive]="isDark() ? 'bg-white/10 text-white ring-1 ring-white/10' : 'bg-zinc-100 text-zinc-900 ring-1 ring-zinc-200'"
                    class="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-200 outline-none"
@@ -112,7 +114,7 @@ import { AppAuthService } from '../../../core/auth/app-auth.service';
             <div class="text-[10px] font-semibold uppercase tracking-widest mb-2 px-1"
                  [style.color]="isDark() ? '#3f3f46' : '#A1A1AA'">Hệ thống</div>
             <ul class="flex flex-col gap-0.5">
-              <li>
+              <li *hasPermission="PERMISSIONS.SYSTEM.SETTINGS_VIEW">
                 <a routerLink="/admin/settings"
                    [routerLinkActive]="isDark() ? 'bg-white/10 text-white ring-1 ring-white/10' : 'bg-zinc-100 text-zinc-900 ring-1 ring-zinc-200'"
                    class="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-200 outline-none"
@@ -121,7 +123,7 @@ import { AppAuthService } from '../../../core/auth/app-auth.service';
                   Cài đặt
                 </a>
               </li>
-              <li>
+              <li *hasPermission="[PERMISSIONS.IDENTITY.ROLES_VIEW, PERMISSIONS.IDENTITY.ROLES_MANAGE]">
                 <a routerLink="/admin/roles"
                    [routerLinkActive]="isDark() ? 'bg-white/10 text-white ring-1 ring-white/10' : 'bg-zinc-100 text-zinc-900 ring-1 ring-zinc-200'"
                    class="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-200 outline-none"
@@ -194,6 +196,8 @@ export class AdminLayoutComponent {
   private themeService = inject(ThemeService);
   private authService = inject(AppAuthService);
 
+  readonly PERMISSIONS = PERMISSIONS;
+
   isDark = this.themeService.isDark;
 
   toggleTheme(): void {
@@ -204,3 +208,4 @@ export class AdminLayoutComponent {
     this.authService.logout();
   }
 }
+

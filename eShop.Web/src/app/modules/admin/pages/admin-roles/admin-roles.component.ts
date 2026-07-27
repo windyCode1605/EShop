@@ -7,6 +7,8 @@ import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { finalize, forkJoin } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { HasPermissionDirective } from '../../../../shared/directives/has-permission.directive';
+import { PERMISSIONS } from '../../../../core/constants/permissions.const';
 
 
 const GROUP_ACCENT: Record<string, string> = {};
@@ -15,7 +17,7 @@ const GROUP_PALETTE = ['#6366F1', '#F59E0B', '#10B981', '#F97316', '#EC4899', '#
 @Component({
   selector: 'app-admin-roles',
   standalone: true,
-  imports: [CommonModule, FormsModule, ToastModule],
+  imports: [CommonModule, FormsModule, ToastModule, HasPermissionDirective],
   styles: [`
     :host { display: block; }
 
@@ -105,14 +107,14 @@ const GROUP_PALETTE = ['#6366F1', '#F59E0B', '#10B981', '#F97316', '#EC4899', '#
           <div class="flex-1"></div>
 
           <!-- Create Role -->
-          <button (click)="openCreateRole()" class="h-[38px] px-4 rounded-[10px] text-[13px] font-medium flex items-center gap-2 transition-colors"
+          <button *hasPermission="PERMISSIONS.IDENTITY.ROLES_CREATE" (click)="openCreateRole()" class="h-[38px] px-4 rounded-[10px] text-[13px] font-medium flex items-center gap-2 transition-colors"
                   style="border:1px solid var(--admin-btn-border); background:var(--admin-btn-bg); color:var(--admin-btn-text);">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
             New Role
           </button>
 
           <!-- Apply Button -->
-          <button (click)="saveAllChanges()" [disabled]="saving() || dirtyRoles().size === 0"
+          <button *hasPermission="[PERMISSIONS.IDENTITY.ROLES_MANAGE, PERMISSIONS.IDENTITY.ROLES_VIEW]" (click)="saveAllChanges()" [disabled]="saving() || dirtyRoles().size === 0"
                   class="h-[38px] px-5 rounded-[10px] text-[13px] font-semibold transition-all active:scale-95 disabled:opacity-40 flex items-center gap-2"
                   style="background:var(--admin-text-primary); color:var(--admin-canvas);">
             <svg *ngIf="saving()" class="animate-spin" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" opacity=".25"/><path d="M12 2a10 10 0 0 1 10 10" opacity=".75"/></svg>
@@ -120,6 +122,7 @@ const GROUP_PALETTE = ['#6366F1', '#F59E0B', '#10B981', '#F97316', '#EC4899', '#
             <span *ngIf="dirtyRoles().size > 0" class="ml-1 text-[11px] px-1.5 py-0.5 rounded-full" style="background:rgba(0,0,0,0.15);">{{ dirtyRoles().size }}</span>
           </button>
         </div>
+
 
         <!-- Loading State -->
         <div *ngIf="initialLoading()" class="flex flex-col gap-3">
@@ -252,6 +255,8 @@ const GROUP_PALETTE = ['#6366F1', '#F59E0B', '#10B981', '#F97316', '#EC4899', '#
 export class AdminRolesComponent implements OnInit {
   private roleService = inject(AdminRoleService);
   private messageService = inject(MessageService);
+
+  readonly PERMISSIONS = PERMISSIONS;
 
   // ── Signals ──────────────────────────────────────────────────
   roles = this.roleService.roles;
