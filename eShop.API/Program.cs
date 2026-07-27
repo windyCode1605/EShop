@@ -147,10 +147,16 @@ builder.Services.AddSwaggerGen(options =>
 // ===============================================
 // 4. DATABASE & OPENIDDICT CONFIGURATION
 // ===============================================
+// builder.Services.AddDbContext<CoreDbContext>(options =>
+//     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
+//            .UseOpenIddict()
+// );
+// Đã chuyển từ SQL Server sang PostgreSQL (Supabase)
 builder.Services.AddDbContext<CoreDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
            .UseOpenIddict()
 );
+
 
 builder.Services
     .AddOpenIddict()
