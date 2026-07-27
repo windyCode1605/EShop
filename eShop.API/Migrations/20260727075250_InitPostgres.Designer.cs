@@ -11,7 +11,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace eShop.API.Migrations
 {
     [DbContext(typeof(CoreDbContext))]
-    [Migration("20260727074215_InitPostgres")]
+    [Migration("20260727075250_InitPostgres")]
     partial class InitPostgres
     {
         /// <inheritdoc />
