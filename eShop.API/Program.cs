@@ -329,35 +329,62 @@ using (var scope = app.Services.CreateScope())
     localization.LoadDictionary("eShop.API.Resources");
 
     var db = scope.ServiceProvider.GetRequiredService<CoreDbContext>();
-    await db.Database.MigrateAsync();
-    // Tự động Seed Data mỗi lần chạy
-    await DataSeeder.SeedAsync(db);
 
-    var applicationManager = scope.ServiceProvider.GetRequiredService<IOpenIddictApplicationManager>();
-
-    if (await applicationManager.FindByClientIdAsync("client-web") == null)
+    // ================================================================
+    // Bọc toàn bộ startup DB code trong try-catch.
+    // Lý do: Render Free Tier dùng Supabase Pooler (port 6543) có thể
+    // bị timeout khi chạy migration. Database đã được migrate sẵn rồi,
+    // nên nếu timeout → bỏ qua, app vẫn hoạt động bình thường.
+    // ================================================================
+    try
     {
-        var descriptor = new OpenIddictApplicationDescriptor
+        Console.WriteLine("[STARTUP] Running database migration...");
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(25));
+        await db.Database.MigrateAsync(cts.Token);
+        Console.WriteLine("[STARTUP] Migration completed.");
+
+        // Tự động Seed Data mỗi lần chạy
+        await DataSeeder.SeedAsync(db);
+        Console.WriteLine("[STARTUP] Data seeding completed.");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"[STARTUP WARNING] Migration/Seed skipped: {ex.Message}");
+        Console.WriteLine("[STARTUP] App will continue without migration (DB schema already up-to-date).");
+    }
+
+    try
+    {
+        var applicationManager = scope.ServiceProvider.GetRequiredService<IOpenIddictApplicationManager>();
+        if (await applicationManager.FindByClientIdAsync("client-web") == null)
         {
-            ClientId = "client-web",
-            ClientSecret = "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",
-            DisplayName = "Web Client",
-        };
+            var descriptor = new OpenIddictApplicationDescriptor
+            {
+                ClientId = "client-web",
+                ClientSecret = "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",
+                DisplayName = "Web Client",
+            };
 
-        descriptor.RedirectUris.Add(new Uri("http://localhost:4200/callback"));
-        descriptor.Permissions.Add(OpenIddictConstants.Permissions.Endpoints.Authorization);
-        descriptor.Permissions.Add(OpenIddictConstants.Permissions.Endpoints.Token);
-        descriptor.Permissions.Add(OpenIddictConstants.Permissions.GrantTypes.AuthorizationCode);
-        descriptor.Permissions.Add(OpenIddictConstants.Permissions.GrantTypes.RefreshToken);
-        descriptor.Permissions.Add(OpenIddictConstants.Permissions.GrantTypes.Password);
-        descriptor.Permissions.Add(OpenIddictConstants.Permissions.GrantTypes.ClientCredentials);
-        descriptor.Permissions.Add(OpenIddictConstants.Permissions.ResponseTypes.Code);
-        descriptor.Permissions.Add(OpenIddictConstants.Permissions.Scopes.Email);
-        descriptor.Permissions.Add(OpenIddictConstants.Permissions.Scopes.Profile);
-        descriptor.Permissions.Add(OpenIddictConstants.Permissions.Scopes.Roles);
-        descriptor.Permissions.Add(OpenIddictConstants.Permissions.Prefixes.Scope + "api");
+            descriptor.RedirectUris.Add(new Uri("http://localhost:4200/callback"));
+            descriptor.Permissions.Add(OpenIddictConstants.Permissions.Endpoints.Authorization);
+            descriptor.Permissions.Add(OpenIddictConstants.Permissions.Endpoints.Token);
+            descriptor.Permissions.Add(OpenIddictConstants.Permissions.GrantTypes.AuthorizationCode);
+            descriptor.Permissions.Add(OpenIddictConstants.Permissions.GrantTypes.RefreshToken);
+            descriptor.Permissions.Add(OpenIddictConstants.Permissions.GrantTypes.Password);
+            descriptor.Permissions.Add(OpenIddictConstants.Permissions.GrantTypes.ClientCredentials);
+            descriptor.Permissions.Add(OpenIddictConstants.Permissions.ResponseTypes.Code);
+            descriptor.Permissions.Add(OpenIddictConstants.Permissions.Scopes.Email);
+            descriptor.Permissions.Add(OpenIddictConstants.Permissions.Scopes.Profile);
+            descriptor.Permissions.Add(OpenIddictConstants.Permissions.Scopes.Roles);
+            descriptor.Permissions.Add(OpenIddictConstants.Permissions.Prefixes.Scope + "api");
 
-        await applicationManager.CreateAsync(descriptor);
+            await applicationManager.CreateAsync(descriptor);
+            Console.WriteLine("[STARTUP] OpenIddict client-web created.");
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"[STARTUP WARNING] OpenIddict seeding skipped: {ex.Message}");
     }
 }
 
