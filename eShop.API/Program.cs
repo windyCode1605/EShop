@@ -305,10 +305,17 @@ using (var scope = app.Services.CreateScope())
     var localization = scope.ServiceProvider.GetRequiredService<CR.ApplicationBase.Localization.LocalizationBase>();
     localization.LoadDictionary("eShop.API.Resources");
 
-    var db = scope.ServiceProvider.GetRequiredService<CoreDbContext>();
-    await db.Database.MigrateAsync();
-    // Tự động Seed Data mỗi lần chạy
-    await DataSeeder.SeedAsync(db);
+    try
+    {
+        var db = scope.ServiceProvider.GetRequiredService<CoreDbContext>();
+        await db.Database.MigrateAsync();
+        // Tự động Seed Data mỗi lần chạy
+        await DataSeeder.SeedAsync(db);
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"[WARNING] Database Migration/Seeding skipped: {ex.Message}");
+    }
 
     var applicationManager = scope.ServiceProvider.GetRequiredService<IOpenIddictApplicationManager>();
 
