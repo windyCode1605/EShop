@@ -27,10 +27,7 @@ using CR.Core.ApplicationServices.AttributeModule.Abstract;
 using CR.Core.ApplicationServices.AttributeModule.Implements;
 using FirebaseAdmin;
 using Google.Apis.Auth.OAuth2;
-using CR.Core.ApplicationServices.AuthenticationModule.Abstracts;
-using CR.Core.ApplicationServices.AuthenticationModule.Implements;
-using CR.Core.ApplicationServices.RoleModule;
-using CR.Core.ApplicationServices.RoleModule.Implement;
+
 
 
 // ===============================================
