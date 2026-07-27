@@ -14,7 +14,7 @@ namespace CR.Core.Infrastructure.Persistence.Configurations
             entity.Property(o => o.TotalAmount).HasColumnType("decimal(18,2)");
             entity.Property(o => o.Status).IsRequired().HasMaxLength(50).IsUnicode(false);
             entity.Property(o => o.PaymentMethod).IsRequired().HasMaxLength(50).IsUnicode(false);
-            entity.Property(o => o.RowVersion).IsRowVersion();
+            entity.Property(o => o.RowVersion).IsConcurrencyToken();
             entity.HasQueryFilter(o => !o.Deleted);
 
             entity.HasMany(o => o.OrderItems)

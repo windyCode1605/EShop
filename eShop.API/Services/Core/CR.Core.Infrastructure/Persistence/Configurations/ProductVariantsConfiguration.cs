@@ -10,7 +10,7 @@ namespace CR.Core.Infrastructure.Persistence.Configurations
         {
             entity.Property(v => v.SKU).IsRequired().HasMaxLength(100).IsUnicode(false);
             entity.Property(v => v.PriceAdjustment).HasColumnType("decimal(18,2)");
-            entity.Property(v => v.RowVersion).IsRowVersion();
+            entity.Property(v => v.RowVersion).IsConcurrencyToken();
             entity.HasQueryFilter(v => !v.Deleted);
         }
     }

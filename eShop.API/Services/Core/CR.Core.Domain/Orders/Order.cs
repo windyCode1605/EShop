@@ -45,8 +45,7 @@ namespace CR.Core.Domain.Orders
         [Required, MaxLength(50), Unicode(false)]
         public string PaymentMethod { get; set; } = null!;
 
-        [Timestamp]
-        public byte[] RowVersion { get; set; } = null!;
+        public byte[] RowVersion { get; set; } = Guid.NewGuid().ToByteArray();
 
         public virtual Users User { get; set; } = null!;
         public virtual ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();

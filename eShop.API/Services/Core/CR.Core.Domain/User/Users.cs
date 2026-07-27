@@ -67,7 +67,6 @@ namespace CR.Core.Domain.User
         public int? DeletedBy { get; set; }
         public bool Deleted { get; set; }
 
-        [Timestamp]
-        public byte[] RowVersion { get; set; } = null!;
+        public byte[] RowVersion { get; set; } = Guid.NewGuid().ToByteArray();
     }
 }

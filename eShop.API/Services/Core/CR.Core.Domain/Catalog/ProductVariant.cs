@@ -24,8 +24,7 @@ namespace CR.Core.Domain.Catalog
 
         public int StockQuantity { get; set; }
 
-        [Timestamp]
-        public byte[] RowVersion { get; set; } = null!;
+        public byte[] RowVersion { get; set; } = Guid.NewGuid().ToByteArray();
 
         public virtual Product Product { get; set; } = null!;
         public virtual ICollection<ProductVariantAttribute> VariantAttributes { get; set; } = new List<ProductVariantAttribute>();

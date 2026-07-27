@@ -15,7 +15,7 @@ namespace CR.Core.Infrastructure.Persistence.Configurations
             // Fix: Khai báo RowVersion là optimistic concurrency token
             // SQL Server: tự động quản lý bởi database (timestamp type)
             // PostgreSQL (Npgsql): dùng xmin system column làm concurrency token
-            entity.Property(u => u.RowVersion).IsRowVersion();
+            entity.Property(u => u.RowVersion).IsConcurrencyToken();
 
             entity.HasOne(u => u.Profile)
                   .WithOne()
