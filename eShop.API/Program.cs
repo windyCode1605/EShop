@@ -65,7 +65,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Render inject PORT env var - phải bind đúng port này để Render phát hiện service đã live
 var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
-builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+Environment.SetEnvironmentVariable("ASPNETCORE_URLS", $"http://0.0.0.0:{port}");
 Console.WriteLine($"[DEBUG] Binding to port: {port}");
 
 // Double-safety: clear sources và re-add không có reloadOnChange
