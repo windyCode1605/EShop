@@ -239,7 +239,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("WebClient", policy =>
     {
-        policy.WithOrigins("http://localhost:4200", "https://eshop-z32w.onrender.com")
+        policy.SetIsOriginAllowed(origin => true) // Cho phép mọi nguồn (bao gồm các link Vercel động)
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
