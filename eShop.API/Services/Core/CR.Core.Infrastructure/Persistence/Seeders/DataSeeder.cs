@@ -10,18 +10,37 @@ namespace CR.Core.Infrastructure.Persistence.Seeders
     {
         public static async Task SeedAsync(CoreDbContext db)
         {
-            if (await db.Products.AnyAsync()) return;
-
             // 1. Roles
-            var roles = new List<Role>
+            if (!await db.Roles.AnyAsync()) 
             {
-                new Role { Name = "SuperAdmin", Description = "Quản trị viên cấp cao", Status = 1 },
-                new Role { Name = "Admin", Description = "Quản trị viên", Status = 1 },
-                new Role { Name = "Moderator", Description = "Người kiểm duyệt", Status = 1 }
-            };
-            if (!await db.Roles.AnyAsync()) db.Roles.AddRange(roles);
+                var roles = new List<Role>
+                {
+                    new Role { Name = "SuperAdmin", Description = "Quản trị viên cấp cao", Status = 1 },
+                    new Role { Name = "Admin", Description = "Quản trị viên", Status = 1 },
+                    new Role { Name = "Moderator", Description = "Người kiểm duyệt", Status = 1 }
+                };
+                db.Roles.AddRange(roles);
+                await db.SaveChangesAsync();
+            }
 
             // 2. Users
+            if (!await db.Users.AnyAsync(u => u.Email == "maiquangnguyenkt2004@gmail.com"))
+            {
+                var superAdminRole = await db.Roles.FirstOrDefaultAsync(r => r.Name == "SuperAdmin");
+                if (superAdminRole != null)
+                {
+                    var superAdminUser = new Users { 
+                        Username = "maiquangnguyenkt2004", Email = "maiquangnguyenkt2004@gmail.com", Phone = "0900000000", PasswordHash = "AQAAAAIAAYagAAAAEM0A/pTJksE81875vdd2CmmJojUYgmLlBZgrW1n5w+eHzajj8ZSU1x8+0qSmHC0tsw==", UserType = (CR.Constants.Core.Users.UserTypeEnum)1, Status = 1, IsTempPassword = false,
+                        Profile = new UserProfile { FullName = "Mai Quang Nguyen", PhoneNumber = "0900000000", Gender = (CR.Constants.Core.Users.GenderTypes)1 },
+                        UserRoles = new List<UserRole> { new UserRole { Role = superAdminRole } } // SuperAdmin
+                    };
+                    db.Users.Add(superAdminUser);
+                    await db.SaveChangesAsync();
+                }
+            }
+
+            if (await db.Products.AnyAsync()) return;
+
             var users = new List<Users>
             {
                 new Users { 

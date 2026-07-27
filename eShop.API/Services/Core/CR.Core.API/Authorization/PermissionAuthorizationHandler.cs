@@ -25,6 +25,13 @@ namespace CR.Core.API.Authorization
                 return;
             }
 
+            // SuperAdmin bypass: Người dùng có role SuperAdmin sẽ tự động có toàn quyền (Full Permissions)
+            if (context.User.HasClaim(System.Security.Claims.ClaimTypes.Role, "SuperAdmin"))
+            {
+                context.Succeed(requirement);
+                return;
+            }
+
             var roleIds = context.User.Claims
                 .Where(c => c.Type == UserClaimTypes.RoleId)
                 .Select(c => int.TryParse(c.Value, out var val) ? val : (int?)null)
