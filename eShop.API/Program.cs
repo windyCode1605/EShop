@@ -174,7 +174,17 @@ builder.Services.AddSwaggerGen(options =>
 //     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
 //            .UseOpenIddict()
 // );
-// Đã chuyển từ SQL Server sang PostgreSQL (Supabase)
+
+// Configure Forwarded Headers for Cloud Providers (Render, Vercel, Nginx)
+builder.Services.Configure<Microsoft.AspNetCore.Builder.ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor | Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto;
+    // Clear known proxies so it trusts the headers from any proxy (Render's dynamic IPs)
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+});
+
+// Cấu hình Database
 builder.Services.AddDbContext<CoreDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
            .UseOpenIddict()
@@ -415,6 +425,9 @@ if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
 }
+
+// 0. Forwarded Headers (Phải chạy ĐẦU TIÊN để nhận diện đúng HTTPS từ Proxy)
+app.UseForwardedHeaders();
 
 // 1. Exception Handling
 app.UseMiddleware<GlobalExceptionMiddleware>();
