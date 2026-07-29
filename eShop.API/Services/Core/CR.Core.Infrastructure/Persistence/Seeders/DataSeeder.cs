@@ -11,7 +11,7 @@ namespace CR.Core.Infrastructure.Persistence.Seeders
         public static async Task SeedAsync(CoreDbContext db)
         {
             // 1. Roles
-            if (!await db.Roles.AnyAsync()) 
+            if (!await db.Roles.AnyAsync())
             {
                 var roles = new List<Role>
                 {
@@ -29,8 +29,15 @@ namespace CR.Core.Infrastructure.Persistence.Seeders
                 var superAdminRole = await db.Roles.FirstOrDefaultAsync(r => r.Name == "SuperAdmin");
                 if (superAdminRole != null)
                 {
-                    var superAdminUser = new Users { 
-                        Username = "maiquangnguyenkt2004", Email = "maiquangnguyenkt2004@gmail.com", Phone = "0900000000", PasswordHash = "AQAAAAIAAYagAAAAEM0A/pTJksE81875vdd2CmmJojUYgmLlBZgrW1n5w+eHzajj8ZSU1x8+0qSmHC0tsw==", UserType = (CR.Constants.Core.Users.UserTypeEnum)1, Status = 1, IsTempPassword = false,
+                    var superAdminUser = new Users
+                    {
+                        Username = "maiquangnguyenkt2004",
+                        Email = "maiquangnguyenkt2004@gmail.com",
+                        Phone = "0900000000",
+                        PasswordHash = "AQAAAAIAAYagAAAAEM0A/pTJksE81875vdd2CmmJojUYgmLlBZgrW1n5w+eHzajj8ZSU1x8+0qSmHC0tsw==",
+                        UserType = (CR.Constants.Core.Users.UserTypeEnum)1,
+                        Status = 1,
+                        IsTempPassword = false,
                         Profile = new UserProfile { FullName = "Mai Quang Nguyen", PhoneNumber = "0900000000", Gender = (CR.Constants.Core.Users.GenderTypes)1 },
                         UserRoles = new List<UserRole> { new UserRole { Role = superAdminRole } } // SuperAdmin
                     };
@@ -43,11 +50,11 @@ namespace CR.Core.Infrastructure.Persistence.Seeders
 
             var users = new List<Users>
             {
-                new Users { 
+                new Users {
                     Username = "admin01", Email = "admin01@eshop.com", Phone = "0900000001", PasswordHash = "hashed_pwd_1", UserType = (CR.Constants.Core.Users.UserTypeEnum)1, Status = 1, IsTempPassword = false,
                     Profile = new UserProfile { FullName = "Admin 1", PhoneNumber = "0900000001", Gender = (CR.Constants.Core.Users.GenderTypes)1 }
                 },
-                new Users { 
+                new Users {
                     Username = "user02", Email = "user02@eshop.com", Phone = "0900000002", PasswordHash = "hashed_pwd_2", UserType = (CR.Constants.Core.Users.UserTypeEnum)2, Status = 1, IsTempPassword = false,
                     Profile = new UserProfile { FullName = "User 2", PhoneNumber = "0900000002", Gender = (CR.Constants.Core.Users.GenderTypes)0 }
                 }
@@ -59,7 +66,8 @@ namespace CR.Core.Infrastructure.Persistence.Seeders
             {
                 new SysVar { GrName = "Config", VarName = "SiteName", VarValue = "EShop", VarDesc = "Tên website" },
                 new SysVar { GrName = "Payment", VarName = "VAT", VarValue = "10", VarDesc = "Thuế GTGT" },
-                new SysVar { GrName = "Shipping", VarName = "BaseFee", VarValue = "30000", VarDesc = "Phí ship cơ bản" }
+                new SysVar { GrName = "Shipping", VarName = "BaseFee", VarValue = "30000", VarDesc = "Phí ship cơ bản" },
+                new SysVar { GrName = "AUTHMAXTURN", VarName = "LOGINMAXTURN", VarValue = "5", VarDesc = "Số lần đăng nhập sai tối đa" }
             };
             if (!await db.SysVars.AnyAsync()) db.SysVars.AddRange(sysVars);
 
@@ -70,7 +78,7 @@ namespace CR.Core.Infrastructure.Persistence.Seeders
                 new Category { Name = "Thời trang", Slug = "thoi-trang" },
                 new Category { Name = "Sách", Slug = "sach" }
             };
-            if (!await db.Categories.AnyAsync()) 
+            if (!await db.Categories.AnyAsync())
             {
                 db.Categories.AddRange(categories);
                 await db.SaveChangesAsync();

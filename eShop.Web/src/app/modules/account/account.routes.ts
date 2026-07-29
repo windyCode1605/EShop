@@ -20,6 +20,11 @@ export const ACCOUNT_ROUTES: Routes = [
         path: 'register',
         loadComponent: () =>
           import('./pages/register/register.component').then((m) => m.RegisterPageComponent)
+      },
+      {
+        path: 'forgot-password',
+        loadComponent: () =>
+          import('./pages/forgot-password/forgot-password.component').then((m) => m.ForgotPasswordComponent)
       }
     ]
   }

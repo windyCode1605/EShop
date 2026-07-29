@@ -23,7 +23,7 @@
     <Text Name="error_1028" value="Mật khẩu hiện tại không chính xác." />
     <Text Name="error_1029" value="Tài khoản bị khóa do đăng nhập sai nhiều lần." />
     <Text Name="error_1030" value="Không tìm thấy thông tin hồ sơ người dùng." />
-
+    <Text Name="error_1031" value="Mã xác thực (Token) không hợp lệ hoặc đã bị chỉnh sửa." />
     <!-- System (2xxx) -->
     <Text Name="error_2000" value="Biến hệ thống chưa được cấu hình." />
 

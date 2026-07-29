@@ -45,7 +45,7 @@ namespace CR.ApplicationBase.Localization
                     type = baseType;
                 }
 
-                var messageKey = PrefixError + errorCode.Name;
+                var messageKey = PrefixError + code?.ToString();
                 if (code != null)
                 {
                     //thêm mã lỗi vào map có dạng Map[404] = "error_NotFound"

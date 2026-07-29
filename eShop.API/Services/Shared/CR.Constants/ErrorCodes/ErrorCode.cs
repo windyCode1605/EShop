@@ -19,7 +19,9 @@ namespace CR.Constants.ErrorCodes
         public const int UserIsRegistered = 1011;
         public const int OptCodeNotValid = 1013;
         public const int OptCodeIsExpired = 1014;
+        public const int TokenIsInvalid = 1031;
         public const int UserRegisterExistPersonalEmail = 1018;
+        public const int UserRegisterExistUsername = 1019;
         public const int UserLoginUserTypeInvalid = 1025;
         public const int UserIsLock = 1027;
         public const int UserCurrentPasswordIncorrect = 1028;

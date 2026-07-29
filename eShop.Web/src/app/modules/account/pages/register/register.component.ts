@@ -21,6 +21,7 @@ export class RegisterPageComponent {
 
   readonly registerForm = this.fb.group({
     displayName: ['', [Validators.required]],
+    userName: ['', [Validators.required, Validators.minLength(3)]],
     email: ['', [Validators.required, Validators.email]],
     userCode: ['']
   });
@@ -38,7 +39,7 @@ export class RegisterPageComponent {
     private readonly fb: FormBuilder,
     private readonly authService: AuthService,
     private readonly router: Router
-  ) {}
+  ) { }
 
   submitRegister(): void {
     if (this.registerForm.invalid || this.submitting) {
@@ -51,7 +52,8 @@ export class RegisterPageComponent {
 
     this.authService
       .register({
-        userName: this.registerForm.controls.displayName.value?.trim() ?? '',
+        fullName: this.registerForm.controls.displayName.value?.trim() ?? '',
+        userName: this.registerForm.controls.userName.value?.trim() ?? '',
         email: this.registerForm.controls.email.value?.trim() ?? '',
         userCode: this.registerForm.controls.userCode.value?.trim() ?? ''
       })
@@ -138,8 +140,11 @@ export class RegisterPageComponent {
     this.successMessage = '';
   }
 
-  private extractApiError(error: HttpErrorResponse, fallback: string): string {
-    const payload = error.error as { errors?: string[]; message?: string } | undefined;
+  private extractApiError(error: any, fallback: string): string {
+    if (error instanceof Error) {
+      return error.message;
+    }
+    const payload = error?.error as { errors?: string[]; message?: string } | undefined;
     if (payload?.errors?.length) {
       return payload.errors[0];
     }

@@ -16,7 +16,7 @@ namespace CR.Core.ApplicationServices.RoleModule.Implement
         private readonly IPermissionCacheService _permissionCacheService;
 
         public RoleService(ILogger<RoleService> logger, IHttpContextAccessor httpContext, IPermissionCacheService permissionCacheService)
-            : base(logger, httpContext) 
+            : base(logger, httpContext)
         {
             _permissionCacheService = permissionCacheService;
         }
@@ -153,6 +153,7 @@ namespace CR.Core.ApplicationServices.RoleModule.Implement
 
         public async Task<Result<bool>> UpdateRolePermissionsAsync(int roleId, List<string> permissionKeys)
         {
+            permissionKeys = permissionKeys.Distinct().ToList();
             _logger.LogInformation("{Method}: roleId={RoleId}, count={Count}", nameof(UpdateRolePermissionsAsync), roleId, permissionKeys.Count);
 
             var roleExists = await _dbContext.Roles.AnyAsync(r => r.Id == roleId && !r.Deleted);
@@ -178,9 +179,29 @@ namespace CR.Core.ApplicationServices.RoleModule.Implement
                 RoleId = roleId,
                 PermissionKey = key,
                 CreatedDate = DateTime.UtcNow
-            });
-            await _dbContext.RolePermissions.AddRangeAsync(newMappings);
-            await _dbContext.SaveChangesAsync();
+            }).ToList();
+
+            if (newMappings.Any())
+            {
+                try
+                {
+
+                    await _dbContext.Database.ExecuteSqlRawAsync(@"
+                        SELECT setval(
+                            pg_get_serial_sequence('public.""RolePermission""', 'Id'), 
+                            COALESCE((SELECT MAX(""Id"") FROM public.""RolePermission""), 0) + 1, 
+                            false
+                        );
+                    ");
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to sync RolePermission Id sequence.");
+                }
+
+                await _dbContext.RolePermissions.AddRangeAsync(newMappings);
+                await _dbContext.SaveChangesAsync();
+            }
 
             await _permissionCacheService.InvalidateRolePermissionsAsync(roleId);
 

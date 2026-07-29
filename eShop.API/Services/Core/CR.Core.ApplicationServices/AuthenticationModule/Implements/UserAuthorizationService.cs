@@ -3,37 +3,49 @@ using CR.Constants.Core.Users;
 using CR.Constants.ErrorCodes;
 using CR.Core.ApplicationServices.AuthenticationModule.Abstracts;
 using CR.Core.ApplicationServices.Common;
+using CR.Core.ApplicationServices.OtpModule.Abstracts;
 using CR.Core.Domain.User;
+using CR.DtoBase;
 using CR.InfrastructureBase;
 using CR.InfrastructureBase.Exceptions;
 using CR.Utils.DataUtils;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Org.BouncyCastle.Crypto.Engines;
 
 namespace CR.Core.ApplicationServices.AuthenticationModule.Implements
 {
     public class UserAuthorizationService : CoreServiceBase, IUserAuthenticationService
     {
         private readonly PasswordHasher<Users> _passwordHasher;
+        private readonly IOtpService _otpService;
+        private readonly IDataProtector _protector;
 
-        public UserAuthorizationService(ILogger<UserAuthorizationService> logger, IHttpContextAccessor httpContextAccessor) 
+        public UserAuthorizationService(
+            ILogger<UserAuthorizationService> logger,
+            IHttpContextAccessor httpContextAccessor,
+            IOtpService otpService,
+            IDataProtectionProvider dataProtectionProvider)
             : base(logger, httpContextAccessor)
         {
             _passwordHasher = new PasswordHasher<Users>();
+            _otpService = otpService;
+            _protector = dataProtectionProvider.CreateProtector("Atelier.eShop.ResetPassword_Token");
         }
 
         public async Task<Users> FindUserAuthorizationById(int id)
         {
             _logger.LogInformation("{MethodName}: id={Id}", nameof(FindUserAuthorizationById), id);
-            
+
             var user = await _dbContext.Users
                            .Include(u => u.Profile)
                            .Include(u => u.UserRoles)
                                .ThenInclude(ur => ur.Role)
-                           .FirstOrDefaultAsync(u => u.Id == id && !u.Deleted && u.Status == (int)UserStatus.ACTIVE) 
+                           .FirstOrDefaultAsync(u => u.Id == id && !u.Deleted && u.Status == (int)UserStatus.ACTIVE)
                        ?? throw new UserFriendlyException(ErrorCode.UserNotFound);
-            
+
             if (new int[] { (int)UserStatus.TEMP, (int)UserStatus.LOCK }.Contains(user.Status))
             {
                 throw new UserFriendlyException(ErrorCode.UserNotFound);
@@ -42,7 +54,7 @@ namespace CR.Core.ApplicationServices.AuthenticationModule.Implements
             {
                 throw new UserFriendlyException(ErrorCode.UserIsDeactive);
             }
-            
+
             return user;
         }
 
@@ -53,17 +65,17 @@ namespace CR.Core.ApplicationServices.AuthenticationModule.Implements
         public async Task<Users> ValidateAppUser(string username, string password)
         {
             _logger.LogInformation("{MethodName}: username = {Username}", nameof(ValidateAppUser), username);
-            
+
             var now = DateTime.UtcNow;
-            
+
             var user = await _dbContext.Users
                             .Include(u => u.Profile)
                             .Include(u => u.UserRoles)
                                 .ThenInclude(ur => ur.Role)
-                            .FirstOrDefaultAsync(u => 
-                            (u.Username == username || u.Email == username) 
-                            && !u.Deleted 
-                            && u.Status == (int)UserStatus.ACTIVE) 
+                            .FirstOrDefaultAsync(u =>
+                            (u.Username == username || u.Email == username)
+                            && !u.Deleted
+                            && u.Status == (int)UserStatus.ACTIVE)
                        ?? throw new UserFriendlyException(ErrorCode.UserNotFound);
 
             // Kiểm tra quyền
@@ -71,7 +83,7 @@ namespace CR.Core.ApplicationServices.AuthenticationModule.Implements
             {
                 throw new UserFriendlyException(ErrorCode.UserLoginUserTypeInvalid);
             }
-            
+
             // Kiểm tra trạng thái TEMP hoặc DEACTIVE/LOCK
             if (user.Status == (int)UserStatus.TEMP) throw new UserFriendlyException(ErrorCode.UserNotFound);
             if (user.Status == (int)UserStatus.DEACTIVE) throw new UserFriendlyException(ErrorCode.UserIsDeactive);
@@ -99,10 +111,10 @@ namespace CR.Core.ApplicationServices.AuthenticationModule.Implements
             {
                 user.IsFirstTime = false;
                 await _dbContext.SaveChangesAsync();
-                
+
                 // Mẹo nhỏ: Set ngược lại true để truyền state lên tầng tạo Token, 
                 // DB thì vẫn lưu false vì đã SaveChanges xong rồi.
-                user.IsFirstTime = true; 
+                user.IsFirstTime = true;
             }
             else
             {
@@ -119,7 +131,7 @@ namespace CR.Core.ApplicationServices.AuthenticationModule.Implements
         public async Task<Users> ValidateWebUser(string userName, string password)
         {
             _logger.LogInformation("{MethodName}: userName={UserName}", nameof(ValidateWebUser), userName);
-            
+
             // Tái sử dụng logic của ValidateAppUser vì kiến trúc là Single-Tenant
             return await ValidateAppUser(userName, password);
         }
@@ -140,9 +152,9 @@ namespace CR.Core.ApplicationServices.AuthenticationModule.Implements
 
             // 2. Tăng số lần sai
             user.LoginFailCount += 1;
-            
+
             // Lấy max turn, nên await nếu hàm lấy DB là Async
-            var loginMaxTurn = await GetLimitedInputTurnAsync(VarNames.LOGINMAXTURN); 
+            var loginMaxTurn = await GetLimitedInputTurnAsync(VarNames.LOGINMAXTURN);
             user.DateTimeLoginFailCount = now.AddMinutes(15);
 
             // 3. Khóa user nếu vượt hạn mức
@@ -150,19 +162,19 @@ namespace CR.Core.ApplicationServices.AuthenticationModule.Implements
             {
                 user.TimeLockUser = now.AddHours(1); // Khóa 1 tiếng
                 user.LoginFailCount = 0;
-                user.DateTimeLoginFailCount = null; 
+                user.DateTimeLoginFailCount = null;
             }
 
             await _dbContext.SaveChangesAsync();
 
             // 4. Bắn Exception
-            if (user.TimeLockUser.HasValue && user.TimeLockUser.Value >= now) 
+            if (user.TimeLockUser.HasValue && user.TimeLockUser.Value >= now)
                 throw new UserFriendlyException(ErrorCode.UserIsInactiveBecauseMultiLoginTime);
-            
-            if (user.Status == (int)UserStatus.DEACTIVE) 
+
+            if (user.Status == (int)UserStatus.DEACTIVE)
                 throw new UserFriendlyException(ErrorCode.UserIsDeactive);
-            
-            if (user.LoginFailCount == 1) 
+
+            if (user.LoginFailCount == 1)
                 throw new UserFriendlyException(ErrorCode.UsernameOrPasswordIncorrect);
 
             throw new UserFriendlyException(
@@ -179,8 +191,68 @@ namespace CR.Core.ApplicationServices.AuthenticationModule.Implements
         {
             var sysVar = await _dbContext.SysVars.FirstOrDefaultAsync(o => o.GrName == GrNames.AUTHMAXTURN && o.VarName == varName)
                          ?? throw new UserFriendlyException(ErrorCode.SysVarsIsNotConfig, GrNames.AUTHMAXTURN, varName);
-            
+
             return int.Parse(sysVar.VarValue);
+        }
+
+        public async Task<Result> ForgotPasswordAsync(string email)
+        {
+            _logger.LogInformation("Method {method}: email = {email}", nameof(ForgotPasswordAsync), email);
+            var user = await _dbContext.Users
+                .FirstOrDefaultAsync(u => u.Email == email && !u.Deleted && u.Status == (int)UserStatus.ACTIVE);
+            if (user == null)
+                return Result.Failure(ErrorCode.UserNotFound, this.GetCurrentMethodInfo());
+            var otpResult = await _otpService.SendOtp(user.Id);
+            if (!otpResult.IsSuccess)
+            {
+                return otpResult;
+            }
+            return Result.Success();
+        }
+        public async Task<Result> VerifyOtpForResetAsync(string email, string otpCode)
+        {
+            _logger.LogInformation("Method Name {Method}: email = {email}", nameof(VerifyOtpForResetAsync), email);
+            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Email == email && !u.Deleted && u.Status == (int)UserStatus.ACTIVE);
+            if (user == null)
+                return Result.Failure(ErrorCode.UserNotFound, this.GetCurrentMethodInfo());
+            var verifyResult = await _otpService.VerifyOtp(otpCode, user.Id);
+            if (!verifyResult.IsSuccess) return verifyResult;
+
+            // Sửa lại thành ToUnixTimeSeconds để đồng bộ với hàm ResetPassword
+            var expireUnix = DateTimeOffset.UtcNow.AddMinutes(15).ToUnixTimeSeconds();
+            var plainTextToken = $"{user.Id}|{expireUnix}";
+
+            // Phải gọi hàm Protect để mã hóa
+            var resetToken = _protector.Protect(plainTextToken);
+            return Result.Success(new { ResetToken = resetToken });
+        }
+        public async Task<Result> ResetPasswordAsync(string email, string resetToken, string newPassword)
+        {
+            _logger.LogInformation("{MethodName}: email={Email}", nameof(ResetPasswordAsync), email);
+            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Email == email && !u.Deleted && u.Status == (int)UserStatus.ACTIVE);
+            if (user == null) return Result.Failure(ErrorCode.UserNotFound, this.GetCurrentMethodInfo());
+
+            try
+            {
+                var plainTextToken = _protector.Unprotect(resetToken);
+                var parts = plainTextToken.Split('|');
+                var userIdToken = int.Parse(parts[0]);
+                var expireUnix = long.Parse(parts[1]);
+                if (userIdToken != user.Id) return Result.Failure(ErrorCode.TokenIsInvalid, this.GetCurrentMethodInfo());
+                if (DateTimeOffset.UtcNow.ToUnixTimeSeconds() > expireUnix) return Result.Failure(ErrorCode.OptCodeIsExpired, this.GetCurrentMethodInfo());
+            }
+            catch
+            {
+                return Result.Failure(ErrorCode.TokenIsInvalid, this.GetCurrentMethodInfo());
+            }
+            user.PasswordHash = _passwordHasher.HashPassword(user, newPassword);
+
+            user.LoginFailCount = 0;
+            user.TimeLockUser = null;
+            user.DateTimeLoginFailCount = null;
+            await _dbContext.SaveChangesAsync();
+            await _dbContext.SaveChangesAsync();
+            return Result.Success(new { Message = "Đặt lại mật khẩu thành công!" });
         }
     }
 }

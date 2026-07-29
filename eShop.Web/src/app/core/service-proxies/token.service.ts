@@ -85,8 +85,12 @@ export class TokenService {
     }
 
     isAdmin(tokenOverride?: string): boolean {
+
         const userType = this.getUserType(tokenOverride);
-        const isUserAdmin = (userType === 1 || userType === 2);
-        return isUserAdmin;
+        if (userType === 1 || userType === 2) {
+            return true;
+        }
+        const roles = this.getUserRoles(tokenOverride);
+        return roles.includes('SuperAdmin') || roles.includes('Admin');
     }
 }

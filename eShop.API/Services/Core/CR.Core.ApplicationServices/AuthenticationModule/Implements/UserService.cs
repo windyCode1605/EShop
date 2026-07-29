@@ -43,24 +43,30 @@ namespace CR.Core.ApplicationServices.AuthenticationModule.Implements
         {
             _logger.LogInformation("{MethodName}: input = {@Input}", nameof(RegisterUser), input);
 
-            // Kiểm tra theo Email (Thay vì UserName như code cũ)
-            var existingUser = await _dbContext.Users.FirstOrDefaultAsync(u => u.Email == input.Email && !u.Deleted);
-
-            // Nếu đã tồn tại và không phải trạng thái TEMP -> Chặn luôn
-            if (existingUser != null && existingUser.Status != (int)UserStatus.TEMP)
+            // Kiểm tra theo Email
+            var existingUserByEmail = await _dbContext.Users.Include(u => u.Profile).FirstOrDefaultAsync(u => u.Email == input.Email && !u.Deleted);
+            if (existingUserByEmail != null && existingUserByEmail.Status != (int)UserStatus.TEMP)
             {
                 return Result.Failure<UserDto>(ErrorCode.UserRegisterExistPersonalEmail, this.GetCurrentMethodInfo());
             }
 
+            // Kiểm tra theo Username
+            var existingUserByUsername = await _dbContext.Users.FirstOrDefaultAsync(u => u.Username == input.UserName && !u.Deleted);
+            if (existingUserByUsername != null && (existingUserByEmail == null || existingUserByUsername.Id != existingUserByEmail.Id))
+            {
+                // Username đã bị người khác (hoặc email khác) chiếm dụng, dù là TEMP hay ACTIVE đều không được phép tạo đè
+                return Result.Failure<UserDto>(ErrorCode.UserRegisterExistUsername, this.GetCurrentMethodInfo());
+            }
+
             try
             {
-                Users? user = existingUser;
+                Users? user = existingUserByEmail;
 
                 if (user == null)
                 {
                     user = new Users
                     {
-                        Username = input.Email, // Mặc định lấy Email làm Username khi mới đăng ký
+                        Username = input.UserName,
                         Email = input.Email,
                         PasswordHash = _passwordHasher.HashPassword(new Users(), Guid.NewGuid().ToString()), // Mật khẩu rác tạm thời
                         UserType = UserTypeEnum.CUSTOMER,
@@ -68,16 +74,30 @@ namespace CR.Core.ApplicationServices.AuthenticationModule.Implements
                         IsTempPassword = true,
                         IsFirstTime = true,
 
-                        // Tự động sinh UserProfile nhờ vào cơ chế Navigation Property
+                        // Tự động sinh UserProfile
                         Profile = new UserProfile
                         {
-                            FullName = input.UserName, // Theo DTO cũ của anh, UserName đang chứa Họ tên
-                            PhoneNumber = string.Empty // Set default
+                            FullName = input.FullName,
+                            PhoneNumber = string.Empty
                         }
                     };
 
                     _dbContext.Users.Add(user);
                     await _dbContext.SaveChangesAsync(); // Lưu để EF Core gen Id
+                }
+                else
+                {
+                    // Nếu user nhập lại thông tin (resend OTP), cập nhật lại Username và FullName nếu họ có thay đổi
+                    user.Username = input.UserName;
+                    if (user.Profile != null)
+                    {
+                        user.Profile.FullName = input.FullName;
+                    }
+                    else
+                    {
+                        user.Profile = new UserProfile { FullName = input.FullName, PhoneNumber = string.Empty };
+                    }
+                    await _dbContext.SaveChangesAsync();
                 }
 
                 // Gửi OTP (OtpService quản lý transaction của nó)
@@ -92,7 +112,7 @@ namespace CR.Core.ApplicationServices.AuthenticationModule.Implements
                     Id = user.Id,
                     Username = user.Username,
                     Email = user.Email,
-                    FullName = input.UserName,
+                    FullName = input.FullName,
                     UserType = UserTypeEnum.CUSTOMER,
                     Status = UserStatus.TEMP,
                     IsPasswordTemp = user.IsTempPassword,
@@ -242,7 +262,7 @@ namespace CR.Core.ApplicationServices.AuthenticationModule.Implements
             var user = await _dbContext.Users
                 .Include(u => u.Profile)
                 .FirstOrDefaultAsync(u => u.Id == userId && !u.Deleted);
-            
+
             if (user == null)
             {
                 return Result<UserDto>.Failure(ErrorCode.UserNotFound, this.GetCurrentMethodInfo());

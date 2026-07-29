@@ -486,7 +486,7 @@ export class AdminRolesComponent implements OnInit {
             this.saving.set(false);
             if (!hasError) {
               this.dirtyRoles.set(new Set());
-              this.messageService.add({ severity: 'success', summary: 'Saved', detail: 'Changes applied successfully' });
+              this.messageService.add({ severity: 'success', summary: 'Thành công', detail: 'Cập nhật quyền thành công' });
               // We no longer call loadData() here to avoid wasteful N+1 API calls.
               // Local state is already in sync!
             }
@@ -495,7 +495,7 @@ export class AdminRolesComponent implements OnInit {
       ).subscribe({
         error: (err: any) => {
           hasError = true;
-          this.messageService.add({ severity: 'error', summary: 'Error', detail: err.message });
+          this.messageService.add({ severity: 'error', summary: 'Lỗi', detail: err.message || 'Cập nhật quyền thất bại' });
         }
       });
     });

@@ -30,9 +30,8 @@ using Google.Apis.Auth.OAuth2;
 
 
 
-// ===============================================
+
 // 0. ENVIRONMENT & CONFIGURATION LOAD
-// ===============================================
 var envPath = Path.Combine(AppContext.BaseDirectory, ".env");
 if (!File.Exists(envPath))
 {
@@ -48,22 +47,21 @@ if (File.Exists(envPath))
     Console.WriteLine($"[DEBUG] .env file loaded successfully");
 }
 
-// =====================================================================
-// Fix CRITICAL: Tắt inotify file-watcher TRƯỚC KHI CreateBuilder chạy
-// Render Free Tier Linux giới hạn 128 inotify instances (dùng chung với
-// các service khác trên cùng host). ASP.NET Core đọc key
-// "hostBuilder:reloadConfigOnChange" từ env var có prefix DOTNET_ để
-// quyết định có gắn FileSystemWatcher vào config files hay không.
-// Phải set trước khi WebApplication.CreateBuilder() được gọi.
-// =====================================================================
+
 Environment.SetEnvironmentVariable("DOTNET_hostBuilder__reloadConfigOnChange", "false");
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Render inject PORT env var - phải bind đúng port này để Render phát hiện service đã live
-var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
-Environment.SetEnvironmentVariable("ASPNETCORE_URLS", $"http://0.0.0.0:{port}");
-Console.WriteLine($"[DEBUG] Binding to port: {port}");
+var renderPort = Environment.GetEnvironmentVariable("PORT");
+if (!string.IsNullOrEmpty(renderPort))
+{
+    Environment.SetEnvironmentVariable("ASPNET_URLS", $"http://0.0.0.0:{renderPort}");
+    Console.WriteLine("[DEBUG] Running on Cloud (Render) - Port: {renderPort}");
+}
+else
+{
+    Console.WriteLine("[DEBUG] Running on Local - Port from lauchSettings.json");
+}
 
 // Double-safety: clear sources và re-add không có reloadOnChange
 builder.Configuration.Sources.Clear();
@@ -113,9 +111,8 @@ else
 {
     Console.WriteLine("[STARTUP WARNING] Không tìm thấy Firebase:ServiceAccountKeyPath trong biến môi trường! Bỏ qua Firebase.");
 }
-// ===============================================
+
 // 1. LOGGING SETUP
-// ===============================================
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 if (builder.Environment.IsDevelopment())
@@ -124,10 +121,7 @@ if (builder.Environment.IsDevelopment())
 }
 builder.Logging.AddConfiguration(builder.Configuration.GetSection("Logging"));
 
-// ===============================================
 // 2. CORE API SERVICES & CONTROLLERS
-// ===============================================
-// Đã gộp 2 lần AddControllers/AddControllersWithViews thành 1 khối duy nhất
 builder.Services.AddControllersWithViews(options =>
 {
     options.Filters.Add<ValidationFilter>();
@@ -138,9 +132,9 @@ builder.Services.AddControllersWithViews(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddHttpContextAccessor();
 
-// ===============================================
+
 // 3. SWAGGER CONFIGURATION
-// ===============================================
+
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo { Title = "CR eShop API", Version = "v1" });
@@ -167,13 +161,8 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-// ===============================================
+
 // 4. DATABASE & OPENIDDICT CONFIGURATION
-// ===============================================
-// builder.Services.AddDbContext<CoreDbContext>(options =>
-//     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
-//            .UseOpenIddict()
-// );
 
 // Configure Forwarded Headers for Cloud Providers (Render, Vercel, Nginx)
 builder.Services.Configure<Microsoft.AspNetCore.Builder.ForwardedHeadersOptions>(options =>
@@ -345,9 +334,9 @@ builder.Services.AddSingleton<eShop.API.Services.Shared.FirebaseNotificationServ
 // Nơi bạn đã đóng gói các DI khác thông qua Extension Method
 builder.Services.AddApplicationServices();
 
-// ===============================================
+
 // 7. BUILD APP & DATABASE SEEDING
-// ===============================================
+
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
@@ -357,12 +346,7 @@ using (var scope = app.Services.CreateScope())
 
     var db = scope.ServiceProvider.GetRequiredService<CoreDbContext>();
 
-    // ================================================================
-    // Bọc toàn bộ startup DB code trong try-catch.
-    // Lý do: Render Free Tier dùng Supabase Pooler (port 6543) có thể
-    // bị timeout khi chạy migration. Database đã được migrate sẵn rồi,
-    // nên nếu timeout → bỏ qua, app vẫn hoạt động bình thường.
-    // ================================================================
+
     try
     {
         Console.WriteLine("[STARTUP] Running database migration...");
@@ -415,10 +399,7 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-// ===============================================
 // 8. HTTP REQUEST PIPELINE (THỨ TỰ CHUẨN)
-// ===============================================
-//
 app.UseSwagger();
 app.UseSwaggerUI();
 if (app.Environment.IsDevelopment())
@@ -458,5 +439,12 @@ app.UseAuthorization();
 // 5. Endpoints
 app.MapControllers();
 
-var portStr = Environment.GetEnvironmentVariable("PORT") ?? "8080";
-app.Run($"http://0.0.0.0:{portStr}");
+var finalPort = Environment.GetEnvironmentVariable("PORT");
+if (!string.IsNullOrEmpty(finalPort))
+{
+    app.Run($"http://0.0.0.0:{finalPort}");
+}
+else
+{
+    app.Run();
+}

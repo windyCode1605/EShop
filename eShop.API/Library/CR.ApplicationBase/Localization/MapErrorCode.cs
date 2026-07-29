@@ -27,6 +27,7 @@ public sealed class MapErrorCode : MapErrorCodeBase<MapErrorCode.ErrorCodes>
         public const int UserIsRegistered = ErrorCode.UserIsRegistered;
         public const int OptCodeNotValid = ErrorCode.OptCodeNotValid;
         public const int OptCodeIsExpired = ErrorCode.OptCodeIsExpired;
+        public const int TokenIsInvalid = ErrorCode.TokenIsInvalid;
         public const int UserRegisterExistPersonalEmail = ErrorCode.UserRegisterExistPersonalEmail;
         public const int AppPasswordIncorrect = ErrorCode.AppPasswordIncorrect;
         public const int UserLoginUserTypeInvalid = ErrorCode.UserLoginUserTypeInvalid;

@@ -106,7 +106,7 @@ namespace CR.Core.ApplicationServices.OtpModule.Implements
             }
 
             var now = DateTime.UtcNow;
-            var resendCooldown = DefaultResendCooldownSeconds;
+            var resendCooldown = await GetIntSysVar(GrNames.OTP, VarNames.OTP_RESEND_COOLDOWN, DefaultResendCooldownSeconds);
             var otpLifeTime = await GetIntSysVar(GrNames.OTP, VarNames.SECOND, DefaultOtpLifeTimeSeconds);
 
             // Bắt đầu Transaction bảo vệ tính toàn vẹn dữ liệu
@@ -147,7 +147,8 @@ namespace CR.Core.ApplicationServices.OtpModule.Implements
                     oldOtp.IsUsed = true;
                 }
 
-                var otpCode = GenerateOTP.GenerateOtp(DefaultOtpLength);
+                var otpLength = await GetIntSysVar(GrNames.OTP, VarNames.OTP_LENGTH, DefaultOtpLength);
+                var otpCode = GenerateOTP.GenerateOtp(otpLength);
                 var otpHash = PasswordHasher.HashPassword(otpCode);
 
                 await _dbContext.AuthOtps.AddAsync(new AuthOtp

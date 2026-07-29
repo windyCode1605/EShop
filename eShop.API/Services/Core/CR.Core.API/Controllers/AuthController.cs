@@ -26,6 +26,7 @@ using CR.IdentityServerBase.Controllers;
 using CR.IdentityServerBase.Dto;
 using CR.IdentityServerBase.Constants;
 using Microsoft.AspNetCore;
+using Microsoft.AspNetCore.Identity.Data;
 
 namespace CR.Core.API.Controllers;
 
@@ -75,8 +76,9 @@ public class AuthorizationController : AuthorizationControllerBase
         var result = await _userServices.RegisterUser(input);
         if (result.IsFailure)
         {
-            // Trả về lỗi có localization
-            return BadRequest(ApiResponse<UserDto>.Fail($"Register failed: {result.ErrorCode}", ErrorCode.BadRequest));
+            // Lấy thông báo lỗi đã được cấu hình trong file XML (ví dụ: "Email cá nhân đã tồn tại.")
+            var errorMessage = _mapErrorCode.GetErrorMessage(result.ErrorCode);
+            return Ok(ApiResponse<UserDto>.Fail(errorMessage, result.ErrorCode));
         }
 
         return Ok(ApiResponse<UserDto>.Ok(result.Value, "Register successful"));
@@ -431,6 +433,48 @@ public class AuthorizationController : AuthorizationControllerBase
             }
         );
     }
+
+    [HttpPost("/api/auth/forgot-password")]
+    public async Task<IActionResult> ForgotPassword(ForgotPasswordRequest request)
+    {
+        var result = await _userAuthorizationService.ForgotPasswordAsync(request.Email);
+        if (!result.IsSuccess)
+        {
+            var errorMessage = _mapErrorCode.GetErrorMessage(result.ErrorCode);
+            return BadRequest(new { result.IsSuccess, result.IsFailure, result.ErrorCode, Message = errorMessage });
+        }
+        return Ok(result);
+    }
+
+    [HttpPost("/api/auth/verify-reset-otp")]
+    public async Task<IActionResult> VerifyResetOtp([FromBody] VerifyResetOtpRequestDto request)
+    {
+        var result = await _userAuthorizationService.VerifyOtpForResetAsync(request.Email, request.OtpCode);
+
+        if (!result.IsSuccess)
+        {
+            var errorMessage = _mapErrorCode.GetErrorMessage(result.ErrorCode);
+            return BadRequest(new { result.IsSuccess, result.IsFailure, result.ErrorCode, Message = errorMessage });
+        }
+        return Ok(result);
+    }
+
+    [HttpPost("/api/auth/reset-password")]
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequestDto request)
+    {
+        var result = await _userAuthorizationService.ResetPasswordAsync(
+            request.Email,
+            request.ResetToken,
+            request.NewPassword
+        );
+        if (!result.IsSuccess)
+        {
+            var errorMessage = _mapErrorCode.GetErrorMessage(result.ErrorCode);
+            return BadRequest(new { result.IsSuccess, result.IsFailure, result.ErrorCode, Message = errorMessage });
+        }
+        return Ok(result);
+    }
+
 
     // ==========================================
     // CÁC HÀM TIỆN ÍCH (HELPER METHODS)

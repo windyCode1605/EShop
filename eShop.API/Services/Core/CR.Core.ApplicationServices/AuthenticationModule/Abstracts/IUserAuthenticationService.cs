@@ -1,4 +1,6 @@
 using CR.Core.Domain.User;
+using CR.InfrastructureBase;
+using CR.DtoBase;
 
 namespace CR.Core.ApplicationServices.AuthenticationModule.Abstracts
 {
@@ -21,7 +23,7 @@ namespace CR.Core.ApplicationServices.AuthenticationModule.Abstracts
         Task<Users> ValidateAppUser(string userName, string password);
 
 
-        
+
         /// <summary>
         /// Tìm kiếm user theo id ( dùng khi goi authentication)
         /// </summary>
@@ -29,7 +31,8 @@ namespace CR.Core.ApplicationServices.AuthenticationModule.Abstracts
         /// <returns></returns>
         Task<Users> FindUserAuthorizationById(int id);
 
-
-
+        Task<Result> ForgotPasswordAsync(string email);
+        Task<Result> VerifyOtpForResetAsync(string email, string otpCode);
+        Task<Result> ResetPasswordAsync(string email, string resetToken, string newPassword);
     }
 }
