@@ -7,6 +7,10 @@
     
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
+    <!-- Chuyển Server GC sang Workstation GC để giảm chiếm dụng RAM trên Render 512MB -->
+    <ServerGarbageCollection>false</ServerGarbageCollection>
+    <!-- Giảm phân mảnh bộ nhớ Large Object Heap (LOH) -->
+    <GCLargeObjectHeapCompactionMode>1</GCLargeObjectHeapCompactionMode>
   </PropertyGroup>
   
   <ItemGroup>

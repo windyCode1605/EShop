@@ -122,7 +122,8 @@ if (builder.Environment.IsDevelopment())
 builder.Logging.AddConfiguration(builder.Configuration.GetSection("Logging"));
 
 // 2. CORE API SERVICES & CONTROLLERS
-builder.Services.AddControllersWithViews(options =>
+// 
+builder.Services.AddControllers(options =>
 {
     options.Filters.Add<ValidationFilter>();
     options.Filters.Add<PagingValidationFilter>();
