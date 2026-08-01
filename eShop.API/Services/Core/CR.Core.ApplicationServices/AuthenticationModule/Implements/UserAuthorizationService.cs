@@ -189,10 +189,12 @@ namespace CR.Core.ApplicationServices.AuthenticationModule.Implements
         /// </summary>
         public async Task<int> GetLimitedInputTurnAsync(string varName)
         {
-            var sysVar = await _dbContext.SysVars.FirstOrDefaultAsync(o => o.GrName == GrNames.AUTHMAXTURN && o.VarName == varName)
-                         ?? throw new UserFriendlyException(ErrorCode.SysVarsIsNotConfig, GrNames.AUTHMAXTURN, varName);
-
-            return int.Parse(sysVar.VarValue);
+            var sysVar = await _dbContext.SysVars.FirstOrDefaultAsync(o => o.GrName == GrNames.AUTHMAXTURN && o.VarName == varName);
+            if (sysVar != null && int.TryParse(sysVar.VarValue, out var turns))
+            {
+                return turns;
+            }
+            return 5;
         }
 
         public async Task<Result> ForgotPasswordAsync(string email)

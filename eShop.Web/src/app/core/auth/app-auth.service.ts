@@ -29,17 +29,12 @@ export class AppAuthService {
         this.clear();
     }
 
-    authenticate(finallyCallback?: () => void, returnUrl?: string): void {
+    authenticate(finallyCallback?: () => void, returnUrl?: string, errorCallback?: (msg: string) => void): void {
         finallyCallback = finallyCallback || (() => { });
         this._tokenAuthService.authenticateV2(this.authenticateModel).pipe(
             catchError((err: HttpErrorResponse) => {
                 const errorMessage = this.getAuthErrorMessage(err);
-                this.messageService.add({
-                    severity: 'error',
-                    summary: 'Đăng nhập thất bại',
-                    life: 5000,
-                    detail: errorMessage
-                });
+                if (errorCallback) errorCallback(errorMessage);
                 console.error('Authentication error:', err);
                 if (finallyCallback) finallyCallback();
                 return throwError(() => err);
@@ -68,6 +63,9 @@ export class AppAuthService {
     }
 
     private getAuthErrorMessage(err: HttpErrorResponse): string {
+        if (err.error?.error_description) {
+            return err.error.error_description;
+        }
         if (err.status === 400 && err.error?.error === 'invalid_grant') return 'Tên đăng nhập hoặc mật khẩu không đúng.';
         if (err.status === 401) return 'Tài khoản hoặc mật khẩu không đúng.';
         if (err.status === 429) return 'Quá nhiều lần thử đăng nhập. Vui lòng thử lại sau.';

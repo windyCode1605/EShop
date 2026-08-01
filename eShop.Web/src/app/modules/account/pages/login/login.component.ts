@@ -17,6 +17,7 @@ export class LoginPageComponent implements OnInit, AfterViewInit {
   dark = false;
   showPassword = false;
   returnUrl: string = '';
+  errorMessage: string = '';
 
   constructor(
     public authService: AppAuthService,
@@ -33,7 +34,12 @@ export class LoginPageComponent implements OnInit, AfterViewInit {
   }
   login(): void {
     this.submitting = true;
-    this.authService.authenticate(() => (this.submitting = false), this.returnUrl);
+    this.errorMessage = '';
+    this.authService.authenticate(
+      () => (this.submitting = false),
+      this.returnUrl,
+      (msg: string) => (this.errorMessage = msg)
+    );
   }
   ToggleDarkMode(): void {
     this.dark = !this.dark;

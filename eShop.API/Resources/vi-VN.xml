@@ -17,7 +17,7 @@
     <Text Name="error_1013" value="Mã OTP không hợp lệ." />
     <Text Name="error_1014" value="Mã OTP đã hết hạn." />
     <Text Name="error_1018" value="Email cá nhân đã tồn tại." />
-    <Text Name="error_1023" value="Mật khẩu ứng dụng không chính xác." />
+    <Text Name="error_1023" value="Mật khẩu không chính xác." />
     <Text Name="error_1025" value="Loại người dùng đăng nhập không hợp lệ." />
     <Text Name="error_1027" value="Tài khoản đã bị khóa." />
     <Text Name="error_1028" value="Mật khẩu hiện tại không chính xác." />

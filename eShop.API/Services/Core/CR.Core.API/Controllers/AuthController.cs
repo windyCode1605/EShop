@@ -405,11 +405,13 @@ public class AuthorizationController : AuthorizationControllerBase
         }
         catch (UserFriendlyException ex)
         {
+            var localizedErrorMessage = _mapErrorCode.TryGetErrorMessage(ex.ErrorCode)
+                ?? _localization.Localize($"error_{ex.ErrorCode}");
             var properties = new AuthenticationProperties(
                 new Dictionary<string, string?>
                 {
                     [OpenIddictServerAspNetCoreConstants.Properties.Error] = Errors.InvalidGrant,
-                    [OpenIddictServerAspNetCoreConstants.Properties.ErrorDescription] = _localization.Localize($"error_{ex.ErrorCode}")
+                    [OpenIddictServerAspNetCoreConstants.Properties.ErrorDescription] = localizedErrorMessage
                 }
             );
             return Forbid(properties, OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);

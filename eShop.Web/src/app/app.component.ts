@@ -3,12 +3,14 @@ import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { NavbarComponent } from './layout/components/navbar.component';
 import { CommonModule } from '@angular/common';
 import { filter } from 'rxjs/operators';
+import { ToastModule } from 'primeng/toast';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterModule, NavbarComponent, CommonModule],
+  imports: [RouterModule, NavbarComponent, CommonModule, ToastModule],
   template: `
+    <p-toast></p-toast>
     <app-navbar *ngIf="!hideNavbar"></app-navbar>
     <router-outlet></router-outlet>
   `,
