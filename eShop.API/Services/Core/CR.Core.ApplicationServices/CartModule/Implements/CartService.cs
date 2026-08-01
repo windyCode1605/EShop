@@ -9,8 +9,7 @@ using CR.DtoBase;
 using CR.InfrastructureBase;
 using CR.Utils.DataUtils;
 using Microsoft.EntityFrameworkCore;
-using Org.BouncyCastle.Asn1.Cms;
-using Org.BouncyCastle.Asn1.X509;
+
 
 namespace CR.Core.ApplicationServices.CartModule.Implemts;
 

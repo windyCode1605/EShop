@@ -166,9 +166,9 @@ namespace CR.Core.ApplicationServices.OtpModule.Implements
                 sendOtpDb.LastSentDateTime = now;
                 sendOtpDb.TimeLimitCanVerifyOtp = now.AddSeconds(resendCooldown);
 
-                await _dbContext.SaveChangesAsync(); // Update DB context để MailKit có thể chạy độc lập
+                await _dbContext.SaveChangesAsync();
 
-                // Gọi hàm gửi Mail bằng MailKit
+                // Gọi hàm gửi Mail bằng Brevo API
                 await SendOtpMailAsync(user.Email, otpCode, otpLifeTime);
 
                 await transaction.CommitAsync();

@@ -7,8 +7,7 @@ using CR.InfrastructureBase;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
-using Org.BouncyCastle.Asn1;
-using Org.BouncyCastle.Crypto.Engines;
+
 
 
 namespace CR.Core.ApplicationServices.AddressModule.Implements;
