@@ -126,12 +126,16 @@ builder.Logging.AddConfiguration(builder.Configuration.GetSection("Logging"));
 // ============================================================================
 // 2. CORE WEB, CONTROLLERS & HTTP CLIENTS
 // ============================================================================
-builder.Services.AddControllers(options =>
+var mvcBuilder = builder.Services.AddControllers(options =>
 {
     options.Filters.Add<ValidationFilter>();
     options.Filters.Add<PagingValidationFilter>();
-})
-.AddRazorRuntimeCompilation();
+});
+
+if (builder.Environment.IsDevelopment())
+{
+    mvcBuilder.AddRazorRuntimeCompilation();
+}
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddHttpContextAccessor();
