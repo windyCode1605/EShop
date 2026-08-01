@@ -4,15 +4,13 @@ using CR.Core.ApplicationServices.Common;
 using CR.Core.ApplicationServices.OtpModule.Abstracts;
 using CR.Core.Domain.Opts;
 using CR.DtoBase;
-using CR.InfrastructureBase;
 using CR.Utils.DataUtils;
 using CR.Utils.Sercurity;
-using MailKit.Net.Smtp;       // Thư viện MailKit
-using MailKit.Security;       // Tùy chọn bảo mật MailKit
-using MimeKit;                // Khởi tạo Message của MailKit
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
+using System.Net.Http;
+using System.Text;
+using System.Text.Json;
+
 
 namespace CR.Core.ApplicationServices.OtpModule.Implements
 {
@@ -24,14 +22,17 @@ namespace CR.Core.ApplicationServices.OtpModule.Implements
         private const int DefaultResendCooldownSeconds = 60;
 
         private readonly IConfiguration _configuration;
+        private readonly IHttpClientFactory _httpClientFactory;
 
         public OtpService(
             ILogger<OtpService> logger,
             IHttpContextAccessor httpContextAccessor,
-            IConfiguration configuration
+            IConfiguration configuration,
+            IHttpClientFactory httpClientFactory
         ) : base(logger, httpContextAccessor)
         {
             _configuration = configuration;
+            _httpClientFactory = httpClientFactory;
         }
 
         public Task<Result> SendOtp(int userId)
@@ -182,63 +183,45 @@ namespace CR.Core.ApplicationServices.OtpModule.Implements
         }
 
         /// <summary>
-        /// Hàm gửi Email thực tế sử dụng sức mạnh của MailKit
+        /// Hàm gửi Email
         /// </summary>
         private async Task SendOtpMailAsync(string email, string otpCode, int otpLifeTimeSeconds)
         {
-            var host = _configuration["Smtp:Host"];
-            var userName = _configuration["Smtp:UserName"];
-            var password = _configuration["Smtp:Password"];
-            var fromEmail = _configuration["Smtp:FromEmail"];
-            var fromName = _configuration["Smtp:FromName"] ?? "ATELIER eShop";
-
-            var enableSsl = _configuration.GetValue("Smtp:EnableSsl", true);
-            var port = _configuration.GetValue("Smtp:Port", 587);
-
-            if (string.IsNullOrWhiteSpace(host) || string.IsNullOrWhiteSpace(userName) ||
-                string.IsNullOrWhiteSpace(password) || string.IsNullOrWhiteSpace(fromEmail))
+            var apiKey = _configuration["Brevo:ApiKey"] ?? Environment.GetEnvironmentVariable("BREVO_API_KEY");
+            var fromEmail = _configuration["Brevo:SenderEmail"] ?? _configuration["Smtp:FromEmail"];
+            var fromName = _configuration["Brevo:SenderName"] ?? "ATELIER eShop";
+            if (string.IsNullOrWhiteSpace(apiKey))
             {
-                throw new InvalidOperationException("SMTP configuration is missing in appsettings.");
+                throw new InvalidOperationException("Thiếu cấu hình BREVO_API_KEY.");
             }
-
-            // 1. Tạo Message chuẩn MimeKit
-            var message = new MimeMessage();
-            message.From.Add(new MailboxAddress(fromName, fromEmail));
-            message.To.Add(new MailboxAddress("", email));
-            message.Subject = "ATELIER - Mã xác nhận (OTP)";
-
-            // 2. Build giao diện HTML cho Mail
-            var bodyBuilder = new BodyBuilder
+            var payload = new
             {
-                HtmlBody = $@"
-                <div style='font-family: Arial, sans-serif; padding: 20px; color: #333;'>
-                    <h2 style='color: #2A2A2A;'>Xác nhận đăng ký tài khoản</h2>
-                    <p>Mã OTP của bạn là:</p>
-                    <h1 style='background: #f4f4f4; padding: 10px 20px; border-radius: 5px; display: inline-block; letter-spacing: 5px;'>{otpCode}</h1>
-                    <p>Mã có hiệu lực trong <b>{otpLifeTimeSeconds / 60} phút</b>. Vui lòng không chia sẻ mã này cho bất kỳ ai.</p>
-                </div>"
+                sender = new { name = fromName, email = fromEmail },
+                to = new[] { new { email = email } },
+                subject = "ATELIER - Mã xác nhận (OTP)",
+                htmlContent = $@"
+            <div style='font-family: Arial, sans-serif; padding: 20px; color: #333;'>
+                <h2 style='color: #2A2A2A;'>Xác nhận đăng ký tài khoản</h2>
+                <p>Mã OTP của bạn là:</p>
+                <h1 style='background: #f4f4f4; padding: 10px 20px; border-radius: 5px; display: inline-block; letter-spacing: 5px;'>{otpCode}</h1>
+                <p>Mã có hiệu lực trong <b>{otpLifeTimeSeconds / 60} phút</b>. Vui lòng không chia sẻ mã này cho bất kỳ ai.</p>
+            </div>"
             };
-            message.Body = bodyBuilder.ToMessageBody();
+            // Sử dụng HttpClient được quản lý bởi IHttpClientFactory
+            var client = _httpClientFactory.CreateClient("BrevoClient");
 
-            // 3. Khởi tạo SmtpClient của MailKit và tiến hành gửi
-            using var client = new MailKit.Net.Smtp.SmtpClient();
-            try
+            using var request = new HttpRequestMessage(HttpMethod.Post, "smtp/email");
+            request.Headers.Add("api-key", apiKey);
+            request.Content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
+            var response = await client.SendAsync(request);
+            if (!response.IsSuccessStatusCode)
             {
-                // Bypass SSL Validation cho môi trường Dev (nếu cần thiết)
-                // client.ServerCertificateValidationCallback = (s, c, h, e) => true; 
-
-                var secureOptions = enableSsl ? SecureSocketOptions.StartTls : SecureSocketOptions.Auto;
-
-                await client.ConnectAsync(host, port, secureOptions);
-                await client.AuthenticateAsync(userName, password);
-                await client.SendAsync(message);
+                var errorDetail = await response.Content.ReadAsStringAsync();
+                _logger.LogError("Lỗi khi gọi Brevo API. Status: {StatusCode}, Detail: {Error}", response.StatusCode, errorDetail);
+                throw new Exception($"Không thể gửi email OTP thông qua Brevo API. Chi tiết: {errorDetail}");
             }
-            finally
-            {
-                await client.DisconnectAsync(true);
-            }
+            _logger.LogInformation("Đã gửi Email OTP qua Brevo API thành công tới {Email}", email);
         }
-
         private async Task<int> GetIntSysVar(string grName, string varName, int defaultValue)
         {
             var sysVar = await _dbContext.SysVars.FirstOrDefaultAsync(x =>

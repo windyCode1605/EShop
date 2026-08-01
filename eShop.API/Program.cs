@@ -28,10 +28,9 @@ using CR.Core.ApplicationServices.AttributeModule.Implements;
 using FirebaseAdmin;
 using Google.Apis.Auth.OAuth2;
 
-
-
-
+// ============================================================================
 // 0. ENVIRONMENT & CONFIGURATION LOAD
+// ============================================================================
 var envPath = Path.Combine(AppContext.BaseDirectory, ".env");
 if (!File.Exists(envPath))
 {
@@ -47,7 +46,6 @@ if (File.Exists(envPath))
     Console.WriteLine($"[DEBUG] .env file loaded successfully");
 }
 
-
 Environment.SetEnvironmentVariable("DOTNET_hostBuilder__reloadConfigOnChange", "false");
 
 var builder = WebApplication.CreateBuilder(args);
@@ -56,11 +54,11 @@ var renderPort = Environment.GetEnvironmentVariable("PORT");
 if (!string.IsNullOrEmpty(renderPort))
 {
     Environment.SetEnvironmentVariable("ASPNET_URLS", $"http://0.0.0.0:{renderPort}");
-    Console.WriteLine("[DEBUG] Running on Cloud (Render) - Port: {renderPort}");
+    Console.WriteLine($"[DEBUG] Running on Cloud (Render) - Port: {renderPort}");
 }
 else
 {
-    Console.WriteLine("[DEBUG] Running on Local - Port from lauchSettings.json");
+    Console.WriteLine("[DEBUG] Running on Local - Port from launchSettings.json");
 }
 
 // Double-safety: clear sources và re-add không có reloadOnChange
@@ -82,7 +80,8 @@ var configMappings = new Dictionary<string, string>
     { "SMTP_PORT", "Smtp:Port" },
     { "SMTP_USERNAME", "Smtp:UserName" },
     { "SMTP_PASSWORD", "Smtp:Password" },
-    { "SMTP_FROMEMAIL", "Smtp:FromEmail" }
+    { "SMTP_FROMEMAIL", "Smtp:FromEmail" },
+    { "BREVO_API_KEY", "Brevo:ApiKey" }
 };
 
 foreach (var mapping in configMappings)
@@ -94,15 +93,16 @@ foreach (var mapping in configMappings)
     }
 }
 
+// Cấu hình SDK Bên thứ 3 (Firebase)
 var firebaseKeyPath = builder.Configuration["Firebase:ServiceAccountKeyPath"];
 if (!string.IsNullOrEmpty(firebaseKeyPath))
 {
-    var ServiceAccountPath = Path.Combine(builder.Environment.ContentRootPath, firebaseKeyPath);
-    if (File.Exists(ServiceAccountPath))
+    var serviceAccountPath = Path.Combine(builder.Environment.ContentRootPath, firebaseKeyPath);
+    if (File.Exists(serviceAccountPath))
     {
         FirebaseApp.Create(new AppOptions
         {
-            Credential = GoogleCredential.FromFile(ServiceAccountPath),
+            Credential = GoogleCredential.FromFile(serviceAccountPath),
             ProjectId = builder.Configuration["Firebase:projectId"]
         });
     }
@@ -112,7 +112,9 @@ else
     Console.WriteLine("[STARTUP WARNING] Không tìm thấy Firebase:ServiceAccountKeyPath trong biến môi trường! Bỏ qua Firebase.");
 }
 
+// ============================================================================
 // 1. LOGGING SETUP
+// ============================================================================
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 if (builder.Environment.IsDevelopment())
@@ -121,8 +123,9 @@ if (builder.Environment.IsDevelopment())
 }
 builder.Logging.AddConfiguration(builder.Configuration.GetSection("Logging"));
 
-// 2. CORE API SERVICES & CONTROLLERS
-// 
+// ============================================================================
+// 2. CORE WEB, CONTROLLERS & HTTP CLIENTS
+// ============================================================================
 builder.Services.AddControllers(options =>
 {
     options.Filters.Add<ValidationFilter>();
@@ -133,9 +136,16 @@ builder.Services.AddControllers(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddHttpContextAccessor();
 
+// Đăng ký Named HttpClient (Brevo REST API)
+builder.Services.AddHttpClient("BrevoClient", client =>
+{
+    client.BaseAddress = new Uri("https://api.brevo.com/v3/");
+    client.DefaultRequestHeaders.Add("accept", "application/json");
+});
 
-// 3. SWAGGER CONFIGURATION
-
+// ============================================================================
+// 3. SWAGGER & API DOCUMENTATION CONFIGURATION
+// ============================================================================
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo { Title = "CR eShop API", Version = "v1" });
@@ -162,25 +172,24 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-
+// ============================================================================
 // 4. DATABASE & OPENIDDICT CONFIGURATION
-
+// ============================================================================
 // Configure Forwarded Headers for Cloud Providers (Render, Vercel, Nginx)
 builder.Services.Configure<Microsoft.AspNetCore.Builder.ForwardedHeadersOptions>(options =>
 {
     options.ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor | Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto;
-    // Clear known proxies so it trusts the headers from any proxy (Render's dynamic IPs)
     options.KnownNetworks.Clear();
     options.KnownProxies.Clear();
 });
 
-// Cấu hình Database
+// Database Context (PostgreSQL via EF Core)
 builder.Services.AddDbContext<CoreDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
            .UseOpenIddict()
 );
 
-
+// Identity Server (OpenIddict)
 builder.Services
     .AddOpenIddict()
     .AddCore(options =>
@@ -222,14 +231,14 @@ builder.Services
         options.UseAspNetCore();
     });
 
-// ===============================================
-// 5. AUTHENTICATION, AUTHORIZATION & CORS
-// ===============================================
+// ============================================================================
+// 5. SECURITY: CORS, AUTHENTICATION & AUTHORIZATION
+// ============================================================================
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("WebClient", policy =>
     {
-        policy.SetIsOriginAllowed(origin => true) // Cho phép mọi nguồn (bao gồm các link Vercel động)
+        policy.SetIsOriginAllowed(origin => true)
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
@@ -257,8 +266,7 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-// Chỉ đăng ký Google OAuth nếu đã cấu hình ClientId thực sự
-// Trên Render, nếu chưa set env var → bỏ qua, không crash mọi request
+// Google OAuth Check
 var googleClientId = builder.Configuration["Authentication:Google:ClientId"];
 var googleClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
 if (!string.IsNullOrEmpty(googleClientId) &&
@@ -266,13 +274,6 @@ if (!string.IsNullOrEmpty(googleClientId) &&
     !string.IsNullOrEmpty(googleClientSecret))
 {
     Console.WriteLine("[CONFIG] Google OAuth: Enabled");
-    // Tạm thời comment out do .AddGoogle() yêu cầu package AspNet.Security.OAuth.Google riêng
-    // Bật lại khi cần tính năng đăng nhập bằng Google
-    // authBuilder.AddGoogle(options =>
-    // {
-    //     options.ClientId = googleClientId;
-    //     options.ClientSecret = googleClientSecret;
-    // });
 }
 else
 {
@@ -284,7 +285,7 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("ApiUser", policy => policy.RequireAuthenticatedUser());
 });
 
-// Configure Distributed Cache
+// Distributed Caching (Redis / MemoryCache)
 var redisConnectionString = builder.Configuration.GetConnectionString("Redis");
 if (!string.IsNullOrEmpty(redisConnectionString))
 {
@@ -296,25 +297,23 @@ if (!string.IsNullOrEmpty(redisConnectionString))
 }
 else
 {
-    // Fallback if Redis is not configured
     builder.Services.AddDistributedMemoryCache();
 }
 
-// ===============================================
-// 6. DEPENDENCY INJECTION (DI) 
-// ===============================================
-// Infrastructure / Common
+// ============================================================================
+// 6. DEPENDENCY INJECTION (DI) REGISTRATION
+// ============================================================================
+// Infrastructure & Localization
 builder.Services.AddSingleton<IMapErrorCode, MapErrorCode>();
 builder.Services.AddSingleton<LocalizationBase>();
 builder.Services.AddSingleton<ILocalization>(sp => sp.GetRequiredService<LocalizationBase>());
 
-// Authorization Cache
+// Authorization & Permission System
 builder.Services.AddScoped<CR.Core.ApplicationServices.AuthenticationModule.Abstracts.IPermissionCacheService, CR.Core.ApplicationServices.AuthenticationModule.Implements.PermissionCacheService>();
 builder.Services.AddSingleton<Microsoft.AspNetCore.Authorization.IAuthorizationPolicyProvider, CR.Core.API.Authorization.PermissionPolicyProvider>();
 builder.Services.AddScoped<Microsoft.AspNetCore.Authorization.IAuthorizationHandler, CR.Core.API.Authorization.PermissionAuthorizationHandler>();
 
-// Application Services (Giải quyết lỗi IOrderService)
-// BẠN KHAI BÁO CÁC SERVICE CÒN THIẾU TẠI ĐÂY
+// Core Application Domain Services
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IShipmentService, ShipmentService>();
@@ -327,17 +326,16 @@ builder.Services.AddScoped<IAttributeValueService, AttributeValueService>();
 builder.Services.AddScoped<CR.Core.ApplicationServices.RoleModule.Abstracts.IRoleService, CR.Core.ApplicationServices.RoleModule.Implement.RoleService>();
 builder.Services.AddScoped<CR.Core.ApplicationServices.RoleModule.IPermissionService, CR.Core.ApplicationServices.RoleModule.Implement.PermissionService>();
 
-// builder.Services.AddScoped<IOrderRepository, OrderRepository>();
-
+// External Shared Services
 builder.Services.AddSingleton<eShop.API.Services.Shared.FirebaseStorageService>();
 builder.Services.AddSingleton<eShop.API.Services.Shared.FirebaseNotificationService>();
 
-// Nơi bạn đã đóng gói các DI khác thông qua Extension Method
+// Extension Method DI Module Assembly Registration
 builder.Services.AddApplicationServices();
 
-
-// 7. BUILD APP & DATABASE SEEDING
-
+// ============================================================================
+// 7. BUILD APPLICATION & STARTUP DATA SEEDING
+// ============================================================================
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
@@ -347,7 +345,6 @@ using (var scope = app.Services.CreateScope())
 
     var db = scope.ServiceProvider.GetRequiredService<CoreDbContext>();
 
-
     try
     {
         Console.WriteLine("[STARTUP] Running database migration...");
@@ -355,7 +352,6 @@ using (var scope = app.Services.CreateScope())
         await db.Database.MigrateAsync(cts.Token);
         Console.WriteLine("[STARTUP] Migration completed.");
 
-        // Tự động Seed Data mỗi lần chạy
         await DataSeeder.SeedAsync(db);
         Console.WriteLine("[STARTUP] Data seeding completed.");
     }
@@ -400,27 +396,30 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-// 8. HTTP REQUEST PIPELINE (THỨ TỰ CHUẨN)
+// ============================================================================
+// 8. HTTP REQUEST PIPELINE (MIDDLEWARE CHAIN)
+// ============================================================================
 app.UseSwagger();
 app.UseSwaggerUI();
+
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
 }
 
-// 0. Forwarded Headers (Phải chạy ĐẦU TIÊN để nhận diện đúng HTTPS từ Proxy)
+// 1. Proxy / Cloud Headers Handling
 app.UseForwardedHeaders();
 
-// 1. Exception Handling
+// 2. Global Exception Catching
 app.UseMiddleware<GlobalExceptionMiddleware>();
 
-// 2. HTTPS & Static Files
-// Tắt HTTPS redirect trên Cloud (Render/Vercel xử lý TLS ở proxy level)
-// Chỉ redirect HTTPS ở local Development
+// 3. HTTPS Redirection (Only Local Development)
 if (app.Environment.IsDevelopment())
 {
     app.UseHttpsRedirection();
 }
+
+// 4. Static Files Serving
 var webRootPath = app.Environment.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
 if (!Directory.Exists(webRootPath)) Directory.CreateDirectory(webRootPath);
 app.UseStaticFiles(new StaticFileOptions
@@ -429,17 +428,18 @@ app.UseStaticFiles(new StaticFileOptions
     RequestPath = ""
 });
 
-// 3. Routing & CORS
+// 5. Routing & Cross-Origin Resource Sharing (CORS)
 app.UseRouting();
 app.UseCors("WebClient");
 
-// 4. Authentication & Authorization (Phải nằm giữa Routing và Endpoints)
+// 6. Security Middlewares (Must be between Routing and Endpoints)
 app.UseAuthentication();
 app.UseAuthorization();
 
-// 5. Endpoints
+// 7. Controller Endpoints Mapping
 app.MapControllers();
 
+// 9. HOST RUN
 var finalPort = Environment.GetEnvironmentVariable("PORT");
 if (!string.IsNullOrEmpty(finalPort))
 {
