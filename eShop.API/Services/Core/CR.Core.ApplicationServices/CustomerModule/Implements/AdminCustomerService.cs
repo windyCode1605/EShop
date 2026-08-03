@@ -37,7 +37,6 @@ namespace CR.Core.ApplicationServices.CustomerModule.Implements
                 }
                 else
                 {
-                    // Trả về tất cả trạng thái KHÔNG phải ACTIVE (như DEACTIVE, LOCK, TEMP...)
                     baseQuery = baseQuery.Where(c => c.Status != UserStatus.ACTIVE);
                 }
             }
