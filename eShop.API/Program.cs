@@ -27,6 +27,8 @@ using CR.Core.ApplicationServices.AttributeModule.Abstract;
 using CR.Core.ApplicationServices.AttributeModule.Implements;
 using FirebaseAdmin;
 using Google.Apis.Auth.OAuth2;
+using CR.Core.ApplicationServices.CustomerModule.Abstracts;
+using CR.Core.ApplicationServices.CustomerModule.Implements;
 
 // ============================================================================
 // 0. ENVIRONMENT & CONFIGURATION LOAD
@@ -329,6 +331,7 @@ builder.Services.AddScoped<IAttributeService, AttributeService>();
 builder.Services.AddScoped<IAttributeValueService, AttributeValueService>();
 builder.Services.AddScoped<CR.Core.ApplicationServices.RoleModule.Abstracts.IRoleService, CR.Core.ApplicationServices.RoleModule.Implement.RoleService>();
 builder.Services.AddScoped<CR.Core.ApplicationServices.RoleModule.IPermissionService, CR.Core.ApplicationServices.RoleModule.Implement.PermissionService>();
+builder.Services.AddScoped<IAdminCustomerService, AdminCustomerService>();
 
 // External Shared Services
 builder.Services.AddSingleton<eShop.API.Services.Shared.FirebaseStorageService>();

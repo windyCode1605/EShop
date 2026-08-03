@@ -2,8 +2,12 @@
 
   <!-- ── Page Header ──────────────────────────────────────────────────── -->
   <div class="page-header">
-    <h1 class="page-title">The Collection</h1>
-    <p class="page-subtitle">Minimal design, maximum utility.</p>
+    <div class="header-badge">
+      <span class="badge-dot"></span>
+      <span>BỘ SƯU TẬP CAO CẤP 2025</span>
+    </div>
+    <h1 class="page-title">Sản Phẩm <span class="accent-title">Ấn tượng</span></h1>
+    <p class="page-subtitle">Tuyển tập những sáng tác tinh tế, thiết kế tối giản & chất lượng đỉnh cao.</p>
   </div>
 
   <!-- ── Filter Bar ───────────────────────────────────────────────────── -->
@@ -11,38 +15,28 @@
     <div class="filter-bar-left">
 
       <!-- Filter: Danh mục -->
-      <div class="filter-item"
-           (mouseenter)="openDropdown('category', $event)"
-           (mouseleave)="scheduleCloseDropdown()">
+      <div class="filter-item" (mouseenter)="openDropdown('category', $event)" (mouseleave)="scheduleCloseDropdown()">
         <button class="filter-btn" [class.is-active]="isDropdownOpen('category')" id="filter-category-btn">
           <span>
             Danh mục
             <span class="filter-tag" *ngIf="selectedCategoryId() !== null">•</span>
           </span>
-          <svg class="chevron" [class.rotated]="isDropdownOpen('category')"
-               width="14" height="14" viewBox="0 0 24 24" fill="none"
-               stroke="currentColor" stroke-width="2">
-            <polyline points="6 9 12 15 18 9"/>
+          <svg class="chevron" [class.rotated]="isDropdownOpen('category')" width="14" height="14" viewBox="0 0 24 24"
+            fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6 9 12 15 18 9" />
           </svg>
         </button>
 
-        <div class="filter-dropdown"
-             [class.open]="isDropdownOpen('category')"
-             (mouseenter)="cancelCloseDropdown()"
-             (mouseleave)="scheduleCloseDropdown()"
-             id="filter-category-panel">
+        <div class="filter-dropdown" [class.open]="isDropdownOpen('category')" (mouseenter)="cancelCloseDropdown()"
+          (mouseleave)="scheduleCloseDropdown()" id="filter-category-panel">
           <div class="dropdown-inner">
             <div *ngIf="categories().length === 0" class="dropdown-empty">Đang tải...</div>
-            <label
-              *ngFor="let cat of categories()"
-              class="dropdown-option"
-              [class.is-selected]="isCategorySelected(cat.categoryId)"
-              (click)="onCategoryToggle(cat.categoryId)">
+            <label *ngFor="let cat of categories()" class="dropdown-option"
+              [class.is-selected]="isCategorySelected(cat.categoryId)" (click)="onCategoryToggle(cat.categoryId)">
               <span class="option-check">
-                <svg *ngIf="isCategorySelected(cat.categoryId)"
-                     width="12" height="12" viewBox="0 0 24 24" fill="none"
-                     stroke="currentColor" stroke-width="3">
-                  <polyline points="20 6 9 17 4 12"/>
+                <svg *ngIf="isCategorySelected(cat.categoryId)" width="12" height="12" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="3">
+                  <polyline points="20 6 9 17 4 12" />
                 </svg>
               </span>
               <span>{{ cat.categoryName }}</span>
@@ -52,34 +46,28 @@
       </div>
 
       <!-- Filter: Mức giá -->
-      <div class="filter-item"
-           (mouseenter)="openDropdown('price', $event)"
-           (mouseleave)="scheduleCloseDropdown()">
+      <div class="filter-item" (mouseenter)="openDropdown('price', $event)" (mouseleave)="scheduleCloseDropdown()">
         <button class="filter-btn" [class.is-active]="isDropdownOpen('price')" id="filter-price-btn">
           <span>
             Mức giá
             <span class="filter-tag" *ngIf="minPrice !== null || maxPrice !== null">•</span>
           </span>
-          <svg class="chevron" [class.rotated]="isDropdownOpen('price')"
-               width="14" height="14" viewBox="0 0 24 24" fill="none"
-               stroke="currentColor" stroke-width="2">
-            <polyline points="6 9 12 15 18 9"/>
+          <svg class="chevron" [class.rotated]="isDropdownOpen('price')" width="14" height="14" viewBox="0 0 24 24"
+            fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6 9 12 15 18 9" />
           </svg>
         </button>
 
-        <div class="filter-dropdown"
-             [class.open]="isDropdownOpen('price')"
-             (mouseenter)="cancelCloseDropdown()"
-             (mouseleave)="scheduleCloseDropdown()"
-             id="filter-price-panel">
+        <div class="filter-dropdown" [class.open]="isDropdownOpen('price')" (mouseenter)="cancelCloseDropdown()"
+          (mouseleave)="scheduleCloseDropdown()" id="filter-price-panel">
           <div class="dropdown-inner price-dropdown-inner">
             <div class="price-row-inputs">
               <div class="price-input-group">
                 <label class="price-label">Từ</label>
                 <div class="price-input-wrap">
                   <span class="currency">đ</span>
-                  <input type="number" placeholder="0" [(ngModel)]="minPrice"
-                         (keyup.enter)="onPriceFilter()" class="price-input" id="min-price-input" />
+                  <input type="number" placeholder="0" [(ngModel)]="minPrice" (keyup.enter)="onPriceFilter()"
+                    class="price-input" id="min-price-input" />
                 </div>
               </div>
               <div class="price-divider">—</div>
@@ -87,8 +75,8 @@
                 <label class="price-label">Đến</label>
                 <div class="price-input-wrap">
                   <span class="currency">đ</span>
-                  <input type="number" placeholder="∞" [(ngModel)]="maxPrice"
-                         (keyup.enter)="onPriceFilter()" class="price-input" id="max-price-input" />
+                  <input type="number" placeholder="∞" [(ngModel)]="maxPrice" (keyup.enter)="onPriceFilter()"
+                    class="price-input" id="max-price-input" />
                 </div>
               </div>
             </div>
@@ -98,23 +86,17 @@
       </div>
 
       <!-- Filter: Sắp xếp -->
-      <div class="filter-item"
-           (mouseenter)="openDropdown('sort', $event)"
-           (mouseleave)="scheduleCloseDropdown()">
+      <div class="filter-item" (mouseenter)="openDropdown('sort', $event)" (mouseleave)="scheduleCloseDropdown()">
         <button class="filter-btn" [class.is-active]="isDropdownOpen('sort')" id="filter-sort-btn">
           <span>{{ getSortLabel() }}</span>
-          <svg class="chevron" [class.rotated]="isDropdownOpen('sort')"
-               width="14" height="14" viewBox="0 0 24 24" fill="none"
-               stroke="currentColor" stroke-width="2">
-            <polyline points="6 9 12 15 18 9"/>
+          <svg class="chevron" [class.rotated]="isDropdownOpen('sort')" width="14" height="14" viewBox="0 0 24 24"
+            fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6 9 12 15 18 9" />
           </svg>
         </button>
 
-        <div class="filter-dropdown"
-             [class.open]="isDropdownOpen('sort')"
-             (mouseenter)="cancelCloseDropdown()"
-             (mouseleave)="scheduleCloseDropdown()"
-             id="filter-sort-panel">
+        <div class="filter-dropdown" [class.open]="isDropdownOpen('sort')" (mouseenter)="cancelCloseDropdown()"
+          (mouseleave)="scheduleCloseDropdown()" id="filter-sort-panel">
           <div class="dropdown-inner">
             <label *ngFor="let opt of [
               {value:'name_asc',    label:'Tên A–Z'},
@@ -122,16 +104,12 @@
               {value:'price_asc',   label:'Giá thấp đến cao'},
               {value:'price_desc',  label:'Giá cao đến thấp'},
               {value:'createdAt_desc', label:'Mới nhất'}
-            ]"
-              class="dropdown-option"
-              [class.is-selected]="selectedSort === opt.value"
-              (click)="onSortChange(opt.value)"
-              [id]="'sort-' + opt.value">
+            ]" class="dropdown-option" [class.is-selected]="selectedSort === opt.value"
+              (click)="onSortChange(opt.value)" [id]="'sort-' + opt.value">
               <span class="option-check">
-                <svg *ngIf="selectedSort === opt.value"
-                     width="12" height="12" viewBox="0 0 24 24" fill="none"
-                     stroke="currentColor" stroke-width="3">
-                  <polyline points="20 6 9 17 4 12"/>
+                <svg *ngIf="selectedSort === opt.value" width="12" height="12" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="3">
+                  <polyline points="20 6 9 17 4 12" />
                 </svg>
               </span>
               <span>{{ opt.label }}</span>
@@ -141,20 +119,15 @@
       </div>
     </div>
 
-    <!-- Right: count + cart -->
+    <!-- Right: count + status -->
     <div class="filter-bar-right">
       <span class="result-count">
-        {{ loading() ? '—' : totalCount() }} sản phẩm
+        Hiển thị <strong>{{ loading() ? '—' : totalCount() }}</strong> sản phẩm
       </span>
-      <a routerLink="/cart" class="cart-btn" id="header-cart-btn" title="Giỏ hàng">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-             stroke="currentColor" stroke-width="1.5">
-          <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/>
-          <path d="M3 6h18"/>
-          <path d="M16 10a4 4 0 0 1-8 0"/>
-        </svg>
-        <span class="cart-count" *ngIf="cartTotalItems() > 0">{{ cartTotalItems() }}</span>
-      </a>
+      <div class="status-indicator">
+        <span class="status-dot"></span>
+        <span>Hàng sẵn giao</span>
+      </div>
     </div>
   </div>
 
@@ -172,28 +145,33 @@
   <div class="product-grid" *ngIf="!loading() && hasProducts()">
     <div class="product-card" *ngFor="let product of products()">
 
-      <!-- Image -->
+      <!-- Image Outer Hardware Shell & Inner Core -->
       <div class="card-img-wrap">
         <span class="out-badge" *ngIf="getTotalStock(product) === 0">Hết hàng</span>
+        <span class="stock-badge" *ngIf="getTotalStock(product) > 0 && getTotalStock(product) <= 5">
+          Còn {{ getTotalStock(product) }}
+        </span>
 
-        <img [src]="getProductImage(product)" [alt]="product.name"
-             class="card-img" loading="lazy" />
+        <img [src]="getProductImage(product)" [alt]="product.name" class="card-img" loading="lazy" />
 
         <div class="card-overlay">
           <!-- Wishlist -->
-          <button class="wishlist-btn" title="Wishlist" [id]="'wish-' + product.id">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
-                 stroke="currentColor" stroke-width="1.5">
-              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+          <button class="wishlist-btn" title="Yêu thích" [id]="'wish-' + product.id">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path
+                d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
             </svg>
           </button>
 
-          <!-- Quick Add -->
-          <button class="quick-add-bar"
-                  *ngIf="getTotalStock(product) > 0"
-                  (click)="openQuickAdd(product, $event)"
-                  [id]="'quickadd-' + product.id">
-            Chọn phiên bản
+          <!-- Quick Add with Nested Button-in-Button Trailing Icon -->
+          <button class="quick-add-bar" *ngIf="getTotalStock(product) > 0" (click)="openQuickAdd(product, $event)"
+            [id]="'quickadd-' + product.id">
+            <span>Chọn phiên bản</span>
+            <div class="btn-icon-circle">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            </div>
           </button>
           <div class="quick-add-bar disabled" *ngIf="getTotalStock(product) === 0">
             Hết hàng
@@ -201,9 +179,19 @@
         </div>
       </div>
 
-      <!-- Meta -->
+      <!-- Meta Data -->
       <div class="card-meta">
-        <span class="cat-label">{{ product.categoryName }}</span>
+        <div class="card-meta-top">
+          <span class="cat-label">{{ product.categoryName || 'ATELIER' }}</span>
+          <span class="rating-tag">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="#C5A882" stroke="none">
+              <polygon
+                points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+            </svg>
+            4.9
+          </span>
+        </div>
+
         <a [routerLink]="['/product', product.id]" class="product-name" [id]="'detail-' + product.id">
           {{ product.name }}
         </a>
@@ -218,35 +206,28 @@
           <ng-template #singlePrice>
             <span class="price">{{ formatPrice(getMinPrice(product)) }}</span>
           </ng-template>
-
-          <span class="low-stock-badge"
-                *ngIf="getTotalStock(product) > 0 && getTotalStock(product) <= 5">
-            Còn {{ getTotalStock(product) }}
-          </span>
         </div>
 
         <!-- Color swatches preview -->
         <div class="color-preview" *ngIf="getVariantColors(product).length > 0">
-          <button *ngFor="let color of getVariantColors(product).slice(0, 5)"
-                  class="swatch"
-                  [style.background-color]="colorToCss(color)"
-                  [title]="color"></button>
+          <button *ngFor="let color of getVariantColors(product).slice(0, 5)" class="swatch"
+            [style.background-color]="colorToCss(color)" [title]="color"></button>
           <span class="swatch-more" *ngIf="getVariantColors(product).length > 5">
             +{{ getVariantColors(product).length - 5 }}
           </span>
         </div>
       </div>
+
     </div>
   </div>
 
   <!-- ── Empty State ────────────────────────────────────────────────────── -->
   <div class="empty-state" *ngIf="!loading() && !hasProducts()">
     <div class="empty-icon">
-      <svg width="48" height="48" viewBox="0 0 24 24" fill="none"
-           stroke="currentColor" stroke-width="1">
-        <rect x="2" y="3" width="20" height="14" rx="2"/>
-        <path d="M8 21h8"/>
-        <path d="M12 17v4"/>
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+        <rect x="2" y="3" width="20" height="14" rx="2" />
+        <path d="M8 21h8" />
+        <path d="M12 17v4" />
       </svg>
     </div>
     <h3 class="empty-title">Không tìm thấy sản phẩm</h3>
@@ -255,26 +236,22 @@
 
   <!-- ── Pagination ─────────────────────────────────────────────────────── -->
   <div class="pagination-bar" *ngIf="!loading() && totalPages() > 1">
-    <button class="page-btn" [disabled]="currentPage() === 1"
-            (click)="goToPage(currentPage() - 1)" id="prev-page-btn">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-           stroke="currentColor" stroke-width="2">
-        <polyline points="15 18 9 12 15 6"/>
+    <button class="page-btn" [disabled]="currentPage() === 1" (click)="goToPage(currentPage() - 1)" id="prev-page-btn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="15 18 9 12 15 6" />
       </svg>
     </button>
 
     <ng-container *ngFor="let page of getPaginationRange()">
       <span class="page-dots" *ngIf="page === -1">…</span>
-      <button class="page-btn" [class.active]="page === currentPage()"
-              *ngIf="page !== -1" (click)="goToPage(page)"
-              [id]="'page-' + page">{{ page }}</button>
+      <button class="page-btn" [class.active]="page === currentPage()" *ngIf="page !== -1" (click)="goToPage(page)"
+        [id]="'page-' + page">{{ page }}</button>
     </ng-container>
 
-    <button class="page-btn" [disabled]="currentPage() === totalPages()"
-            (click)="goToPage(currentPage() + 1)" id="next-page-btn">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-           stroke="currentColor" stroke-width="2">
-        <polyline points="9 18 15 12 9 6"/>
+    <button class="page-btn" [disabled]="currentPage() === totalPages()" (click)="goToPage(currentPage() + 1)"
+      id="next-page-btn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="9 18 15 12 9 6" />
       </svg>
     </button>
   </div>
@@ -286,9 +263,9 @@
 
     <!-- Close -->
     <button class="modal-close" (click)="closeQuickAdd()" id="modal-close-btn" aria-label="Đóng">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-           stroke="currentColor" stroke-width="2">
-        <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M18 6 6 18" />
+        <path d="m6 6 12 12" />
       </svg>
     </button>
 
@@ -297,9 +274,7 @@
 
       <!-- Left: product image -->
       <div class="modal-img-col">
-        <img [src]="getProductImage(quickAddProduct()!)"
-             [alt]="quickAddProduct()!.name"
-             class="modal-img" />
+        <img [src]="getProductImage(quickAddProduct()!)" [alt]="quickAddProduct()!.name" class="modal-img" />
       </div>
 
       <!-- Right: info + selectors -->
@@ -315,17 +290,12 @@
             <span class="variant-selected-value" *ngIf="selectedColor()">{{ selectedColor() }}</span>
           </div>
           <div class="color-swatches-row">
-            <button *ngFor="let color of modalColors()"
-                    class="modal-swatch"
-                    [class.selected]="selectedColor() === color"
-                    [style.background-color]="colorToCss(color)"
-                    [title]="color"
-                    (click)="selectModalColor(color)"
-                    [id]="'modal-color-' + color">
-              <svg *ngIf="selectedColor() === color" class="swatch-check"
-                   width="10" height="10" viewBox="0 0 24 24" fill="none"
-                   stroke="white" stroke-width="3.5">
-                <polyline points="20 6 9 17 4 12"/>
+            <button *ngFor="let color of modalColors()" class="modal-swatch"
+              [class.selected]="selectedColor() === color" [style.background-color]="colorToCss(color)" [title]="color"
+              (click)="selectModalColor(color)" [id]="'modal-color-' + color">
+              <svg *ngIf="selectedColor() === color" class="swatch-check" width="10" height="10" viewBox="0 0 24 24"
+                fill="none" stroke="white" stroke-width="3.5">
+                <polyline points="20 6 9 17 4 12" />
               </svg>
             </button>
           </div>
@@ -338,13 +308,9 @@
             <span class="variant-selected-value" *ngIf="selectedSize()">{{ selectedSize() }}</span>
           </div>
           <div class="size-chips-row">
-            <button *ngFor="let s of modalSizes()"
-                    class="size-chip"
-                    [class.selected]="selectedSize() === s.value"
-                    [class.unavailable]="!s.available"
-                    [disabled]="!s.available"
-                    (click)="selectModalSize(s.value, s.available)"
-                    [id]="'modal-size-' + s.value">
+            <button *ngFor="let s of modalSizes()" class="size-chip" [class.selected]="selectedSize() === s.value"
+              [class.unavailable]="!s.available" [disabled]="!s.available"
+              (click)="selectModalSize(s.value, s.available)" [id]="'modal-size-' + s.value">
               {{ s.value }}
             </button>
           </div>
@@ -354,30 +320,27 @@
         <div class="variant-group">
           <span class="variant-label">Số lượng</span>
           <div class="qty-control">
-            <button class="qty-btn" (click)="decreasePopupQty()"
-                    [disabled]="popupQuantity() <= 1" id="modal-qty-minus">−</button>
+            <button class="qty-btn" (click)="decreasePopupQty()" [disabled]="popupQuantity() <= 1"
+              id="modal-qty-minus">−</button>
             <span class="qty-value">{{ popupQuantity() }}</span>
-            <button class="qty-btn" (click)="increasePopupQty()"
-                    [disabled]="popupQuantity() >= modalMaxStock()" id="modal-qty-plus">+</button>
+            <button class="qty-btn" (click)="increasePopupQty()" [disabled]="popupQuantity() >= modalMaxStock()"
+              id="modal-qty-plus">+</button>
           </div>
         </div>
 
         <!-- Stock info -->
-        <p class="modal-stock-hint"
-           *ngIf="selectedVariant() && selectedVariant()!.stockQuantity <= 5">
+        <p class="modal-stock-hint" *ngIf="selectedVariant() && selectedVariant()!.stockQuantity <= 5">
           Chỉ còn {{ selectedVariant()!.stockQuantity }} sản phẩm
         </p>
 
         <!-- CTA -->
-        <button class="modal-add-btn"
-                [disabled]="!canAddToCart() || isAddingToCartModal()"
-                (click)="onModalAddToCart()"
-                id="modal-add-to-cart-btn">
+        <button class="modal-add-btn" [disabled]="!canAddToCart() || isAddingToCartModal()" (click)="onModalAddToCart()"
+          id="modal-add-to-cart-btn">
           <ng-container *ngIf="!isAddingToCartModal()">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
-                 stroke="currentColor" stroke-width="2">
-              <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/>
-              <path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
+              <path d="M3 6h18" />
+              <path d="M16 10a4 4 0 0 1-8 0" />
             </svg>
             Thêm vào giỏ hàng
           </ng-container>
@@ -390,7 +353,8 @@
         <p class="modal-hint" *ngIf="!canAddToCart()">
           Vui lòng chọn
           <span *ngIf="modalColors().length > 0 && !selectedColor()">màu sắc</span>
-          <span *ngIf="modalColors().length > 0 && !selectedColor() && modalSizes().length > 0 && !selectedSize()"> và </span>
+          <span *ngIf="modalColors().length > 0 && !selectedColor() && modalSizes().length > 0 && !selectedSize()"> và
+          </span>
           <span *ngIf="modalSizes().length > 0 && !selectedSize()">kích thước</span>
         </p>
       </div>
@@ -402,15 +366,16 @@
 <div class="toast-container" *ngIf="toasts().length > 0">
   <div *ngFor="let toast of toasts()" class="toast" [ngClass]="'toast-' + toast.type">
     <span class="toast-icon">
-      <svg *ngIf="toast.type === 'success'" width="18" height="18" viewBox="0 0 24 24"
-           fill="none" stroke="currentColor" stroke-width="2.5">
-        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-        <path d="m9 11 3 3L22 4"/>
+      <svg *ngIf="toast.type === 'success'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="2.5">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+        <path d="m9 11 3 3L22 4" />
       </svg>
-      <svg *ngIf="toast.type === 'error'" width="18" height="18" viewBox="0 0 24 24"
-           fill="none" stroke="currentColor" stroke-width="2.5">
-        <circle cx="12" cy="12" r="10"/>
-        <path d="m15 9-6 6"/><path d="m9 9 6 6"/>
+      <svg *ngIf="toast.type === 'error'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="2.5">
+        <circle cx="12" cy="12" r="10" />
+        <path d="m15 9-6 6" />
+        <path d="m9 9 6 6" />
       </svg>
     </span>
     <div class="toast-body">
@@ -418,9 +383,9 @@
       <a *ngIf="toast.type === 'success'" routerLink="/cart" class="toast-link">Xem giỏ →</a>
     </div>
     <button class="toast-close" (click)="dismissToast(toast.id)">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-           stroke="currentColor" stroke-width="2">
-        <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M18 6 6 18" />
+        <path d="m6 6 12 12" />
       </svg>
     </button>
   </div>

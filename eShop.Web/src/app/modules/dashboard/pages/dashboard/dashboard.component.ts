@@ -532,7 +532,7 @@ import { CommonModule } from '@angular/common';
   template: `
     <div class="dashboard">
 
-      <!-- Fixed wave background -->
+      <!-- Wave background -->
       <div class="wave-bg" aria-hidden="true">
         <svg class="wave-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 120" preserveAspectRatio="none">
           <path fill="rgba(197,168,130,0.15)" d="M0,60 C240,100 480,20 720,60 C960,100 1200,20 1440,60 L1440,120 L0,120 Z"/>
@@ -570,7 +570,7 @@ import { CommonModule } from '@angular/common';
                   Khám phá ngay
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
                 </button>
-                <button class="hero__btn-ghost">
+                <button class="hero__btn-ghost" (click)="navigateToProducts()">
                   <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
                   Xem thêm
                 </button>
@@ -684,13 +684,16 @@ import { CommonModule } from '@angular/common';
           </section>
 
           <!-- FOOTER -->
-          <footer class="dash-footer">
+          <footer class="dash-footer pb-24 md:pb-12">
             <span class="dash-footer__copy">© 2025 ATELIER eShop — Crafted with intention.</span>
-            <a href="/account/login" style="font-size: 13px; color: #9D9890; text-decoration: none;">Đăng nhập</a>
+            <div class="flex items-center gap-4 text-xs text-[#9D9890]">
+              <a href="/account/login" class="hover:underline">Đăng nhập</a>
+            </div>
           </footer>
 
         </div>
       </div>
+
     </div>
   `
 })

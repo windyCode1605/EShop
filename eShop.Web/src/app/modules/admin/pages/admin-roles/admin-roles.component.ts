@@ -9,6 +9,7 @@ import { finalize, forkJoin } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { HasPermissionDirective } from '../../../../shared/directives/has-permission.directive';
 import { PERMISSIONS } from '../../../../core/constants/permissions.const';
+import { ToastService } from '../../../../core/services/toast.service';
 
 
 const GROUP_ACCENT: Record<string, string> = {};
@@ -255,6 +256,7 @@ const GROUP_PALETTE = ['#6366F1', '#F59E0B', '#10B981', '#F97316', '#EC4899', '#
 export class AdminRolesComponent implements OnInit {
   private roleService = inject(AdminRoleService);
   private messageService = inject(MessageService);
+  private toastService = inject(ToastService);
 
   readonly PERMISSIONS = PERMISSIONS;
 
@@ -486,16 +488,14 @@ export class AdminRolesComponent implements OnInit {
             this.saving.set(false);
             if (!hasError) {
               this.dirtyRoles.set(new Set());
-              this.messageService.add({ severity: 'success', summary: 'Thành công', detail: 'Cập nhật quyền thành công' });
-              // We no longer call loadData() here to avoid wasteful N+1 API calls.
-              // Local state is already in sync!
+              this.toastService.success('Cập nhật quyền thành công', 'Thành công', { position: 'bottom-right' });
             }
           }
         })
       ).subscribe({
         error: (err: any) => {
           hasError = true;
-          this.messageService.add({ severity: 'error', summary: 'Lỗi', detail: err.message || 'Cập nhật quyền thất bại' });
+          this.toastService.error(err.message || 'Cập nhật quyền thất bại', 'Thất bại', { position: 'bottom-right' });
         }
       });
     });

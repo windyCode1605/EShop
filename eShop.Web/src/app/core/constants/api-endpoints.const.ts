@@ -119,5 +119,8 @@ export const API_ENDPOINTS = {
         PRODUCT_VARIANT: {
             ...createCrudEndpoints('/api/admin/ProductVariant'),
         },
+        CUSTOMER: {
+            ...createCrudEndpoints('/api/admin/customers'),
+        },
     },
 } as const;

@@ -4,12 +4,14 @@ import { NavbarComponent } from './layout/components/navbar.component';
 import { CommonModule } from '@angular/common';
 import { filter } from 'rxjs/operators';
 import { ToastModule } from 'primeng/toast';
+import { ToastComponent } from './shared/components/toast/toast.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterModule, NavbarComponent, CommonModule, ToastModule],
+  imports: [RouterModule, NavbarComponent, CommonModule, ToastModule, ToastComponent],
   template: `
+    <app-toast></app-toast>
     <p-toast></p-toast>
     <app-navbar *ngIf="!hideNavbar"></app-navbar>
     <router-outlet></router-outlet>

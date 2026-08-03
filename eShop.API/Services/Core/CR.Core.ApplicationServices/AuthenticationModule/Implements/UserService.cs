@@ -64,6 +64,8 @@ namespace CR.Core.ApplicationServices.AuthenticationModule.Implements
 
                 if (user == null)
                 {
+                    var customerRole = await _dbContext.Roles
+                        .FirstOrDefaultAsync(r => r.Name == "Customer" && !r.Deleted);
                     user = new Users
                     {
                         Username = input.UserName,
@@ -81,9 +83,18 @@ namespace CR.Core.ApplicationServices.AuthenticationModule.Implements
                             PhoneNumber = string.Empty
                         }
                     };
+                    if (customerRole != null)
+                    {
+                        user.UserRoles.Add(new UserRole
+                        {
+                            RoleId = customerRole.Id,
+                            CreatedDate = DateTime.UtcNow,
+                            Deleted = false,
+                        });
+                    }
 
                     _dbContext.Users.Add(user);
-                    await _dbContext.SaveChangesAsync(); // Lưu để EF Core gen Id
+                    await _dbContext.SaveChangesAsync();
                 }
                 else
                 {

@@ -520,3 +520,42 @@ input[type=number]::-webkit-outer-spin-button {
   margin: 0;
 }
 input[type=number] { -moz-appearance: textfield; }
+
+// ─────────────────────────────────────────────────────
+// MOBILE RESPONSIVE OVERRIDES (< 768px)
+// ─────────────────────────────────────────────────────
+@media (max-width: 768px) {
+  .cart-container {
+    padding: 24px 16px 100px;
+  }
+
+  .cart-layout {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+
+  .cart-item {
+    gap: 16px;
+    padding: 16px 0;
+  }
+
+  .cart-item__image-wrap {
+    width: 80px;
+    height: 100px;
+  }
+
+  .cart-summary {
+    position: static;
+  }
+
+  .summary-card {
+    padding: 20px;
+    border-radius: 20px;
+  }
+
+  .checkout-btn {
+    padding: 16px;
+    font-size: 14px;
+  }
+}
+

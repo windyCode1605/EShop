@@ -34,8 +34,8 @@ import { filter } from 'rxjs';
 
         <!-- Main Links -->
         <div class="shell-nav__links">
-          <a class="shell-nav__link" routerLink="/dashboard" routerLinkActive="is-active">Sản phẩm</a>
-          <a class="shell-nav__link" routerLink="/product" routerLinkActive="is-active">Bộ sưu tập</a>
+          <a class="shell-nav__link" routerLink="/dashboard" routerLinkActive="is-active" [routerLinkActiveOptions]="{exact: true}">Trang chủ</a>
+          <a class="shell-nav__link" routerLink="/product" routerLinkActive="is-active">Sản phẩm</a>
         </div>
 
         <!-- Search Bar -->
@@ -281,6 +281,11 @@ import { filter } from 'rxjs';
       .logout-btn:hover {
         color: #ef4444;
         background: #fef2f2;
+      }
+      .shell-nav__divider {
+        width: 1px;
+        height: 24px;
+        background-color: var(--color-border, #E4E4E7);
       }
 
       .shell-nav__cta {

@@ -4,6 +4,7 @@ using CR.Core.ApplicationServices.OrderModule.Dtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
+namespace CR.Core.API.Controllers;
 [ApiController]
 [Route("api/admin/orders")]
 // [Authorize(Roles = "ADMIN,STAFF")]
