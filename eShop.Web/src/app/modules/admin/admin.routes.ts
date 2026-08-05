@@ -41,6 +41,12 @@ export const ADMIN_ROUTES: Routes = [
         data: { permissions: [PERMISSIONS.CUSTOMERS.VIEW] }
       },
       {
+        path: 'customers/detail/:id',
+        loadComponent: () => import('./pages/admin-customers/admin-customer-detail/admin-customer-detail.component').then((m) => m.AdminCustomerDetailComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: [PERMISSIONS.CUSTOMERS.VIEW] }
+      },
+      {
         path: 'settings',
         loadComponent: () => import('./pages/admin-settings/admin-settings.component').then((m) => m.AdminSettingsComponent),
         canActivate: [permissionGuard],

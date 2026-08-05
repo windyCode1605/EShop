@@ -121,6 +121,9 @@ export const API_ENDPOINTS = {
         },
         CUSTOMER: {
             ...createCrudEndpoints('/api/admin/customers'),
+            STATISTICS: (id: string | number) => `/api/admin/customers/${id}/statistics`,
+            LOCK: (id: string | number) => `/api/admin/customers/${id}/lock`,
+            UNLOCK: (id: string | number) => `/api/admin/customers/${id}/unlock`,
         },
     },
 } as const;

@@ -6,7 +6,7 @@ namespace CR.Core.ApplicationServices.CustomerModule.Abstracts
 {
     public interface ICustomerService
     {
-        Task<Result<CR.Core.Domain.User.UserProfile>> GetMyProfile();
-        Task<Result<CR.Core.Domain.User.UserProfile>> UpdateMyProfile(UpdateProfileDto dto);
+        Task<Result<UserProfileDto>> GetMyProfile();
+        Task<Result<UserProfileDto>> UpdateMyProfile(UpdateProfileDto dto);
     }
 }

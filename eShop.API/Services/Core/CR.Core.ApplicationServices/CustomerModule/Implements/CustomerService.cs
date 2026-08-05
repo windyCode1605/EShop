@@ -12,7 +12,7 @@ namespace CR.Core.ApplicationServices.CustomerModule.Implements
         public CustomerService(ILogger<CustomerService> logger, IHttpContextAccessor httpContext)
             : base(logger, httpContext) { }
 
-        public async Task<Result<CR.Core.Domain.User.UserProfile>> GetMyProfile()
+        public async Task<Result<UserProfileDto>> GetMyProfile()
         {
             _logger.LogInformation("Method {method} called ", nameof(GetMyProfile));
             var userId = _httpContext.GetCurrentUserId();
@@ -21,11 +21,11 @@ namespace CR.Core.ApplicationServices.CustomerModule.Implements
             .FirstOrDefaultAsync(up => up.UserId == userId);
             if (userProfile == null)
             {
-                return Result<CR.Core.Domain.User.UserProfile>.Success(null);
+                return Result<UserProfileDto>.Success(null);
             }
-            return Result<CR.Core.Domain.User.UserProfile>.Success(userProfile);
+            return Result<UserProfileDto>.Success(MapToDto(userProfile));
         }
-        public async Task<Result<CR.Core.Domain.User.UserProfile>> UpdateMyProfile(UpdateProfileDto dto)
+        public async Task<Result<UserProfileDto>> UpdateMyProfile(UpdateProfileDto dto)
         {
             _logger.LogInformation("Method {method} called ", nameof(UpdateMyProfile));
             var userId = _httpContext.GetCurrentUserId();
@@ -57,7 +57,23 @@ namespace CR.Core.ApplicationServices.CustomerModule.Implements
                 userProfile.AvatarUrl = dto.AvatarUrl;
 
             await _dbContext.SaveChangesAsync();
-            return Result<CR.Core.Domain.User.UserProfile>.Success(userProfile);
+            return Result<UserProfileDto>.Success(MapToDto(userProfile));
+        }
+
+        private UserProfileDto MapToDto(CR.Core.Domain.User.UserProfile userProfile)
+        {
+            if (userProfile == null) return null;
+
+            return new UserProfileDto
+            {
+                Id = userProfile.Id,
+                UserId = userProfile.UserId,
+                FullName = userProfile.FullName,
+                PhoneNumber = userProfile.PhoneNumber,
+                DateOfBirth = userProfile.DateOfBirth,
+                Gender = userProfile.Gender,
+                AvatarUrl = userProfile.AvatarUrl,
+            };
         }
 
     }

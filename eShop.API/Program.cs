@@ -30,15 +30,13 @@ using Google.Apis.Auth.OAuth2;
 using CR.Core.ApplicationServices.CustomerModule.Abstracts;
 using CR.Core.ApplicationServices.CustomerModule.Implements;
 
-// ============================================================================
-// 0. ENVIRONMENT & CONFIGURATION LOAD
-// ============================================================================
+
 var envPath = Path.Combine(AppContext.BaseDirectory, ".env");
 if (!File.Exists(envPath))
 {
     envPath = Path.Combine(AppContext.BaseDirectory, "..", "..", "..", ".env");
 }
-
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 Console.WriteLine($"[DEBUG] Looking for .env at: {Path.GetFullPath(envPath)}");
 
 if (File.Exists(envPath))
@@ -114,9 +112,7 @@ else
     Console.WriteLine("[STARTUP WARNING] Không tìm thấy Firebase:ServiceAccountKeyPath trong biến môi trường! Bỏ qua Firebase.");
 }
 
-// ============================================================================
-// 1. LOGGING SETUP
-// ============================================================================
+
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 if (builder.Environment.IsDevelopment())
@@ -125,9 +121,7 @@ if (builder.Environment.IsDevelopment())
 }
 builder.Logging.AddConfiguration(builder.Configuration.GetSection("Logging"));
 
-// ============================================================================
-// 2. CORE WEB, CONTROLLERS & HTTP CLIENTS
-// ============================================================================
+
 var mvcBuilder = builder.Services.AddControllers(options =>
 {
     options.Filters.Add<ValidationFilter>();
@@ -142,16 +136,12 @@ if (builder.Environment.IsDevelopment())
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddHttpContextAccessor();
 
-// Đăng ký Named HttpClient (Brevo REST API)
 builder.Services.AddHttpClient("BrevoClient", client =>
 {
     client.BaseAddress = new Uri("https://api.brevo.com/v3/");
     client.DefaultRequestHeaders.Add("accept", "application/json");
 });
 
-// ============================================================================
-// 3. SWAGGER & API DOCUMENTATION CONFIGURATION
-// ============================================================================
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo { Title = "CR eShop API", Version = "v1" });
@@ -178,10 +168,7 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-// ============================================================================
-// 4. DATABASE & OPENIDDICT CONFIGURATION
-// ============================================================================
-// Configure Forwarded Headers for Cloud Providers (Render, Vercel, Nginx)
+
 builder.Services.Configure<Microsoft.AspNetCore.Builder.ForwardedHeadersOptions>(options =>
 {
     options.ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor | Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto;
@@ -189,7 +176,6 @@ builder.Services.Configure<Microsoft.AspNetCore.Builder.ForwardedHeadersOptions>
     options.KnownProxies.Clear();
 });
 
-// Database Context (PostgreSQL via EF Core)
 builder.Services.AddDbContext<CoreDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
            .UseOpenIddict()
@@ -237,9 +223,7 @@ builder.Services
         options.UseAspNetCore();
     });
 
-// ============================================================================
-// 5. SECURITY: CORS, AUTHENTICATION & AUTHORIZATION
-// ============================================================================
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("WebClient", policy =>
@@ -306,9 +290,6 @@ else
     builder.Services.AddDistributedMemoryCache();
 }
 
-// ============================================================================
-// 6. DEPENDENCY INJECTION (DI) REGISTRATION
-// ============================================================================
 // Infrastructure & Localization
 builder.Services.AddSingleton<IMapErrorCode, MapErrorCode>();
 builder.Services.AddSingleton<LocalizationBase>();
@@ -333,16 +314,12 @@ builder.Services.AddScoped<CR.Core.ApplicationServices.RoleModule.Abstracts.IRol
 builder.Services.AddScoped<CR.Core.ApplicationServices.RoleModule.IPermissionService, CR.Core.ApplicationServices.RoleModule.Implement.PermissionService>();
 builder.Services.AddScoped<IAdminCustomerService, AdminCustomerService>();
 
-// External Shared Services
 builder.Services.AddSingleton<eShop.API.Services.Shared.FirebaseStorageService>();
 builder.Services.AddSingleton<eShop.API.Services.Shared.FirebaseNotificationService>();
 
-// Extension Method DI Module Assembly Registration
 builder.Services.AddApplicationServices();
 
-// ============================================================================
-// 7. BUILD APPLICATION & STARTUP DATA SEEDING
-// ============================================================================
+
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
@@ -403,9 +380,6 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-// ============================================================================
-// 8. HTTP REQUEST PIPELINE (MIDDLEWARE CHAIN)
-// ============================================================================
 app.UseSwagger();
 app.UseSwaggerUI();
 
@@ -414,19 +388,14 @@ if (app.Environment.IsDevelopment())
     app.UseDeveloperExceptionPage();
 }
 
-// 1. Proxy / Cloud Headers Handling
 app.UseForwardedHeaders();
 
-// 2. Global Exception Catching
 app.UseMiddleware<GlobalExceptionMiddleware>();
 
-// 3. HTTPS Redirection (Only Local Development)
 if (app.Environment.IsDevelopment())
 {
     app.UseHttpsRedirection();
 }
-
-// 4. Static Files Serving
 var webRootPath = app.Environment.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
 if (!Directory.Exists(webRootPath)) Directory.CreateDirectory(webRootPath);
 app.UseStaticFiles(new StaticFileOptions
@@ -435,18 +404,13 @@ app.UseStaticFiles(new StaticFileOptions
     RequestPath = ""
 });
 
-// 5. Routing & Cross-Origin Resource Sharing (CORS)
 app.UseRouting();
 app.UseCors("WebClient");
-
-// 6. Security Middlewares (Must be between Routing and Endpoints)
 app.UseAuthentication();
 app.UseAuthorization();
 
-// 7. Controller Endpoints Mapping
 app.MapControllers();
 
-// 9. HOST RUN
 var finalPort = Environment.GetEnvironmentVariable("PORT");
 if (!string.IsNullOrEmpty(finalPort))
 {

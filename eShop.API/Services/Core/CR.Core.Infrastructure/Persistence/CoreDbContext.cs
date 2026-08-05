@@ -15,7 +15,8 @@ using CR.Core.Domain.Opts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Http;         // IHttpContextAccessor
 using Microsoft.Extensions.Logging;       // ILogger<T>
-using Microsoft.Extensions.DependencyInjection; // GetService<T>()
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion; // GetService<T>()
 
 public class CoreDbContext : ApplicationDbContext<Users>
 {
@@ -69,8 +70,30 @@ public class CoreDbContext : ApplicationDbContext<Users>
     protected override void OnModelCreating(ModelBuilder mb)
     {
         base.OnModelCreating(mb);
-        // Áp dụng tất cả IEntityTypeConfiguration trong assembly này
-        // Không cần gọi từng file một — tự động scan
         mb.ApplyConfigurationsFromAssembly(typeof(CoreDbContext).Assembly);
+
+        // Tìm tất cả các properties kiểu DateTime và gắn ValueConverter
+        var dateTimeConverter = new ValueConverter<DateTime, DateTime>(
+            v => v.ToUniversalTime(),
+            v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
+
+        var nullableDateTimeConverter = new ValueConverter<DateTime?, DateTime?>(
+            v => v.HasValue ? v.Value.ToUniversalTime() : v,
+            v => v.HasValue ? DateTime.SpecifyKind(v.Value, DateTimeKind.Utc) : v);
+
+        foreach (var entityType in mb.Model.GetEntityTypes())
+        {
+            foreach (var property in entityType.GetProperties())
+            {
+                if (property.ClrType == typeof(DateTime))
+                {
+                    property.SetValueConverter(dateTimeConverter);
+                }
+                else if (property.ClrType == typeof(DateTime?))
+                {
+                    property.SetValueConverter(nullableDateTimeConverter);
+                }
+            }
+        }
     }
 }

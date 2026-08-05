@@ -21,6 +21,18 @@ namespace CR.Core.Infrastructure.Persistence.Configurations
                 .WithOne(oi => oi.Order)
                 .HasForeignKey(oi => oi.OrderId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            // Đánh Composite Index trên (UserId, Deleted)
+            var indexBuilder = entity.HasIndex(o => new { o.UserId, o.Deleted })
+                  .HasDatabaseName("IX_Orders_UserId_Deleted");
+                  
+            Microsoft.EntityFrameworkCore.NpgsqlIndexBuilderExtensions.IncludeProperties(indexBuilder, o => new
+            {
+                o.TotalAmount,
+                o.CreatedDate,
+                o.Status,
+                o.OrderCode
+            });
         }
     }
 }

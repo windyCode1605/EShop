@@ -12,6 +12,7 @@ using CR.Core.Dtos.Auth;
 using CR.InfrastructureBase.Exceptions;
 using CR.InfrastructureBase;
 using CR.WebAPIBase.Responses;
+using CR.Core.API.Extensions;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
@@ -469,12 +470,7 @@ public class AuthorizationController : AuthorizationControllerBase
             request.ResetToken,
             request.NewPassword
         );
-        if (!result.IsSuccess)
-        {
-            var errorMessage = _mapErrorCode.GetErrorMessage(result.ErrorCode);
-            return BadRequest(new { result.IsSuccess, result.IsFailure, result.ErrorCode, Message = errorMessage });
-        }
-        return Ok(result);
+        return result.ToActionResult(this, "Đặt lại mật khẩu thành công.");
     }
 
 
@@ -585,5 +581,158 @@ public class AuthorizationController : AuthorizationControllerBase
             if (expired) return false;
         }
         return true;
+    }
+    [HttpPost("login/withpassword")]
+    public async Task<IActionResult> loginWithPassword(keyLogin k)
+    {
+        var identity = new ClaimsIdentity(
+           TokenValidationParameters.DefaultAuthenticationType,
+           Claims.Name,
+           Claims.Role
+       );
+        var request = HttpContext.GetOpenIddictServerRequest()!;
+        try
+        {
+            if (request.IsAuthorizationCodeGrantType())
+            {
+                var result = await HttpContext.AuthenticateAsync(
+                        OpenIddictServerAspNetCoreDefaults.AuthenticationScheme
+                    );
+                int userId = int.Parse(result.Principal!.GetClaim(UserClaimTypes.UserId)!);
+
+                // Ở đây cần Includes(u => u.Profile) bên trong hàm FindUserAuthorizationById để SetClaims không bị null FullName
+                var user = await _userAuthorizationService.FindUserAuthorizationById(userId)
+                    ?? throw new UserFriendlyException(ErrorCode.UserNotFound);
+
+                SetClaims(identity, user);
+
+                identity.SetScopes(
+                    new[]
+                    {
+                        Scopes.OpenId,
+                        Scopes.Email,
+                        Scopes.Profile,
+                        Scopes.Roles,
+                        Scopes.OfflineAccess,
+                        "api"
+                    }.Intersect(request.GetScopes())
+                );
+                identity.SetDestinations(GetDestinations);
+                return SignIn(
+                    new ClaimsPrincipal(identity),
+                    OpenIddictServerAspNetCoreDefaults.AuthenticationScheme
+                );
+            }
+            else if (request.IsPasswordGrantType())
+            {
+                var user = await _userAuthorizationService.ValidateAppUser(
+                    request.Username!.ToLower(),
+                    request.Password!
+                );
+
+                // Cập nhật Last Login
+                await _userServices.LoginInfor(user.Id);
+
+                // _authTokenService.AddNotificationToken(user.Id, _.FcmToken, _.ApnsToken);
+
+                SetClaims(identity, user);
+
+                identity.SetScopes(
+                    new[]
+                    {
+                            Scopes.OpenId,
+                            Scopes.Email,
+                            Scopes.Profile,
+                            Scopes.Roles,
+                            Scopes.OfflineAccess,
+                            "api"
+                    }.Intersect(request.GetScopes())
+                );
+                identity.SetDestinations(GetDestinations);
+
+                var authenticationProperties = new AuthenticationProperties();
+                authenticationProperties.SetParameter(AuthParameters.IsTempPin, user.IsTempPin);
+                authenticationProperties.SetParameter(AuthParameters.IsTempPassword, user.IsTempPassword);
+                authenticationProperties.SetParameter(AuthParameters.IsHasPin, !string.IsNullOrEmpty(user.PinCode));
+
+                return SignIn(
+                    new ClaimsPrincipal(identity),
+                    authenticationProperties,
+                    OpenIddictServerAspNetCoreDefaults.AuthenticationScheme
+                );
+            }
+            else if (request.IsClientCredentialsGrantType())
+            {
+                var application = await _applicationManager.FindByClientIdAsync(request.ClientId!)
+                    ?? throw new InvalidOperationException("Không tìm thấy ClientId");
+
+                identity.SetClaim(Claims.Subject, await _applicationManager.GetClientIdAsync(application));
+                identity.SetClaim(Claims.Name, await _applicationManager.GetDisplayNameAsync(application));
+                identity.SetDestinations(static claim =>
+                    claim.Type switch
+                    {
+                        Claims.Name when claim.Subject?.HasScope(Scopes.Profile) == true
+                            => new[] { Destinations.AccessToken, Destinations.IdentityToken },
+                        _ => new[] { Destinations.AccessToken }
+                    }
+                );
+            }
+            else if (request.IsRefreshTokenGrantType())
+            {
+                var result = await HttpContext.AuthenticateAsync(
+                        OpenIddictServerAspNetCoreDefaults.AuthenticationScheme
+                    );
+                var user = await _userAuthorizationService.FindUserAuthorizationById(
+                    int.Parse(result.Principal!.GetClaim(UserClaimTypes.UserId)!)
+                ) ?? throw new UserFriendlyException(ErrorCode.UserNotFound);
+
+                if (user.Status != (int)UserStatus.ACTIVE)
+                {
+                    throw new UserFriendlyException(ErrorCode.UserIsDeactive);
+                }
+                SetClaims(identity, user);
+                identity.SetDestinations(GetDestinations);
+                return SignIn(
+                    new ClaimsPrincipal(identity),
+                    OpenIddictServerAspNetCoreDefaults.AuthenticationScheme
+                );
+            }
+        }
+        catch (UserFriendlyException ex)
+        {
+            var localizedErrorMessage = _mapErrorCode.TryGetErrorMessage(ex.ErrorCode)
+                ?? _localization.Localize($"error_{ex.ErrorCode}");
+            var properties = new AuthenticationProperties(
+                new Dictionary<string, string?>
+                {
+                    [OpenIddictServerAspNetCoreConstants.Properties.Error] = Errors.InvalidGrant,
+                    [OpenIddictServerAspNetCoreConstants.Properties.ErrorDescription] = localizedErrorMessage
+                }
+            );
+            return Forbid(properties, OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
+        }
+        catch (Exception ex)
+        {
+            var properties = new AuthenticationProperties(
+                new Dictionary<string, string?>
+                {
+                    [OpenIddictServerAspNetCoreConstants.Properties.Error] = Errors.ServerError,
+                    [OpenIddictServerAspNetCoreConstants.Properties.ErrorDescription] = ex.Message
+                }
+            );
+            return Forbid(properties, OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
+        }
+        return BadRequest(
+            new OpenIddictResponse
+            {
+                Error = Errors.UnsupportedGrantType,
+                ErrorDescription = "The specified grant type is not supported."
+            }
+        );
+    }
+    public class keyLogin()
+    {
+        public string? keyToken { get; set; }
+        public string? UserName { get; set; }
     }
 }

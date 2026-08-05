@@ -26,11 +26,8 @@ export class AdminCategoryService {
 
   constructor(private http: HttpClient) { }
 
-  // ── Categories CRUD ───────────────────────────────────────────────────────
 
-  /**
-   * GET /api/Category/getCategory
-   */
+  // GET /api/Category/getCategory
   getCategories(page: number = 1, size: number = 50, keyword?: string): Observable<ICategoryListResponse> {
     let params = new HttpParams();
     // if backend supports pagination, pass them

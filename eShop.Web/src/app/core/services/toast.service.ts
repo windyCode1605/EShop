@@ -59,7 +59,7 @@ export class ToastService {
     }
 
     if (isSuccess) {
-      return this.success(msg, options?.title || 'Thành công', { ...options, statusCode: response.statusCode });
+      return this.success(msg, options?.title || 'Thành công', { ...options });
     } else {
       return this.error(msg, options?.title || 'Thất bại', { ...options, statusCode: response.statusCode });
     }

@@ -33,3 +33,29 @@ export interface AdminCustomerListResponse {
     hasNext: boolean;
     hasPrev: boolean;
 }
+
+export interface ICustomerAddressItem {
+    id: number;
+    receiverName: string;
+    phone: string;
+    fullAddress: string;
+    isDefault: boolean;
+}
+
+export interface ICustomerRecentOrder {
+    orderId: number;
+    orderCode: string;
+    orderDate: string;
+    totalAmount: number;
+    orderStatus: string;
+}
+
+export interface ICustomerDetail extends ICustomerListItem {
+    addresses: ICustomerAddressItem[];
+}
+
+export interface ICustomerStatistics {
+    totalOrders: number;
+    totalSpent: number;
+    recentOrders: ICustomerRecentOrder[];
+}

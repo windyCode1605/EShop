@@ -1,9 +1,8 @@
 using CR.Core.ApplicationServices.AuthenticationModule.Abstracts;
 using CR.Core.ApplicationServices.Common;
 using CR.Core.Domain.AuthToken;
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
+
 
 namespace CR.Core.ApplicationServices.AuthenticationModule.Implements
 {

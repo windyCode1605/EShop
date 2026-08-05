@@ -173,7 +173,7 @@ public class OrderService : CoreServiceBase, IOrderService
                 TotalAmount = totalAmount,
                 Status = OrderStatusConst.Pending.ToString(),
                 PaymentMethod = input.PaymentMethod,
-                CreatedDate = DateTimeUtils.GetDate(),
+                CreatedDate = DateTime.UtcNow,
             }).Entity;
 
             await _dbContext.SaveChangesAsync();

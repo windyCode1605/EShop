@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { API_ENDPOINTS } from '../../../core/constants/api-endpoints.const';
 import { ApiResponse } from '../../../core/models';
-import { AdminCustomerListResponse, IAdminCustomerFilter } from '../models/admin-customer.model';
+import { AdminCustomerListResponse, IAdminCustomerFilter, ICustomerDetail, ICustomerStatistics } from '../models/admin-customer.model';
 
 @Injectable({ providedIn: 'root' })
 export class AdminCustomerService {
@@ -30,5 +30,27 @@ export class AdminCustomerService {
 
     return this.http.get<ApiResponse<AdminCustomerListResponse>>(API_ENDPOINTS.ADMIN.CUSTOMER.GET_ALL, { params })
       .pipe(map(res => res.data!));
+  }
+
+  // GET /api/admin/customers/{id} 
+  getCustomerDetail(id: number): Observable<ICustomerDetail> {
+    return this.http.get<ApiResponse<ICustomerDetail>>(API_ENDPOINTS.ADMIN.CUSTOMER.GET_BY_ID(id))
+      .pipe(map(res => res.data!));
+  }
+
+  // GET /api/admin/customers/{id}/statistics 
+  getCustomerStatistics(id: number): Observable<ICustomerStatistics> {
+    return this.http.get<ApiResponse<ICustomerStatistics>>(API_ENDPOINTS.ADMIN.CUSTOMER.STATISTICS(id))
+      .pipe(map(res => res.data!));
+  }
+
+  // POST /api/admin/customers/{id}/lock
+  lockCustomer(id: number): Observable<ApiResponse<boolean>> {
+    return this.http.post<ApiResponse<boolean>>(API_ENDPOINTS.ADMIN.CUSTOMER.LOCK(id), {});
+  }
+
+  // POST /api/admin/customers/{id}/unlock
+  unlockCustomer(id: number): Observable<ApiResponse<boolean>> {
+    return this.http.post<ApiResponse<boolean>>(API_ENDPOINTS.ADMIN.CUSTOMER.UNLOCK(id), {});
   }
 }

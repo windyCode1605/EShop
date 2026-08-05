@@ -9,7 +9,6 @@ public abstract class ApplicationDbContext<TUser> : DbContext
 {
     protected ApplicationDbContext(DbContextOptions options) : base(options) { }
 
-    // Hook: tự động set CreatedAt/UpdatedAt trước khi SaveChanges
     public override Task<int> SaveChangesAsync(CancellationToken ct = default)
     {
         foreach (var entry in ChangeTracker.Entries<BaseEntity>())
