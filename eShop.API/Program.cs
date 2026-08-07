@@ -313,6 +313,7 @@ builder.Services.AddScoped<IAttributeValueService, AttributeValueService>();
 builder.Services.AddScoped<CR.Core.ApplicationServices.RoleModule.Abstracts.IRoleService, CR.Core.ApplicationServices.RoleModule.Implement.RoleService>();
 builder.Services.AddScoped<CR.Core.ApplicationServices.RoleModule.IPermissionService, CR.Core.ApplicationServices.RoleModule.Implement.PermissionService>();
 builder.Services.AddScoped<IAdminCustomerService, AdminCustomerService>();
+builder.Services.AddScoped<CR.Core.ApplicationServices.DashboardModule.Abstracts.IDashboardService, CR.Core.ApplicationServices.DashboardModule.Implements.DashboardService>();
 
 builder.Services.AddSingleton<eShop.API.Services.Shared.FirebaseStorageService>();
 builder.Services.AddSingleton<eShop.API.Services.Shared.FirebaseNotificationService>();

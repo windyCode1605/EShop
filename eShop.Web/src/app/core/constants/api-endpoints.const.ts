@@ -125,5 +125,8 @@ export const API_ENDPOINTS = {
             LOCK: (id: string | number) => `/api/admin/customers/${id}/lock`,
             UNLOCK: (id: string | number) => `/api/admin/customers/${id}/unlock`,
         },
+        DASHBOARD: {
+            SUMMARY: '/api/admin/dashboard/summary',
+        },
     },
 } as const;

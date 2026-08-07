@@ -75,7 +75,6 @@ export class AppAuthService {
 
     private processAuthenticateResult(authenticateResult: AuthenticateResultModel, returnUrl?: string): void {
         this.authenticateResult = authenticateResult;
-        console.log('[DEBUG 1] API Trả về kết quả login:', authenticateResult)
         if (authenticateResult.access_token) {
             this.login(
                 authenticateResult.access_token,

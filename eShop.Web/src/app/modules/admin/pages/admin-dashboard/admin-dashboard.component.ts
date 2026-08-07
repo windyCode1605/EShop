@@ -1,7 +1,8 @@
-import { Component, OnInit, ElementRef, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NgxEchartsModule, provideEchartsCore } from 'ngx-echarts';
 import * as echarts from 'echarts';
+import { AdminDashboardService, DashboardResponseDto } from '../../services/admin-dashboard.service';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -12,15 +13,38 @@ import * as echarts from 'echarts';
   templateUrl: './admin-dashboard.component.html'
 })
 export class AdminDashboardComponent implements OnInit {
-  
-  chartOptions: any;
+
+  isLoading = signal(true);
+  data = signal<DashboardResponseDto | null>(null);
+  chartOptions = signal<any>(null);
+
+  constructor(private dashboardService: AdminDashboardService) {}
 
   ngOnInit(): void {
-    this.initChart();
+    this.dashboardService.getSummary().subscribe({
+      next: (res) => {
+        this.data.set(res);
+        this.initChart(res.revenueChart.map(p => p.label), res.revenueChart.map(p => p.revenue));
+        this.isLoading.set(false);
+      },
+      error: () => {
+        this.isLoading.set(false);
+      }
+    });
   }
 
-  initChart() {
-    this.chartOptions = {
+  /** Format tiền tệ VNĐ */
+  formatCurrency(value: number): string {
+    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
+  }
+
+  /** Hiển thị % tăng trưởng với dấu + hoặc - */
+  formatGrowth(value: number): string {
+    return (value >= 0 ? '+' : '') + value.toFixed(1) + '%';
+  }
+
+  private initChart(labels: string[], revenues: number[]): void {
+    this.chartOptions.set({
       tooltip: {
         trigger: 'axis',
         backgroundColor: '#18181B',
@@ -29,55 +53,37 @@ export class AdminDashboardComponent implements OnInit {
         padding: [8, 12],
         axisPointer: { type: 'none' }
       },
-      grid: {
-        left: '0%',
-        right: '0%',
-        bottom: '0%',
-        top: '10%',
-        containLabel: true
-      },
+      grid: { left: '0%', right: '0%', bottom: '0%', top: '10%', containLabel: true },
       xAxis: {
         type: 'category',
         boundaryGap: false,
-        data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+        data: labels,
         axisLine: { show: false },
         axisTick: { show: false },
         axisLabel: { color: '#71717A', margin: 16 }
       },
       yAxis: {
         type: 'value',
-        splitLine: {
-          lineStyle: {
-            color: '#F4F4F5',
-            type: 'dashed'
-          }
-        },
+        splitLine: { lineStyle: { color: '#F4F4F5', type: 'dashed' } },
         axisLabel: { color: '#71717A' }
       },
-      series: [
-        {
-          name: 'Revenue',
-          type: 'line',
-          smooth: true,
-          symbol: 'none',
-          data: [12000, 15000, 11000, 18000, 22000, 19000, 28000, 25000, 31000, 29000, 36000, 45000],
-          lineStyle: {
-            color: '#18181B',
-            width: 3
-          },
-          areaStyle: {
-            color: {
-              type: 'linear',
-              x: 0, y: 0, x2: 0, y2: 1,
-              colorStops: [{
-                  offset: 0, color: 'rgba(24, 24, 27, 0.15)' // dark near top
-              }, {
-                  offset: 1, color: 'rgba(24, 24, 27, 0)' // transparent at bottom
-              }]
-            }
+      series: [{
+        name: 'Doanh thu',
+        type: 'line',
+        smooth: true,
+        symbol: 'none',
+        data: revenues,
+        lineStyle: { color: '#18181B', width: 3 },
+        areaStyle: {
+          color: {
+            type: 'linear', x: 0, y: 0, x2: 0, y2: 1,
+            colorStops: [
+              { offset: 0, color: 'rgba(24, 24, 27, 0.15)' },
+              { offset: 1, color: 'rgba(24, 24, 27, 0)' }
+            ]
           }
         }
-      ]
-    };
+      }]
+    });
   }
 }
