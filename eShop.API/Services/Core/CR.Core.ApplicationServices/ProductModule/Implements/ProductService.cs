@@ -8,6 +8,9 @@ using CR.Core.Dtos.Product;
 using CR.DtoBase;
 using CR.Utils.DataUtils;
 using Microsoft.EntityFrameworkCore;
+using CR.Utils.Helpers;
+using CR.ApplicationBase.Common;
+using CR.Core.ApplicationServices.ProductModule.Implements;
 
 namespace CR.Core.ApplicationServices.Common.ServiceImplementations;
 
@@ -19,7 +22,7 @@ public class ProductService : ServiceBase<CoreDbContext>, IProductService
         IMapper mapper)
         : base(dbContext, logger, mapper) { }
 
-    public async Task<ProductResponseDto> CreateAsync(ProductRequestDto dto)
+    public async Task<Result<ProductResponseDto>> CreateAsync(ProductRequestDto dto)
     {
         // Validate CategoryId exists
         var categoryExists = await _dbContext.Set<Category>()
@@ -27,7 +30,7 @@ public class ProductService : ServiceBase<CoreDbContext>, IProductService
 
         if (!categoryExists)
         {
-            throw new InvalidOperationException($"Category with Id {dto.CategoryId} does not exist.");
+            return Result<ProductResponseDto>.Failure(ErrorCode.InvalidInput, this.GetCurrentMethodInfo(), $"Category with Id {dto.CategoryId} does not exist.");
         }
 
         var product = _mapper.Map<Product>(dto);
@@ -46,7 +49,7 @@ public class ProductService : ServiceBase<CoreDbContext>, IProductService
                 });
             }
         }
-        product.Slug = GenerateSlug(dto.Name);
+        product.Slug = dto.Name.ToSlug();
 
         _dbContext.Products.Add(product);
         await _dbContext.SaveChangesAsync();
@@ -59,65 +62,53 @@ public class ProductService : ServiceBase<CoreDbContext>, IProductService
         _logger.LogInformation("Product created: Id={Id}, Name={Name}, Variants={Count}",
             result.Id, result.Name, result.Variants.Count);
 
-        return _mapper.Map<ProductResponseDto>(result);
+        return Result<ProductResponseDto>.Success(_mapper.Map<ProductResponseDto>(result));
     }
 
-    private string GenerateSlug(string name)
+    public async Task<Result<PageResult<ProductResponseDto>>> GetAllAsync(ProductQueryDto request)
     {
-        return name.ToLower()
-                   .Replace(" ", "-")
-                   .Replace(".", "")
-                   .Replace(",", "");
-    }
-
-    public async Task<PaginatedResult<ProductResponseDto>> GetAllAsync(int page, int size, int? categoryId = null)
-    {
-        _logger.LogInformation("Method Name: {Method}, Page: {Page}, Size: {Size}, CategoryId: {CategoryId}", nameof(GetAllAsync), page, size, categoryId);
+        _logger.LogInformation("Method Name: {Method}, Keyword: {Keyword}, CategoryId: {CategoryId}, MinPrice: {MinPrice}, MaxPrice: {MaxPrice}", 
+            nameof(GetAllAsync), request.Keyword, request.CategoryId, request.MinPrice, request.MaxPrice);
+            
         var query = _dbContext.Products
-            .Where(p => !p.Deleted)
-            .Where(p => !categoryId.HasValue || p.CategoryId == categoryId)
-            .Include(p => p.Category)
-            .Include(p => p.Images)
-            .Include(p => p.Variants.Where(v => !v.Deleted))
-                .ThenInclude(v => v.VariantAttributes.Where(va => !va.Deleted))
-                    .ThenInclude(va => va.Attribute)
-            .Include(p => p.Variants.Where(v => !v.Deleted))
-                .ThenInclude(v => v.VariantAttributes.Where(va => !va.Deleted))
-                    .ThenInclude(va => va.AttributeValue)
-            .OrderByDescending(p => p.CreatedDate);
+            .Where(p => !p.Deleted);
+            
+        if (!string.IsNullOrWhiteSpace(request.Keyword))
+        {
+            var keyword = request.Keyword.ToLower();
+            query = query.Where(p => p.Name.ToLower().Contains(keyword) || p.Slug.Contains(keyword));
+        }
+
+        if (request.CategoryId.HasValue)
+            query = query.Where(p => p.CategoryId == request.CategoryId);
+
+        if (request.MinPrice.HasValue)
+            query = query.Where(p => p.BasePrice >= request.MinPrice);
+            
+        if (request.MaxPrice.HasValue)
+            query = query.Where(p => p.BasePrice <= request.MaxPrice);
+
+        query = query.IncludeFullProductDetails();
 
         var total = await query.CountAsync();
 
         var items = await query
-            .Skip((page - 1) * size)
-            .Take(size)
+            .PagingAndSorting(request)
             .AsSplitQuery()
             .ToListAsync();
 
-        return new PaginatedResult<ProductResponseDto>
-        {
-            Items = _mapper.Map<List<ProductResponseDto>>(items),
-            TotalCount = total,
-            Page = page,
-            PageSize = size
-        };
+        var dtos = _mapper.Map<List<ProductResponseDto>>(items);
+        return Result<PageResult<ProductResponseDto>>.Success(PageResult<ProductResponseDto>.Create(dtos, total, request));
     }
     public async Task<Result<ProductResponseDto>> GetByIdAsync(int id)
     {
         _logger.LogInformation("Method Name: {method}", nameof(GetByIdAsync));
         var product = await _dbContext.Products
-            .Include(p => p.Category)
-            .Include(p => p.Images)
+            .IncludeFullProductDetails()
             .Include(p => p.ProductAttributes.Where(pa => !pa.Deleted))
                 .ThenInclude(pa => pa.Attribute)
             .Include(p => p.ProductAttributes.Where(pa => !pa.Deleted))
                 .ThenInclude(pa => pa.AttributeValue)
-            .Include(p => p.Variants.Where(v => !v.Deleted))
-                .ThenInclude(v => v.VariantAttributes.Where(va => !va.Deleted))
-                    .ThenInclude(va => va.Attribute)
-            .Include(p => p.Variants.Where(v => !v.Deleted))
-                .ThenInclude(v => v.VariantAttributes.Where(va => !va.Deleted))
-                    .ThenInclude(av => av.AttributeValue)
             .FirstOrDefaultAsync(p => p.Id == id && !p.Deleted);
 
         if (product == null)
@@ -255,7 +246,7 @@ public class ProductService : ServiceBase<CoreDbContext>, IProductService
         product.CategoryId = dto.CategoryId;
         product.BasePrice = dto.Price;
         product.Description = dto.Description;
-        product.Slug = GenerateSlug(dto.Name);
+        product.Slug = dto.Name.ToSlug();
 
         // UpdateAsync này tạm thời CHỈ cập nhật thông tin Product cơ bản. 
         // Các Variants được quản lý độc lập qua luồng POST /api/Product/variants, 

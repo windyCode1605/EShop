@@ -3,6 +3,7 @@ using CR.Core.Dtos.RoleModule;
 using CR.Utils.Net.Request;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using CR.Core.API.Extensions;
 
 namespace CR.Core.API.Controllers
 {
@@ -22,13 +23,6 @@ namespace CR.Core.API.Controllers
         [ProducesResponseType(typeof(CR.WebAPIBase.Responses.ApiResponse<List<PermissionGroupDto>>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(CR.WebAPIBase.Responses.ApiResponse<object>), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetAllPermission()
-        {
-            var result = await _permissionService.GetAllPermissionAsync();
-            if (!result.IsSuccess)
-            {
-                return BadRequest(CR.WebAPIBase.Responses.ApiResponse<object>.Fail("Lấy danh sách quyền thất bại", result.ErrorCode));
-            }
-            return Ok(CR.WebAPIBase.Responses.ApiResponse<List<PermissionGroupDto>>.Ok(result.Value, "Thành công"));
-        }
+            => (await _permissionService.GetAllPermissionAsync()).ToActionResult(this, "Thành công");
     }
 }

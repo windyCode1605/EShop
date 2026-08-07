@@ -22,6 +22,8 @@ public static class ApplicationServicesConfig
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<INotificationTokenService, NotificationTokenService>();
         services.AddScoped<IOtpService, OtpService>();
+        services.AddScoped<IUserClaimsProvider, UserClaimsProvider>();
+        services.AddScoped<IClaimsIdentityFactory, ClaimsIdentityFactory>();
 
         // Product services
         services.AddScoped<IProductService, ProductService>();

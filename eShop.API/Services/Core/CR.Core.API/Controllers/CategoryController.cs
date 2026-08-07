@@ -1,6 +1,8 @@
 using CR.Core.Application.CategoryModule.Abstract;
 using CR.Core.Infrastructure.Persistence.Configurations;
 using Microsoft.AspNetCore.Mvc;
+using CR.Core.API.Extensions;
+using CR.WebAPIBase.Responses;
 
 namespace CR.Core.API.Controllers;
 
@@ -14,6 +16,8 @@ public class CategoryController : ControllerBase
         _categoryService = categoryService;
     }
     [HttpGet("getCategory")]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetCategory()
-        => Ok(await _categoryService.GetCategories());
+        => (await _categoryService.GetCategories()).ToActionResult(this);
 }

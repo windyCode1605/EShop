@@ -4,6 +4,7 @@ using CR.Core.Dtos.RoleModule;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using CR.WebAPIBase.Responses;
+using CR.Core.API.Extensions;
 
 namespace CR.Core.API.Controllers;
 
@@ -31,14 +32,10 @@ public class AdminRoleController : ControllerBase
     /// </summary>
     [HttpGet]
     [Authorize(Policy = "Permission:Identity.Roles.View")]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetRoles()
-    {
-        var result = await _roleService.GetRolesAsync();
-        if (result.IsFailure)
-            return BadRequest(ApiResponse<List<RoleDto>>.Fail("Lấy danh sách vai trò thất bại", result.ErrorCode));
-
-        return Ok(ApiResponse<List<RoleDto>>.Ok(result.Value, "Success"));
-    }
+        => (await _roleService.GetRolesAsync()).ToActionResult(this, "Success");
 
     /// <summary>
     /// Lấy danh sách Permission của một Role cụ thể.
@@ -46,14 +43,11 @@ public class AdminRoleController : ControllerBase
     /// </summary>
     [HttpGet("{roleId:int}/permissions")]
     [Authorize(Policy = "Permission:Identity.Roles.View")]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetRolePermissions([FromRoute] int roleId)
-    {
-        var result = await _roleService.GetRolePermissionsAsync(roleId);
-        if (result.IsFailure)
-            return BadRequest(ApiResponse<List<string>>.Fail("Lấy quyền của vai trò thất bại", result.ErrorCode));
-
-        return Ok(ApiResponse<List<string>>.Ok(result.Value, "Success"));
-    }
+        => (await _roleService.GetRolePermissionsAsync(roleId)).ToActionResult(this, "Success");
 
     /// <summary>
     /// Cập nhật toàn bộ danh sách Permission của một Role.
@@ -61,16 +55,13 @@ public class AdminRoleController : ControllerBase
     /// </summary>
     [HttpPut("{roleId:int}/permissions")]
     [Authorize(Policy = "Permission:Identity.Roles.Manage")]
+    [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> UpdateRolePermissions(
         [FromRoute] int roleId,
         [FromBody] UpdateRolePermissionsDto input)
-    {
-        var result = await _roleService.UpdateRolePermissionsAsync(roleId, input.PermissionKeys);
-        if (result.IsFailure)
-            return BadRequest(ApiResponse<bool>.Fail("Cập nhật quyền thất bại", result.ErrorCode));
-
-        return Ok(ApiResponse<bool>.Ok(true, "Cập nhật quyền thành công"));
-    }
+        => (await _roleService.UpdateRolePermissionsAsync(roleId, input.PermissionKeys)).ToActionResult(this, "Cập nhật quyền thành công");
 
     /// <summary>
     /// Lấy toàn bộ danh mục Permission, gom nhóm theo PermissionGroup.
@@ -78,12 +69,8 @@ public class AdminRoleController : ControllerBase
     /// </summary>
     [HttpGet("all-permissions")]
     [Authorize(Policy = "Permission:Identity.Roles.View")]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetAllPermissions()
-    {
-        var result = await _permissionService.GetAllPermissionsGroupedAsync();
-        if (result.IsFailure)
-            return BadRequest(ApiResponse<object>.Fail("Lấy danh sách quyền thất bại", result.ErrorCode));
-
-        return Ok(ApiResponse<Dictionary<string, List<PermissionItemDto>>>.Ok(result.Value, "Success"));
-    }
+        => (await _permissionService.GetAllPermissionsGroupedAsync()).ToActionResult(this, "Success");
 }

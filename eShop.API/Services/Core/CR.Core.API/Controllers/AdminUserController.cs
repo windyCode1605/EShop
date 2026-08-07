@@ -3,6 +3,7 @@ using CR.Core.ApplicationServices.AuthenticationModule.Dtos.UserActionDtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using CR.WebAPIBase.Responses;
+using CR.Core.API.Extensions;
 
 
 namespace CR.Core.API.Controllers
@@ -18,14 +19,11 @@ namespace CR.Core.API.Controllers
             _userService = userService;
         }
         [HttpPost("{userId:int}/roles")]
+        [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> AssignRole([FromRoute] int userId, [FromBody] AssignRoleDto input)
-        {
-            var result = await _userService.AssignRoleToUser(userId, input.RoleId);
-            if (result.IsFailure)
-                return BadRequest(ApiResponse<bool>.Fail("Cấp quyền thất bại", result.ErrorCode));
-
-            return Ok(ApiResponse<bool>.Ok(true, "Cấp quyền thành công"));
-        }
+            => (await _userService.AssignRoleToUser(userId, input.RoleId)).ToActionResult(this, "Cấp quyền thành công");
 
         [HttpGet("test-permission")]
         [Authorize(Policy = "Permission:AdminUser_Read")]

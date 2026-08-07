@@ -33,6 +33,9 @@ public class OrderController : ControllerBase
     /// Lấy thông tin chi tiết của một đơn hàng cụ thể
     /// </summary>
     [HttpGet("{orderId:int}")]
+    [ProducesResponseType(typeof(ApiResponse<OrderDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetById([FromRoute] int orderId)
         => (await _orderService.GetById(orderId)).ToActionResult(this, "Lấy chi tiết đơn hàng thành công.");
 
@@ -40,6 +43,8 @@ public class OrderController : ControllerBase
     /// Lấy danh sách đơn hàng của người dùng hiện tại với phân trang
     /// </summary>
     [HttpGet("my-orders")]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetMyOrders([FromQuery] FilterOrderPagingDto input)
         => (await _orderService.GetMyOrders(input)).ToActionResult(this, "Lấy danh sách đơn hàng thành công.");
 
@@ -47,6 +52,8 @@ public class OrderController : ControllerBase
     /// Hủy đơn hàng ( chỉ khi PENDING hoặc CONFIRMED)
     /// </summary>
     [HttpPost("{orderId:int}/cancel")]
+    [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> CancelOrder([FromRoute] int orderId, [FromQuery] string? reason = null)
         => (await _orderService.CancelOrder(orderId, reason)).ToActionResult(this, "Hủy đơn hàng thành công.");
 }

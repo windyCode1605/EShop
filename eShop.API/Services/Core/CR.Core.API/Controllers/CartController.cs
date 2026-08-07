@@ -3,6 +3,8 @@ using CR.Core.ApplicationServices.CartModule.Dtos;
 using CR.DtoBase;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using CR.Core.API.Extensions;
+using CR.WebAPIBase.Responses;
 
 namespace CR.Core.API.Controllers;
 
@@ -18,44 +20,51 @@ public class CartController : ControllerBase
     }
 
     [HttpGet("get-my-cart")]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> getCart()
-        => Ok(await _cartService.GetCartAsync());
+        => (await _cartService.GetCartAsync()).ToActionResult(this);
 
 
     [HttpPost("add-to-cart")]
-    [ProducesResponseType(typeof(Result<AddToCartDto>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(Result<string>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse<AddToCartDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> AddItem([FromBody] AddToCartDto input)
-        => Ok(await _cartService.AddItem(input));
+        => (await _cartService.AddItem(input)).ToActionResult(this);
 
     [HttpPut("update-item")]
-    [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> UpdateItem([FromBody] UpdateCartItemDto input)
-        => Ok(await _cartService.UpdateItem(input));
+        => (await _cartService.UpdateItem(input)).ToActionResult(this);
 
     [HttpDelete("remove-item")]
-    [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> RemoveItem([FromBody] int cartItemId)
-        => Ok(await _cartService.RemoveItem(cartItemId));
+        => (await _cartService.RemoveItem(cartItemId)).ToActionResult(this);
 
     [HttpDelete("clear")]
-    [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<bool>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> ClearCart()
-        => Ok(await _cartService.ClearCart());
+        => (await _cartService.ClearCart()).ToActionResult(this);
 
     /// <summary>
     /// Validate trạng thái giỏ hàng: check stock, biến thể, v.v.
     /// </summary>
     [HttpGet("validate")]
-    [ProducesResponseType(typeof(Result<CartValidationResultDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<CartValidationResultDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> ValidateCart()
-        => Ok(await _cartService.ValidateCart());
+        => (await _cartService.ValidateCart()).ToActionResult(this);
     /// <summary>
     /// Tính toán preview đơn hàng: subtotal, phí ship, giảm giá, tổng tiền.
     /// Có thể nhập CouponCode để xem discount trước khi đặt.
     /// </summary>
     [HttpPost("checkout-preview")]
-    [ProducesResponseType(typeof(Result<CheckoutPreviewDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<CheckoutPreviewDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> CheckoutPreview([FromBody] CheckoutPreviewRequestDto input)
-        => Ok(await _cartService.ChechoutPerview(input));
+        => (await _cartService.ChechoutPerview(input)).ToActionResult(this);
 }

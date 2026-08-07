@@ -4,6 +4,7 @@ using CR.DtoBase;
 using CR.WebAPIBase.Responses;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using CR.Core.API.Extensions;
 
 namespace CR.Core.API.Controllers;
 
@@ -21,14 +22,7 @@ public class AddressController : ControllerBase
     [HttpGet]
     [ProducesResponseType(typeof(ApiResponse<List<AddressResponseDto>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAddress(CancellationToken cancellationToken)
-    {
-        var result = await _addressService.GetAddressesByUserIdAsync(cancellationToken);
-        if (result.IsFailure)
-        {
-            return BadRequest(ApiResponse<List<AddressResponseDto>>.Fail($"Lỗi: {result.ErrorCode}"));
-        }
-        return Ok(ApiResponse<List<AddressResponseDto>>.Ok(result.Value));
-    }
+        => (await _addressService.GetAddressesByUserIdAsync(cancellationToken)).ToActionResult(this);
 
     [HttpPost]
     [ProducesResponseType(typeof(ApiResponse<int>), StatusCodes.Status201Created)]
@@ -42,17 +36,7 @@ public class AddressController : ControllerBase
         if (!ModelState.IsValid)
             return BadRequest(ApiResponse<object>.Fail("Dữ liệu địa chỉ không hợp lệ."));
 
-        var result = await _addressService.SaveNewAddressAsync(dto, cancellationToken);
-        if (result.IsFailure)
-        {
-            return BadRequest(ApiResponse<object>.Fail($"Lỗi: {result.ErrorCode}"));
-        }
-
-        return CreatedAtAction(
-            nameof(GetAddress),
-            null,
-            ApiResponse<int>.Ok(result.Value, "Tao dia chi thanh cong")
-        );
+        return (await _addressService.SaveNewAddressAsync(dto, cancellationToken)).ToActionResult(this, "Tao dia chi thanh cong");
     }
 
     /// <summary>
@@ -63,12 +47,5 @@ public class AddressController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<IActionResult> SetAsDefault(int addressId, CancellationToken cancellationToken)
-    {
-        var result = await _addressService.SetAsDefaultAsync(addressId, cancellationToken);
-        if (result.IsFailure)
-        {
-            return BadRequest(ApiResponse<object>.Fail($"Lỗi đặt mặc định: {result.ErrorCode}"));
-        }
-        return NoContent();
-    }
+        => (await _addressService.SetAsDefaultAsync(addressId, cancellationToken)).ToActionResult(this);
 }

@@ -3,6 +3,9 @@ using CR.Core.ApplicationServices.ProductModule.Abstracts;
 using CR.Core.Dtos.Product;
 using CR.WebAPIBase.Responses;
 using Microsoft.AspNetCore.Mvc;
+using CR.DtoBase;
+using Microsoft.AspNetCore.Http;
+using CR.Core.API.Extensions;
 
 namespace CR.Core.API.Controllers;
 [ApiController]
@@ -14,57 +17,43 @@ public class ProductController : ControllerBase
     {
         _productService = productService;
     }
-    [HttpGet]
-    public async Task<ActionResult<ApiResponse<PaginatedResult<ProductResponseDto>>>> GetAll(
-        [FromQuery] int page = 1,
-        [FromQuery] int size = 10,
-        [FromQuery] int? categoryId = null)
-    {
-        var result = await _productService.GetAllAsync(page, size, categoryId);
-        return Ok(ApiResponse<PaginatedResult<ProductResponseDto>>.Ok(result));
-    }
-    [HttpPost]
-    public async Task<ActionResult<ApiResponse<ProductResponseDto>>> Create([FromBody] ProductRequestDto dto)
-    {
-        var result = await _productService.CreateAsync(dto);
-        return Ok(ApiResponse<ProductResponseDto>.Ok(result));
-    }
-    [HttpGet("{id}")]
-    public async Task<ActionResult<ApiResponse<ProductResponseDto>>> GetById(int id)
-    {
-        var result = await _productService.GetByIdAsync(id);
-        if (result.IsFailure)
-            return BadRequest(result);
 
-        return Ok(ApiResponse<ProductResponseDto>.Ok(result.Value));
-    }
+    [HttpGet]
+    [ProducesResponseType(typeof(ApiResponse<PageResult<ProductResponseDto>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> GetAll([FromQuery] ProductQueryDto query)
+        => (await _productService.GetAllAsync(query)).ToActionResult(this);
+
+    [HttpPost]
+    [ProducesResponseType(typeof(ApiResponse<ProductResponseDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> Create([FromBody] ProductRequestDto dto)
+        => (await _productService.CreateAsync(dto)).ToActionResult(this, "Tạo sản phẩm thành công");
+
+    [HttpGet("{id}")]
+    [ProducesResponseType(typeof(ApiResponse<ProductResponseDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetById(int id)
+        => (await _productService.GetByIdAsync(id)).ToActionResult(this);
 
     [HttpPut("{id}")]
-    public async Task<ActionResult<ApiResponse<ProductResponseDto>>> Update(int id, [FromBody] ProductRequestDto dto)
-    {
-        var result = await _productService.UpdateAsync(id, dto);
-        if (result.IsFailure)
-            return BadRequest(result);
+    [ProducesResponseType(typeof(ApiResponse<ProductResponseDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Update(int id, [FromBody] ProductRequestDto dto)
+        => (await _productService.UpdateAsync(id, dto)).ToActionResult(this, "Cập nhật sản phẩm thành công");
 
-        return Ok(ApiResponse<ProductResponseDto>.Ok(result.Value));
-    }
     [HttpPost("variants")]
-    public async Task<ActionResult<ApiResponse<ProductVariantResponseDto>>> CreateVariant([FromBody] CreateProductVariantDto dto)
-    {
-        var result = await _productService.CreateProductVariantAsync(dto);
-        if (result.IsFailure)
-            return BadRequest(result);
-
-        return Ok(ApiResponse<ProductVariantResponseDto>.Ok(result.Value));
-    }
+    [ProducesResponseType(typeof(ApiResponse<ProductVariantResponseDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> CreateVariant([FromBody] CreateProductVariantDto dto)
+        => (await _productService.CreateProductVariantAsync(dto)).ToActionResult(this, "Tạo biến thể thành công");
 
     [HttpPut("variants/{variantId}")]
-    public async Task<ActionResult<ApiResponse<ProductVariantResponseDto>>> UpdateVariant(int variantId, [FromBody] UpdateProductVariantDto dto)
-    {
-        var result = await _productService.UpdateProductVariantAsync(variantId, dto);
-        if (result.IsFailure)
-            return BadRequest(result);
-
-        return Ok(ApiResponse<ProductVariantResponseDto>.Ok(result.Value));
-    }
+    [ProducesResponseType(typeof(ApiResponse<ProductVariantResponseDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UpdateVariant(int variantId, [FromBody] UpdateProductVariantDto dto)
+        => (await _productService.UpdateProductVariantAsync(variantId, dto)).ToActionResult(this, "Cập nhật biến thể thành công");
 }

@@ -1,4 +1,3 @@
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using CR.Constants.Core.Users;
@@ -7,6 +6,8 @@ using CR.Core.Domain.User;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Extensions.Logging;
+using JwtRegisteredClaimNames = Microsoft.IdentityModel.JsonWebTokens.JwtRegisteredClaimNames;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace CR.Core.ApplicationServices.AuthenticationModule.Implements
 {

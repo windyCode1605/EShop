@@ -63,6 +63,7 @@
     <Text Name="error_12002" value="Người dùng chưa được gán vai trò nào." />
     <Text Name="error_12003" value="Dữ liệu đầu vào không hợp lệ." />
     <Text Name="error_12004" value="Khóa quyền (PermissionKey) không tồn tại." />
+    <Text Name="error_12005" value="Vai trò đã tồn tại." />
 
     <!-- Payment (13xxx) -->
     <Text Name="error_13000" value="Thông tin thanh toán không tồn tại." />

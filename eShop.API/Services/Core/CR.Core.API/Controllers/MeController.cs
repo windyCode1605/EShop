@@ -32,6 +32,8 @@ public class MeController : ControllerBase
     /// </summary>
     /// <returns>{ roles: [...], permissions: [...] }</returns>
     [HttpGet("permissions")]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetMyPermissions()
     {
         var result = await _userService.GetCurrentUserAuthorizationAsync();
