@@ -2,6 +2,7 @@ import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AdminOrderService, IUpdateOrderStatus } from '../../services/admin-order.service';
+import { ToastService } from '../../../../core/services/toast.service';
 
 @Component({
   selector: 'app-admin-orders',
@@ -48,7 +49,8 @@ export class AdminOrdersComponent implements OnInit {
   expandedOrderId = signal<number | string | null>(null);
 
   constructor(
-    public OrderService: AdminOrderService
+    public OrderService: AdminOrderService,
+    private toastService: ToastService
   ) { }
 
   toggleExpand(orderId: number | string) {
@@ -124,6 +126,7 @@ export class AdminOrdersComponent implements OnInit {
         });
         this.OrderService.Orders.set(updatedOrders);
         this.isSaving = false;
+        this.toastService.success('Cập nhật trạng thái thành công');
         this.closeModal();
       },
       error: (err) => {

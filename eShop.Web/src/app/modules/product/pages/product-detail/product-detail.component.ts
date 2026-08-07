@@ -216,14 +216,14 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$), finalize(() => this.addingToCart.set(false)))
       .subscribe({
         next: (res) => {
-          if (res.isSuccess) {
+          if (res.success) {
             this.showToast('success', `Đã thêm vào giỏ hàng thành công.`);
           } else {
-            this.showToast('error', this.cartService.getErrorMessage(res.errorCode, res.otherData));
+            this.showToast('error', this.cartService.getErrorMessage(res.statusCode, res.message));
           }
         },
         error: (err) => {
-          this.showToast('error', this.cartService.getErrorMessage(err?.errorCode ?? -1, err?.otherData));
+          this.showToast('error', this.cartService.getErrorMessage(err?.statusCode ?? 500, err?.message || err?.errors?.[0]));
         }
       });
   }

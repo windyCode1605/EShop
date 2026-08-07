@@ -65,6 +65,33 @@
           <option [value]="false">Đã ẩn</option>
         </select>
 
+        <!-- Price Range Filter -->
+        <div class="price-range-wrap">
+          <svg class="price-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+          </svg>
+          <input id="filter-min-price" class="price-input" type="number" min="0"
+                 [(ngModel)]="filter.minPrice"
+                 (change)="applyFilter()"
+                 placeholder="Từ">
+          <span class="price-separator">—</span>
+          <input id="filter-max-price" class="price-input" type="number" min="0"
+                 [(ngModel)]="filter.maxPrice"
+                 (change)="applyFilter()"
+                 placeholder="Đến">
+        </div>
+
+        @if (filter.minPrice || filter.maxPrice) {
+          <button class="btn-reset-price" (click)="filter.minPrice=''; filter.maxPrice=''; applyFilter()" title="Xóa lọc giá">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
+            </svg>
+            Giá
+          </button>
+        }
+
         <select class="filter-select" [(ngModel)]="sortValue"
                 (ngModelChange)="onSortChange($event)" id="filter-sort">
           <option value="name_asc">Tên A → Z</option>

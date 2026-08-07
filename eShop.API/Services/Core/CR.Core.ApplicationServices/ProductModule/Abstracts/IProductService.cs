@@ -13,4 +13,5 @@ public interface IProductService
     /// <summary>Tạo Variant mới cho Product đã tồn tại. <c>dto.ProductId</c> là bắt buộc.</summary>
     Task<Result<ProductVariantResponseDto>> CreateProductVariantAsync(CreateProductVariantDto dto);
     Task<Result<ProductVariantResponseDto>> UpdateProductVariantAsync(int variantId, UpdateProductVariantDto dto);
+    Task<Result> DeleteAsync(int id);
 }

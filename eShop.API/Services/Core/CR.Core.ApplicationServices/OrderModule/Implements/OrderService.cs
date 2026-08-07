@@ -448,30 +448,33 @@ public class OrderService : CoreServiceBase, IOrderService
         if (order == null)
             return Result.Failure(ErrorCode.OrderNotFound, this.GetCurrentMethodInfo());
 
-        if (OrderStatusConst.TerminalStatuses.Contains(order.Status))
+        var currentStatus = order.Status.ToUpper();
+        var newStatus = input.NewStatus.ToUpper();
+
+        if (OrderStatusConst.TerminalStatuses.Contains(currentStatus))
             return Result.Failure(ErrorCode.OrderCannotBeCancelled, this.GetCurrentMethodInfo(),
                 $"Đơn hàng hiện tại ở trạng thái '{order.Status}' nên không thể cập nhật nữa.");
 
-        if (!validTransitions.ContainsKey(order.Status) || !validTransitions[order.Status].Contains(input.NewStatus))
+        if (!validTransitions.ContainsKey(currentStatus) || !validTransitions[currentStatus].Contains(newStatus))
             return Result.Failure(ErrorCode.BadRequest, this.GetCurrentMethodInfo(), $"Không thể chuyển trạng thái từ '{order.Status}' sang '{input.NewStatus}'");
 
-        if (input.NewStatus == OrderStatusConst.Cancelled)
+        if (newStatus == OrderStatusConst.Cancelled)
             return await CancelOrder(orderId, input.Reason);
 
         using var transaction = await _dbContext.Database.BeginTransactionAsync();
         try
         {
-            order.Status = input.NewStatus;
+            order.Status = newStatus;
             order.ModifiedDate = DateTimeUtils.GetDate();
 
-            if (input.NewStatus == OrderStatusConst.Shipping)
+            if (newStatus == OrderStatusConst.Shipping)
             {
                 if (string.IsNullOrWhiteSpace(input.TrackingNumber) || string.IsNullOrWhiteSpace(input.ShippingProvider))
                     return Result.Failure(ErrorCode.BadRequest, this.GetCurrentMethodInfo(), "Bắt buộc phải nhập mã vận đơn và đơn vị vận chuyển");
 
                 await _shipmentService.UpdateTrackingByOrderIdAsync(orderId, input.TrackingNumber, input.ShippingProvider);
             }
-            else if (input.NewStatus == OrderStatusConst.Delivered)
+            else if (newStatus == OrderStatusConst.Delivered)
             {
                 await _shipmentService.UpdateShipmentStatusByOrderIdAsync(orderId, ShipmentStatus.Delivered.ToString());
 
@@ -481,7 +484,7 @@ public class OrderService : CoreServiceBase, IOrderService
                     await _paymentService.UpdatePaymentStatusByOrderIdAsync(orderId, PaymentStatus.Success.ToString());
                 }
             }
-            else if (input.NewStatus == OrderStatusConst.Returned)
+            else if (newStatus == OrderStatusConst.Returned)
             {
 
                 await _shipmentService.UpdateShipmentStatusByOrderIdAsync(orderId, ShipmentStatus.Returned.ToString());

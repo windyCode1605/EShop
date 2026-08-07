@@ -64,8 +64,8 @@ export class CheckoutPageComponent implements OnInit {
 
   ngOnInit() {
     this.cartService.getMyCart().subscribe(res => {
-      if (res.isSuccess) {
-        this.cartSummary.set(res.value);
+      if (res.success && res.data) {
+        this.cartSummary.set(res.data);
       }
     });
 

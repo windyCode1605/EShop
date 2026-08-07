@@ -56,4 +56,11 @@ public class ProductController : ControllerBase
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> UpdateVariant(int variantId, [FromBody] UpdateProductVariantDto dto)
         => (await _productService.UpdateProductVariantAsync(variantId, dto)).ToActionResult(this, "Cập nhật biến thể thành công");
+
+    [HttpDelete("{id}")]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Delete(int id)
+        => (await _productService.DeleteAsync(id)).ToActionResult(this, "Xóa sản phẩm thành công");
 }

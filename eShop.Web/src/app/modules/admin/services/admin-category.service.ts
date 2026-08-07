@@ -30,12 +30,9 @@ export class AdminCategoryService {
   // GET /api/Category/getCategory
   getCategories(page: number = 1, size: number = 50, keyword?: string): Observable<ICategoryListResponse> {
     let params = new HttpParams();
-    // if backend supports pagination, pass them
-    // params = params.set('page', page.toString()).set('size', size.toString());
-    // if (keyword) params = params.set('keyword', keyword);
-    return this.http.get<Result<IAdminCategory[]>>(API_ENDPOINTS.CATEGORY.GET_ALL, { params })
+    return this.http.get<ApiResponse<IAdminCategory[]>>(API_ENDPOINTS.CATEGORY.GET_ALL, { params })
       .pipe(map(res => {
-        const items = res.value || [];
+        const items = res.data || [];
         return {
           items: items.map(c => ({
             ...c,
@@ -57,40 +54,40 @@ export class AdminCategoryService {
    * GET /api/Category/:id
    */
   getCategoryById(id: number): Observable<IAdminCategory> {
-    return this.http.get<Result<IAdminCategory>>(API_ENDPOINTS.CATEGORY.GET_BY_ID(id))
-      .pipe(map(res => res.value));
+    return this.http.get<ApiResponse<IAdminCategory>>(API_ENDPOINTS.CATEGORY.GET_BY_ID(id))
+      .pipe(map(res => res.data!));
   }
 
   /**
    * POST /api/Category
    */
   createCategory(dto: ICategoryCreateDto): Observable<IAdminCategory> {
-    return this.http.post<Result<IAdminCategory>>(API_ENDPOINTS.CATEGORY.CREATE, dto)
-      .pipe(map(res => res.value));
+    return this.http.post<ApiResponse<IAdminCategory>>(API_ENDPOINTS.CATEGORY.CREATE, dto)
+      .pipe(map(res => res.data!));
   }
 
   /**
    * PUT /api/Category/:id
    */
   updateCategory(id: number, dto: ICategoryUpdateDto): Observable<IAdminCategory> {
-    return this.http.put<Result<IAdminCategory>>(API_ENDPOINTS.CATEGORY.UPDATE(id), dto)
-      .pipe(map(res => res.value));
+    return this.http.put<ApiResponse<IAdminCategory>>(API_ENDPOINTS.CATEGORY.UPDATE(id), dto)
+      .pipe(map(res => res.data!));
   }
 
   /**
    * DELETE /api/Category/:id
    */
   deleteCategory(id: number): Observable<void> {
-    return this.http.delete<Result<void>>(API_ENDPOINTS.CATEGORY.DELETE(id))
-      .pipe(map(res => res.value));
+    return this.http.delete<ApiResponse<void>>(API_ENDPOINTS.CATEGORY.DELETE(id))
+      .pipe(map(res => res.data!));
   }
 
   /**
    * PATCH /api/Category/:id/toggle-active
    */
   toggleCategoryActive(id: number): Observable<IAdminCategory> {
-    return this.http.patch<Result<IAdminCategory>>(API_ENDPOINTS.CATEGORY.TOGGLE_ACTIVE(id), {})
-      .pipe(map(res => res.value));
+    return this.http.patch<ApiResponse<IAdminCategory>>(API_ENDPOINTS.CATEGORY.TOGGLE_ACTIVE(id), {})
+      .pipe(map(res => res.data!));
   }
 
   // ── Utility ─────────────────────────────────────────────────────────────

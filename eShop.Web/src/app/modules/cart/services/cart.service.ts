@@ -1,8 +1,9 @@
 import { computed, Injectable, signal } from "@angular/core";
 import { catchError, finalize, Observable, throwError, tap } from "rxjs";
-import { AddToCartRequest, AddToCartResponse, ApiResult, CartErrorCode, CartItemDto, CartSummaryDto } from "../models/cart.models";
+import { AddToCartRequest, AddToCartResponse, CartErrorCode, CartItemDto, CartSummaryDto } from "../models/cart.models";
 import { HttpClient, HttpErrorResponse } from "@angular/common/http";
 import { API_ENDPOINTS } from "../../../core/constants/api-endpoints.const";
+import { ApiResponse } from "../../../core/models";
 
 
 @Injectable({ providedIn: 'root' })
@@ -16,17 +17,17 @@ export class CartService {
 
     constructor(private http: HttpClient) { }
 
-    addToCart(request: AddToCartRequest): Observable<ApiResult<AddToCartResponse>> {
+    addToCart(request: AddToCartRequest): Observable<ApiResponse<AddToCartResponse>> {
         this._isSyncing.set(true);
         const previousCount = this._totalItems();
         this._totalItems.set(previousCount + request.quantity);
 
-        return this.http.post<ApiResult<AddToCartResponse>>(
+        return this.http.post<ApiResponse<AddToCartResponse>>(
             API_ENDPOINTS.CART.ADD_TO_CART,
             request
         ).pipe(
             tap((res) => {
-                if (!res.isSuccess)
+                if (!res.success)
                     this._totalItems.set(previousCount);
             }),
             catchError((err: HttpErrorResponse) => {
@@ -37,12 +38,12 @@ export class CartService {
         );
     }
 
-    getMyCart(): Observable<ApiResult<CartSummaryDto>> {
+    getMyCart(): Observable<ApiResponse<CartSummaryDto>> {
         this._isSyncing.set(true);
-        return this.http.get<ApiResult<CartSummaryDto>>(API_ENDPOINTS.CART.GET_MY_CART).pipe(
+        return this.http.get<ApiResponse<CartSummaryDto>>(API_ENDPOINTS.CART.GET_MY_CART).pipe(
             tap((res) => {
-                if (res.isSuccess && res.value) {
-                    this._totalItems.set(res.value.totalItems);
+                if (res.success && res.data) {
+                    this._totalItems.set(res.data.totalItems);
                 }
             }),
             catchError((err: HttpErrorResponse) => {
@@ -52,10 +53,10 @@ export class CartService {
         );
     }
 
-    updateCartItem(cartItemId: number, quantity: number): Observable<ApiResult<boolean>> {
+    updateCartItem(cartItemId: number, quantity: number): Observable<ApiResponse<boolean>> {
         this._isSyncing.set(true);
         const payload = { cartItemId, quantity };
-        return this.http.put<ApiResult<boolean>>(API_ENDPOINTS.CART.UPDATE_ITEM, payload).pipe(
+        return this.http.put<ApiResponse<boolean>>(API_ENDPOINTS.CART.UPDATE_ITEM, payload).pipe(
             catchError((err: HttpErrorResponse) => {
                 return throwError(() => this.mapError(err));
             }),
@@ -63,9 +64,9 @@ export class CartService {
         );
     }
 
-    removeCartItem(cartItemId: number): Observable<ApiResult<boolean>> {
+    removeCartItem(cartItemId: number): Observable<ApiResponse<boolean>> {
         this._isSyncing.set(true);
-        return this.http.delete<ApiResult<boolean>>(API_ENDPOINTS.CART.REMOVE_ITEM, {
+        return this.http.delete<ApiResponse<boolean>>(API_ENDPOINTS.CART.REMOVE_ITEM, {
             body: cartItemId,
             headers: { 'Content-Type': 'application/json' }
         }).pipe(
@@ -77,17 +78,16 @@ export class CartService {
     }
 
     /** Chuẩn hoá lỗi để component không phải parse HttpErrorResponse thủ công */
-    private mapError(err: HttpErrorResponse): ApiResult<null> {
-        const body = err.error as ApiResult<null> | undefined;
-        if (body?.errorCode) {
+    private mapError(err: HttpErrorResponse): ApiResponse<null> {
+        const body = err.error as ApiResponse<null> | undefined;
+        if (body && !body.success) {
             return body;
         }
         return {
-            isSuccess: false,
-            isFailure: true,
-            errorCode: err.status === 401 ? CartErrorCode.Unauthorized : -1,
-            otherData: 'Không thể kết nối máy chủ. Vui lòng thử lại.',
-            value: null,
+            success: false,
+            statusCode: err.status === 401 ? CartErrorCode.Unauthorized : 500,
+            message: 'Không thể kết nối máy chủ. Vui lòng thử lại.',
+            errors: []
         };
     }
 

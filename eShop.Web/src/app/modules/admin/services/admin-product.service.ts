@@ -44,19 +44,29 @@ export class AdminProductService {
    */
   getProducts(filter: IAdminProductFilter): Observable<AdminProductListResponse> {
     let params = new HttpParams()
-      .set('page', filter.pageIndex.toString())
-      .set('size', filter.pageSize.toString());
+      .set('pageNumber', filter.pageIndex.toString())
+      .set('pageSize', filter.pageSize.toString());
 
     if (filter.keyword) params = params.set('keyword', filter.keyword);
     if (filter.categoryId !== undefined) params = params.set('categoryId', filter.categoryId.toString());
     if (filter.isActive !== undefined) params = params.set('isActive', filter.isActive.toString());
     if (filter.minPrice !== undefined) params = params.set('minPrice', filter.minPrice.toString());
     if (filter.maxPrice !== undefined) params = params.set('maxPrice', filter.maxPrice.toString());
-    if (filter.sortBy) params = params.set('sortBy', filter.sortBy);
-    if (filter.sortOrder) params = params.set('sortOrder', filter.sortOrder);
+    if (filter.sortBy) params = params.set('sortBy', `${filter.sortBy} ${filter.sortOrder ?? 'asc'}`);
 
-    return this.http.get<ApiResponse<AdminProductListResponse>>(API_ENDPOINTS.ADMIN.PRODUCT.GET_ALL, { params })
-      .pipe(map(res => res.data!));
+    return this.http.get<ApiResponse<any>>(API_ENDPOINTS.ADMIN.PRODUCT.GET_ALL, { params })
+      .pipe(map(res => {
+        const d = res.data;
+        return {
+          items: d?.items ?? [],
+          totalCount: d?.totalItems ?? 0,
+          page: filter.pageIndex,
+          pageSize: filter.pageSize,
+          totalPages: d?.totalPages ?? 1,
+          hasNext: d?.hasNextPage ?? false,
+          hasPrev: d?.hasPreviousPage ?? false,
+        } as AdminProductListResponse;
+      }));
   }
 
   /**

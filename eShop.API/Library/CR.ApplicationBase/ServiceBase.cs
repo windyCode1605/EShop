@@ -1,4 +1,4 @@
-﻿// Base class cho tất cả service trong solution
+// Base class cho tất cả service trong solution
 // Cung cấp logger và DbContext sẵn - không phải inject riêng từng service
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
@@ -18,6 +18,13 @@ public abstract class ServiceBase<TDbContext> : ServiceAbstract where TDbContext
 
     protected ServiceBase(TDbContext dbContext, ILogger logger, IMapper mapper)
         : base(logger)
+    {
+        _dbContext = dbContext;
+        _mapper = mapper;
+    }
+
+    protected ServiceBase(TDbContext dbContext, ILogger logger, IMapper mapper, IHttpContextAccessor httpContext)
+        : base(logger, httpContext)
     {
         _dbContext = dbContext;
         _mapper = mapper;

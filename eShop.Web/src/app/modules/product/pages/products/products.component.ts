@@ -240,15 +240,15 @@ export class ProductsComponent implements OnInit {
     }).subscribe({
       next: (res) => {
         this.isAddingToCart = false;
-        if (res.isSuccess) {
+        if (res.success) {
           alert('Đã thêm sản phẩm vào giỏ hàng!');
         } else {
-          alert(this.cartService.getErrorMessage(res.errorCode, res.otherData));
+          alert(this.cartService.getErrorMessage(res.statusCode, res.message));
         }
       },
       error: (err) => {
         this.isAddingToCart = false;
-        alert(err.otherData || 'Có lỗi xảy ra khi thêm vào giỏ.');
+        alert(err.message || err.errors?.[0] || 'Có lỗi xảy ra khi thêm vào giỏ.');
       }
     });
   }

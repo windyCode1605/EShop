@@ -12,29 +12,35 @@ export class ProductService {
 
   getProducts(filter: ProductFilterModel): Observable<ProductResponseDto> {
     let params = new HttpParams()
-      .set('page', filter.pageIndex.toString())
-      .set('size', filter.pageSize.toString());
+      .set('pageNumber', filter.pageIndex.toString())
+      .set('pageSize', filter.pageSize.toString());
 
     if (filter.keyword) params = params.set('keyword', filter.keyword);
-    if (filter.categoryId) params = params.set('categoryId', filter.categoryId);
+    if (filter.categoryId) params = params.set('categoryId', filter.categoryId.toString());
     if (filter.minPrice !== undefined) params = params.set('minPrice', filter.minPrice.toString());
     if (filter.maxPrice !== undefined) params = params.set('maxPrice', filter.maxPrice.toString());
 
     // params = params.set('isActive', 'true');
 
-    if (filter.sortBy) params = params.set('sortBy', filter.sortBy);
-    if (filter.sortOrder) params = params.set('sortOrder', filter.sortOrder);
+    if (filter.sortBy) {
+      let sortByBackend = filter.sortBy === 'price' ? 'BasePrice' : filter.sortBy;
+      if (sortByBackend === 'createdAt') sortByBackend = 'CreatedDate';
+      params = params.set('sortBy', `${sortByBackend} ${filter.sortOrder ?? 'asc'}`);
+    }
 
     return this.http.get<ApiPaginatedResponse<IProduct>>(API_ENDPOINTS.PRODUCT.GET_ALL, { params }).pipe(
-      map(response => ({
-        items: response.data?.items || [],
-        totalCount: response.data?.totalCount || 0,
-        page: response.data?.page || 1,
-        pageSize: response.data?.pageSize || 10,
-        totalPages: response.data?.totalPages || 0,
-        hasNext: response.data?.hasNext || false,
-        hasPrev: response.data?.hasPrev || false
-      }))
+      map(response => {
+        const data: any = response.data;
+        return {
+          items: data?.items || [],
+          totalCount: data?.totalItems || 0,
+          page: data?.currentPage || 1,
+          pageSize: data?.pageSize || 10,
+          totalPages: data?.totalPages || 0,
+          hasNext: data?.hasNextPage || false,
+          hasPrev: data?.hasPreviousPage || false
+        };
+      })
     );
   }
 

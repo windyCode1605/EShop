@@ -62,6 +62,7 @@ namespace CR.Constants.ErrorCodes
 
         //  Product Variant (11xxx) 
         public const int ProductVariantNotFound = 11000;
+        public const int InternalServerError = 11001;
 
         //  Role & Permission (12xxx) 
         public const int RoleNotFound = 12001;

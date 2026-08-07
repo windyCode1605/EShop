@@ -21,6 +21,9 @@ public static class ResultExtensions
 
         var localization = controller.HttpContext.RequestServices.GetRequiredService<ILocalization>();
         string errorMessage = localization.Localize($"error_{result.ErrorCode}");
+        if (result.ListParam != null && result.ListParam.Length > 0 && !string.IsNullOrEmpty(result.ListParam[0])) {
+            errorMessage = result.ListParam[0];
+        }
         return controller.BadRequest(ApiResponse<object>.Fail(errorMessage, result.ErrorCode));
     }
 
@@ -36,6 +39,9 @@ public static class ResultExtensions
 
         var localization = controller.HttpContext.RequestServices.GetRequiredService<ILocalization>();
         string errorMessage = localization.Localize($"error_{result.ErrorCode}");
+        if (result.ListParam != null && result.ListParam.Length > 0 && !string.IsNullOrEmpty(result.ListParam[0])) {
+            errorMessage = result.ListParam[0];
+        }
         return controller.BadRequest(ApiResponse<T>.Fail(errorMessage, result.ErrorCode));
     }
 }

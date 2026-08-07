@@ -38,15 +38,15 @@ export class CartPageComponent implements OnInit {
     
     this.cartService.getMyCart().subscribe({
       next: (res) => {
-        if (res.isSuccess && res.value) {
-          this.cartSummary.set(res.value);
+        if (res.success && res.data) {
+          this.cartSummary.set(res.data);
         } else {
-          this.errorMessage.set(res.otherData || 'Không thể lấy thông tin giỏ hàng.');
+          this.errorMessage.set(res.message || 'Không thể lấy thông tin giỏ hàng.');
         }
         this.isLoading.set(false);
       },
       error: (err) => {
-        this.errorMessage.set(err.otherData || 'Đã xảy ra lỗi khi tải giỏ hàng.');
+        this.errorMessage.set(err.message || err.errors?.[0] || 'Đã xảy ra lỗi khi tải giỏ hàng.');
         this.isLoading.set(false);
       }
     });
@@ -75,12 +75,12 @@ export class CartPageComponent implements OnInit {
 
     this.cartService.updateCartItem(item.id, newQuantity).subscribe({
       next: (res) => {
-        if (!res.isSuccess) {
+        if (!res.success) {
           // Revert on failure
           item.quantity = prevQty;
           item.lineTotal = item.quantity * item.unitPrice;
           this.recalculateMockSubtotal();
-          this.errorMessage.set(res.otherData || 'Không thể cập nhật số lượng.');
+          this.errorMessage.set(res.message || 'Không thể cập nhật số lượng.');
         } else {
            // Có thể gọi lại loadCart() để đồng bộ hoàn toàn với server nếu server có logic tính phí đặc biệt
            // this.loadCart();
@@ -114,14 +114,14 @@ export class CartPageComponent implements OnInit {
 
     this.cartService.removeCartItem(item.id).subscribe({
       next: (res) => {
-        if (!res.isSuccess) {
+        if (!res.success) {
           // Revert nếu lỗi
           this.cartSummary.set({
             ...summary,
             items: oldItems
           });
           this.recalculateMockSubtotal();
-          this.errorMessage.set(res.otherData || 'Không thể xóa sản phẩm.');
+          this.errorMessage.set(res.message || 'Không thể xóa sản phẩm.');
         }
       },
       error: () => {

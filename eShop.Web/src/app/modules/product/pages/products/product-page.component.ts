@@ -429,16 +429,16 @@ export class ProductPageComponent implements OnInit, OnDestroy {
       )
       .subscribe({
         next: (res) => {
-          if (res.isSuccess) {
+          if (res.success) {
             this.showToast('success', `Đã thêm "${product.name}" vào giỏ hàng.`);
             this.closeQuickAdd();
           } else {
-            this.showToast('error', this.cartService.getErrorMessage(res.errorCode, res.otherData));
+            this.showToast('error', this.cartService.getErrorMessage(res.statusCode, res.message));
           }
         },
         error: (err) => {
-          const errorCode = err?.errorCode ?? -1;
-          this.showToast('error', this.cartService.getErrorMessage(errorCode, err?.otherData));
+          const errorCode = err?.statusCode ?? 500;
+          this.showToast('error', this.cartService.getErrorMessage(errorCode, err?.message || err?.errors?.[0]));
         }
       });
   }

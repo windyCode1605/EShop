@@ -29,14 +29,14 @@ export class ProductHttpService {
    */
   getProducts(filter: ProductFilterModel): Observable<ProductResponseDto> {
     let params = new HttpParams()
-      .set('page', filter.pageIndex.toString())
-      .set('size', filter.pageSize.toString());
+      .set('pageNumber', filter.pageIndex.toString())
+      .set('pageSize', filter.pageSize.toString());
 
     if (filter.keyword) {
       params = params.set('keyword', filter.keyword);
     }
     if (filter.categoryId) {
-      params = params.set('categoryId', filter.categoryId);
+      params = params.set('categoryId', filter.categoryId.toString());
     }
     if (filter.minPrice !== undefined) {
       params = params.set('minPrice', filter.minPrice.toString());
@@ -48,23 +48,25 @@ export class ProductHttpService {
       params = params.set('isActive', filter.isActive.toString());
     }
     if (filter.sortBy) {
-      params = params.set('sortBy', filter.sortBy);
-    }
-    if (filter.sortOrder) {
-      params = params.set('sortOrder', filter.sortOrder);
+      let sortByBackend = filter.sortBy === 'price' ? 'BasePrice' : filter.sortBy;
+      if (sortByBackend === 'createdAt') sortByBackend = 'CreatedDate';
+      params = params.set('sortBy', `${sortByBackend} ${filter.sortOrder ?? 'asc'}`);
     }
 
     // Map API response structure to our DTO
     return this.http.get<ApiPaginatedResponse<IProduct>>(this.apiUrl, { params }).pipe(
-      map(response => ({
-        items: response.data.items,
-        totalCount: response.data.totalCount,
-        page: response.data.page,
-        pageSize: response.data.pageSize,
-        totalPages: response.data.totalPages,
-        hasNext: response.data.hasNext,
-        hasPrev: response.data.hasPrev
-      }))
+      map(response => {
+        const data: any = response.data;
+        return {
+          items: data?.items || [],
+          totalCount: data?.totalItems || 0,
+          page: data?.currentPage || 1,
+          pageSize: data?.pageSize || 10,
+          totalPages: data?.totalPages || 0,
+          hasNext: data?.hasNextPage || false,
+          hasPrev: data?.hasPreviousPage || false
+        };
+      })
     );
   }
 
@@ -108,19 +110,22 @@ export class ProductHttpService {
   searchProducts(keyword: string, pageIndex: number = 1, pageSize: number = 10): Observable<ProductResponseDto> {
     const params = new HttpParams()
       .set('keyword', keyword)
-      .set('page', pageIndex.toString())
-      .set('size', pageSize.toString());
+      .set('pageNumber', pageIndex.toString())
+      .set('pageSize', pageSize.toString());
 
     return this.http.get<ApiPaginatedResponse<IProduct>>(this.apiUrl, { params }).pipe(
-      map(response => ({
-        items: response.data.items,
-        totalCount: response.data.totalCount,
-        page: response.data.page,
-        pageSize: response.data.pageSize,
-        totalPages: response.data.totalPages,
-        hasNext: response.data.hasNext,
-        hasPrev: response.data.hasPrev
-      }))
+      map(response => {
+        const data: any = response.data;
+        return {
+          items: data?.items || [],
+          totalCount: data?.totalItems || 0,
+          page: data?.currentPage || 1,
+          pageSize: data?.pageSize || 10,
+          totalPages: data?.totalPages || 0,
+          hasNext: data?.hasNextPage || false,
+          hasPrev: data?.hasPreviousPage || false
+        };
+      })
     );
   }
 
@@ -130,19 +135,22 @@ export class ProductHttpService {
   getProductsByCategory(categoryName: string, pageIndex: number = 1, pageSize: number = 10): Observable<ProductResponseDto> {
     const params = new HttpParams()
       .set('categoryName', categoryName)
-      .set('page', pageIndex.toString())
-      .set('size', pageSize.toString());
+      .set('pageNumber', pageIndex.toString())
+      .set('pageSize', pageSize.toString());
 
     return this.http.get<ApiPaginatedResponse<IProduct>>(this.apiUrl, { params }).pipe(
-      map(response => ({
-        items: response.data.items,
-        totalCount: response.data.totalCount,
-        page: response.data.page,
-        pageSize: response.data.pageSize,
-        totalPages: response.data.totalPages,
-        hasNext: response.data.hasNext,
-        hasPrev: response.data.hasPrev
-      }))
+      map(response => {
+        const data: any = response.data;
+        return {
+          items: data?.items || [],
+          totalCount: data?.totalItems || 0,
+          page: data?.currentPage || 1,
+          pageSize: data?.pageSize || 10,
+          totalPages: data?.totalPages || 0,
+          hasNext: data?.hasNextPage || false,
+          hasPrev: data?.hasPreviousPage || false
+        };
+      })
     );
   }
 }

@@ -11,6 +11,8 @@ using Microsoft.EntityFrameworkCore;
 using CR.Utils.Helpers;
 using CR.ApplicationBase.Common;
 using CR.Core.ApplicationServices.ProductModule.Implements;
+using CR.InfrastructureBase;
+
 
 namespace CR.Core.ApplicationServices.Common.ServiceImplementations;
 
@@ -19,8 +21,9 @@ public class ProductService : ServiceBase<CoreDbContext>, IProductService
     public ProductService(
         CoreDbContext dbContext,
         ILogger<ProductService> logger,
-        IMapper mapper)
-        : base(dbContext, logger, mapper) { }
+        IMapper mapper,
+        IHttpContextAccessor httpContext)
+        : base(dbContext, logger, mapper, httpContext) { }
 
     public async Task<Result<ProductResponseDto>> CreateAsync(ProductRequestDto dto)
     {
@@ -67,12 +70,12 @@ public class ProductService : ServiceBase<CoreDbContext>, IProductService
 
     public async Task<Result<PageResult<ProductResponseDto>>> GetAllAsync(ProductQueryDto request)
     {
-        _logger.LogInformation("Method Name: {Method}, Keyword: {Keyword}, CategoryId: {CategoryId}, MinPrice: {MinPrice}, MaxPrice: {MaxPrice}", 
+        _logger.LogInformation("Method Name: {Method}, Keyword: {Keyword}, CategoryId: {CategoryId}, MinPrice: {MinPrice}, MaxPrice: {MaxPrice}",
             nameof(GetAllAsync), request.Keyword, request.CategoryId, request.MinPrice, request.MaxPrice);
-            
+
         var query = _dbContext.Products
             .Where(p => !p.Deleted);
-            
+
         if (!string.IsNullOrWhiteSpace(request.Keyword))
         {
             var keyword = request.Keyword.ToLower();
@@ -84,7 +87,7 @@ public class ProductService : ServiceBase<CoreDbContext>, IProductService
 
         if (request.MinPrice.HasValue)
             query = query.Where(p => p.BasePrice >= request.MinPrice);
-            
+
         if (request.MaxPrice.HasValue)
             query = query.Where(p => p.BasePrice <= request.MaxPrice);
 
@@ -257,5 +260,68 @@ public class ProductService : ServiceBase<CoreDbContext>, IProductService
 
         var resultDto = _mapper.Map<ProductResponseDto>(product);
         return Result<ProductResponseDto>.Success(resultDto);
+    }
+    public async Task<Result> DeleteAsync(int id)
+    {
+        _logger.LogInformation("Method : {method}, Product ID : {id}", nameof(DeleteAsync), id);
+        var userId = _httpContext.GetCurrentUserId();
+        var product = await _dbContext.Products
+            .Include(p => p.Variants).ThenInclude(pv => pv.VariantAttributes)
+            .Include(p => p.Variants).ThenInclude(pv => pv.Images)
+            .Include(p => p.Images)
+            .Include(p => p.ProductAttributes)
+            .Where(p => p.Id == id && !p.Deleted)
+            .FirstOrDefaultAsync();
+        if (product == null)
+            return Result.Failure(ErrorCode.InvalidInput, this.GetCurrentMethodInfo(), $"Không tìm thấy sản phẩm với ID : {id}");
+        using var transaction = await _dbContext.Database.BeginTransactionAsync();
+        try
+        {
+            var now = DateTime.UtcNow;
+            product.Deleted = true;
+            product.ModifiedDate = now;
+            product.DeletedDate = now;
+            foreach (var attr in product.ProductAttributes)
+            {
+                attr.Deleted = true;
+                attr.DeletedDate = now;
+                attr.DeletedBy = userId;
+            }
+            foreach (var pi in product.Images)
+            {
+                pi.Deleted = true;
+                pi.DeletedDate = now;
+                pi.DeletedBy = userId;
+            }
+            foreach (var pv in product.Variants)
+            {
+                pv.Deleted = true;
+                pv.DeletedDate = now;
+                pv.DeletedBy = userId;
+                foreach (var pva in pv.VariantAttributes)
+                {
+                    pva.Deleted = true;
+                    pva.DeletedDate = now;
+                    pva.DeletedBy = userId;
+                }
+                foreach (var pvi in pv.Images)
+                {
+                    pvi.Deleted = true;
+                    pvi.DeletedDate = now;
+                    pvi.DeletedBy = userId;
+                }
+            }
+            _dbContext.Products.Update(product);
+            await _dbContext.SaveChangesAsync();
+            await transaction.CommitAsync();
+
+            return Result.Success();
+        }
+        catch (Exception ex)
+        {
+            await transaction.RollbackAsync();
+            _logger.LogError(ex, "Lỗi khi xóa Product ID:{id}", id);
+            return Result.Failure(ErrorCode.InternalServerError, this.GetCurrentMethodInfo(), "Lỗi hệ thống khi xóa sản phẩm.");
+        }
     }
 }

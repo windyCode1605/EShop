@@ -16,8 +16,8 @@ export class CategoryService {
 
         this.http.get<any>(API_ENDPOINTS.CATEGORY.GET_ALL)
             .subscribe(response => {
-                if (response.isSuccess && response.value) {
-                    this.categories.set(response.value);
+                if (response.success && response.data) {
+                    this.categories.set(response.data);
                 }
             });
     }

@@ -57,6 +57,8 @@
 
     <!-- Product Variant (11xxx) -->
     <Text Name="error_11000" value="Biến thể sản phẩm không tồn tại." />
+    <Text Name="error_11001" value="Lỗi khi xóa sản phẩm ." />
+
 
     <!-- Role & Permission (12xxx) -->
     <Text Name="error_12001" value="Vai trò không tồn tại." />

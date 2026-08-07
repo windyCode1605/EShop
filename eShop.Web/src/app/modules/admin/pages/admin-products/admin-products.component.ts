@@ -34,7 +34,7 @@ export class AdminProductsComponent implements OnInit, OnDestroy {
   // Pagination & Filter Signals
   currentPage = signal(1);
   pageSize = signal(10);
-  filter = { categoryId: '', isActive: '' };
+  filter = { categoryId: '', isActive: '', minPrice: '', maxPrice: '' };
   searchKeyword = '';
   sortValue = 'createdAt_desc'; // Default sort
 
@@ -112,7 +112,7 @@ export class AdminProductsComponent implements OnInit, OnDestroy {
     if (this.sortValue) {
       const parts = this.sortValue.split('_');
       if (parts.length === 2) {
-        sortBy = parts[0];
+        sortBy = parts[0] === 'price' ? 'BasePrice' : parts[0];
         sortDir = parts[1];
       }
     }
@@ -123,6 +123,8 @@ export class AdminProductsComponent implements OnInit, OnDestroy {
       keyword: this.searchKeyword,
       categoryId: this.filter.categoryId ? Number(this.filter.categoryId) : undefined,
       isActive: this.filter.isActive ? this.filter.isActive === 'true' : undefined,
+      minPrice: this.filter.minPrice ? Number(this.filter.minPrice) : undefined,
+      maxPrice: this.filter.maxPrice ? Number(this.filter.maxPrice) : undefined,
       sortBy: sortBy,
       sortOrder: sortDir as any
     })
@@ -217,11 +219,17 @@ export class AdminProductsComponent implements OnInit, OnDestroy {
         this.totalCount.update(c => c - 1);
         this.confirmVisible.set(false);
         this.deleteTarget.set(null);
-        this.showToast('success', 'Đã xóa sản phẩm');
+        this.showToast('success', 'Đã xóa sản phẩm thành công');
       },
-      error: () => {
+      error: (err) => {
         this.confirmVisible.set(false);
-        this.showToast('error', 'Lỗi khi xóa sản phẩm');
+        let errorMsg = 'Lỗi khi xóa sản phẩm';
+        if (err.error?.listParam && err.error.listParam.length > 0) {
+          errorMsg = err.error.listParam.join('\n');
+        } else if (err.error?.message) {
+          errorMsg = err.error.message;
+        }
+        this.showToast('error', errorMsg);
       }
     });
   }
