@@ -52,20 +52,18 @@ public sealed class AccountController : ControllerBase
         if (validationError is not null)
             return BadRequest(ApiResponse<AuthResponseDto>.Fail(validationError, 400));
 
-        try
+        var resultUser = await _userAuthenticationService.ValidateAppUser(input.UserName!, input.Password!);
+        if (!resultUser.IsSuccess)
         {
-            var user = await _userAuthenticationService.ValidateAppUser(input.UserName!, input.Password!);
-
-            await SignInWithCookieAsync(user);
-
-            var response = BuildAuthResponse(user);
-            return Ok(ApiResponse<AuthResponseDto>.Ok(response, "Đăng nhập thành công."));
-        }
-        catch (UserFriendlyException ex)
-        {
-            var message = _localization.Localize(ex.Message);
+            var message = _mapErrorCode.TryGetErrorMessage(resultUser.ErrorCode) ?? "Đăng nhập thất bại.";
             return BadRequest(ApiResponse<AuthResponseDto>.Fail(message, 400));
         }
+        var user = resultUser.Value;
+
+        await SignInWithCookieAsync(user);
+
+        var response = BuildAuthResponse(user);
+        return Ok(ApiResponse<AuthResponseDto>.Ok(response, "Đăng nhập thành công."));
     }
 
     // FORGOT / RESET PASSWORD

@@ -18,6 +18,7 @@ using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Abstractions;
 using OpenIddict.Server.AspNetCore;
 using static OpenIddict.Abstractions.OpenIddictConstants;
+using CR.ApplicationBase.Localization;
 
 namespace CR.Core.API.Controllers;
 
@@ -34,6 +35,7 @@ public sealed class ConnectController : AuthorizationControllerBase
     private readonly IUserService _userServices;
     private readonly IClaimsIdentityFactory _claimsIdentityFactory;
     private readonly IOpenIddictScopeManager _scopeManager;
+    private readonly IMapErrorCode _mapErrorCode;
 
     public ConnectController(
         IOpenIddictApplicationManager applicationManager,
@@ -41,6 +43,7 @@ public sealed class ConnectController : AuthorizationControllerBase
         IUserService userServices,
         IClaimsIdentityFactory claimsIdentityFactory,
         IOpenIddictScopeManager scopeManager,
+        IMapErrorCode mapErrorCode,
         ILogger<AuthorizationControllerBase> logger)
         : base(logger, applicationManager)
     {
@@ -48,6 +51,7 @@ public sealed class ConnectController : AuthorizationControllerBase
         _userServices = userServices;
         _claimsIdentityFactory = claimsIdentityFactory;
         _scopeManager = scopeManager;
+        _mapErrorCode = mapErrorCode;
     }
 
     // AUTHORIZATION ENDPOINT
@@ -122,7 +126,8 @@ public sealed class ConnectController : AuthorizationControllerBase
         }
         catch (UserFriendlyException ex)
         {
-            return ForbidWithError(Errors.InvalidGrant, ex.Message);
+            var errorMessage = _mapErrorCode.TryGetErrorMessage(ex.ErrorCode) ?? "Lỗi không xác định.";
+            return ForbidWithError(Errors.InvalidGrant, errorMessage);
         }
         catch (Exception ex)
         {
@@ -142,8 +147,13 @@ public sealed class ConnectController : AuthorizationControllerBase
     {
         var result = await HttpContext.AuthenticateAsync(OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
         var userId = int.Parse(result.Principal!.GetClaim(UserClaimTypes.UserId)!);
-        var user = await _userAuthenticationService.FindUserAuthorizationById(userId)
-            ?? throw new UserFriendlyException(ErrorCode.UserNotFound);
+        var resultUser = await _userAuthenticationService.FindUserAuthorizationById(userId);
+        if (!resultUser.IsSuccess)
+        {
+            var errorMessage = _mapErrorCode.TryGetErrorMessage(resultUser.ErrorCode) ?? "Lỗi không xác định.";
+            return ForbidWithError(Errors.InvalidGrant, errorMessage);
+        }
+        var user = resultUser.Value;
 
         var issuer = $"{Request.Scheme}://{Request.Host.Value}";
         var identity = _claimsIdentityFactory.CreateForUser(user, request.GetScopes(), issuer);
@@ -153,9 +163,16 @@ public sealed class ConnectController : AuthorizationControllerBase
 
     private async Task<IActionResult> HandlePasswordGrantAsync(OpenIddictRequest request, ConnectTokenDto dto)
     {
-        var user = await _userAuthenticationService.ValidateAppUser(
+        var resultUser = await _userAuthenticationService.ValidateAppUser(
             request.Username!.ToLower(),
             request.Password!);
+        
+        if (!resultUser.IsSuccess)
+        {
+            var errorMessage = _mapErrorCode.TryGetErrorMessage(resultUser.ErrorCode) ?? "Lỗi không xác định.";
+            return ForbidWithError(Errors.InvalidGrant, errorMessage);
+        }
+        var user = resultUser.Value;
 
         await _userServices.LoginInfor(user.Id);
 
@@ -189,11 +206,19 @@ public sealed class ConnectController : AuthorizationControllerBase
     {
         var result = await HttpContext.AuthenticateAsync(OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
         var userId = int.Parse(result.Principal!.GetClaim(UserClaimTypes.UserId)!);
-        var user = await _userAuthenticationService.FindUserAuthorizationById(userId)
-            ?? throw new UserFriendlyException(ErrorCode.UserNotFound);
+        var resultUser = await _userAuthenticationService.FindUserAuthorizationById(userId);
+        if (!resultUser.IsSuccess)
+        {
+            var errorMessage = _mapErrorCode.TryGetErrorMessage(resultUser.ErrorCode) ?? "Lỗi không xác định.";
+            return ForbidWithError(Errors.InvalidGrant, errorMessage);
+        }
+        var user = resultUser.Value;
 
         if (user.Status != (int)UserStatus.ACTIVE)
-            throw new UserFriendlyException(ErrorCode.UserIsDeactive);
+        {
+            var errorMessage = _mapErrorCode.TryGetErrorMessage(ErrorCode.UserIsDeactive) ?? "Tài khoản đã bị vô hiệu hóa.";
+            return ForbidWithError(Errors.InvalidGrant, errorMessage);
+        }
 
         var issuer = $"{Request.Scheme}://{Request.Host.Value}";
         var identity = _claimsIdentityFactory.CreateForUser(user, [], issuer);
@@ -205,8 +230,13 @@ public sealed class ConnectController : AuthorizationControllerBase
 
     private async Task<IActionResult> SignInWithUserIdAsync(string userId, OpenIddictRequest request)
     {
-        var user = await _userAuthenticationService.FindUserAuthorizationById(int.Parse(userId))
-            ?? throw new InvalidOperationException("Người dùng không tồn tại.");
+        var resultUser = await _userAuthenticationService.FindUserAuthorizationById(int.Parse(userId));
+        if (!resultUser.IsSuccess)
+        {
+            var errorMessage = _mapErrorCode.TryGetErrorMessage(resultUser.ErrorCode) ?? "Người dùng không tồn tại.";
+            return ForbidWithError(Errors.InvalidGrant, errorMessage);
+        }
+        var user = resultUser.Value;
 
         var issuer = $"{Request.Scheme}://{Request.Host.Value}";
         var identity = new ClaimsIdentity(

@@ -35,7 +35,7 @@ namespace CR.Core.ApplicationServices.AuthenticationModule.Implements
             _protector = dataProtectionProvider.CreateProtector("Atelier.eShop.ResetPassword_Token");
         }
 
-        public async Task<Users> FindUserAuthorizationById(int id)
+        public async Task<Result<Users>> FindUserAuthorizationById(int id)
         {
             _logger.LogInformation("{MethodName}: id={Id}", nameof(FindUserAuthorizationById), id);
 
@@ -43,26 +43,27 @@ namespace CR.Core.ApplicationServices.AuthenticationModule.Implements
                            .Include(u => u.Profile)
                            .Include(u => u.UserRoles)
                                .ThenInclude(ur => ur.Role)
-                           .FirstOrDefaultAsync(u => u.Id == id && !u.Deleted && u.Status == (int)UserStatus.ACTIVE)
-                       ?? throw new UserFriendlyException(ErrorCode.UserNotFound);
+                           .FirstOrDefaultAsync(u => u.Id == id && !u.Deleted && u.Status == (int)UserStatus.ACTIVE);
+
+            if (user == null) return Result.Failure<Users>(ErrorCode.UserNotFound, this.GetCurrentMethodInfo());
 
             if (new int[] { (int)UserStatus.TEMP, (int)UserStatus.LOCK }.Contains(user.Status))
             {
-                throw new UserFriendlyException(ErrorCode.UserNotFound);
+                return Result.Failure<Users>(ErrorCode.UserNotFound, this.GetCurrentMethodInfo());
             }
             else if (user.Status == (int)UserStatus.DEACTIVE)
             {
-                throw new UserFriendlyException(ErrorCode.UserIsDeactive);
+                return Result.Failure<Users>(ErrorCode.UserIsDeactive, this.GetCurrentMethodInfo());
             }
 
-            return user;
+            return Result.Success(user);
         }
 
         /// <summary>
         /// Xác thực người dùng (Cho cả Web và App trong kiến trúc Single-tenant)
         /// Hỗ trợ đăng nhập bằng cả Username hoặc Email
         /// </summary>
-        public async Task<Users> ValidateAppUser(string username, string password)
+        public async Task<Result<Users>> ValidateAppUser(string username, string password)
         {
             _logger.LogInformation("{MethodName}: username = {Username}", nameof(ValidateAppUser), username);
 
@@ -75,31 +76,33 @@ namespace CR.Core.ApplicationServices.AuthenticationModule.Implements
                             .FirstOrDefaultAsync(u =>
                             (u.Username == username || u.Email == username)
                             && !u.Deleted
-                            && u.Status == (int)UserStatus.ACTIVE)
-                       ?? throw new UserFriendlyException(ErrorCode.UserNotFound);
+                            && u.Status == (int)UserStatus.ACTIVE);
+
+            if (user == null) return Result.Failure<Users>(ErrorCode.UserNotFound, this.GetCurrentMethodInfo());
 
             // Kiểm tra quyền
             if (!new UserTypeEnum[] { UserTypeEnum.CUSTOMER, UserTypeEnum.SUPER_ADMIN, UserTypeEnum.ADMIN }.Contains(user.UserType))
             {
-                throw new UserFriendlyException(ErrorCode.UserLoginUserTypeInvalid);
+                return Result.Failure<Users>(ErrorCode.UserLoginUserTypeInvalid, this.GetCurrentMethodInfo());
             }
 
             // Kiểm tra trạng thái TEMP hoặc DEACTIVE/LOCK
-            if (user.Status == (int)UserStatus.TEMP) throw new UserFriendlyException(ErrorCode.UserNotFound);
-            if (user.Status == (int)UserStatus.DEACTIVE) throw new UserFriendlyException(ErrorCode.UserIsDeactive);
-            if (user.Status == (int)UserStatus.LOCK) throw new UserFriendlyException(ErrorCode.UserIsLock);
+            if (user.Status == (int)UserStatus.TEMP) return Result.Failure<Users>(ErrorCode.UserNotFound, this.GetCurrentMethodInfo());
+            if (user.Status == (int)UserStatus.DEACTIVE) return Result.Failure<Users>(ErrorCode.UserIsDeactive, this.GetCurrentMethodInfo());
+            if (user.Status == (int)UserStatus.LOCK) return Result.Failure<Users>(ErrorCode.UserIsLock, this.GetCurrentMethodInfo());
 
             // Kiểm tra khóa tạm thời do nhập sai nhiều lần
             if (user.TimeLockUser.HasValue && user.TimeLockUser.Value >= now)
             {
-                throw new UserFriendlyException(ErrorCode.UserIsInactiveBecauseMultiLoginTime);
+                return Result.Failure<Users>(ErrorCode.UserIsInactiveBecauseMultiLoginTime, this.GetCurrentMethodInfo());
             }
 
             // Xác thực mật khẩu
             var verifyResult = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, password);
             if (verifyResult != PasswordVerificationResult.Success)
             {
-                await HandleCountIncorrectPasswordAsync(user); // Ném exception bên trong hàm này
+                var handleFailResult = await HandleCountIncorrectPasswordAsync(user);
+                return Result.Failure<Users>(this.GetCurrentMethodInfo(), handleFailResult);
             }
 
             // Reset đếm lỗi khi đăng nhập thành công
@@ -121,14 +124,14 @@ namespace CR.Core.ApplicationServices.AuthenticationModule.Implements
                 await _dbContext.SaveChangesAsync();
             }
 
-            return user;
+            return Result.Success(user);
         }
 
         /// <summary>
         /// Do đã bỏ TenantId, ValidateWebUser giờ đây giống hệt ValidateAppUser. 
         /// Anh có thể dùng chung hàm ValidateAppUser, hoặc giữ lại hàm này nếu muốn tách biệt API logic sau này.
         /// </summary>
-        public async Task<Users> ValidateWebUser(string userName, string password)
+        public async Task<Result<Users>> ValidateWebUser(string userName, string password)
         {
             _logger.LogInformation("{MethodName}: userName={UserName}", nameof(ValidateWebUser), userName);
 
@@ -139,7 +142,7 @@ namespace CR.Core.ApplicationServices.AuthenticationModule.Implements
         /// <summary>
         /// Xử lý tăng biến đếm khi nhập sai mật khẩu (Đã chuyển sang Async)
         /// </summary>
-        private async Task HandleCountIncorrectPasswordAsync(Users user)
+        private async Task<Result> HandleCountIncorrectPasswordAsync(Users user)
         {
             var now = DateTime.UtcNow;
 
@@ -169,16 +172,17 @@ namespace CR.Core.ApplicationServices.AuthenticationModule.Implements
 
             // 4. Bắn Exception
             if (user.TimeLockUser.HasValue && user.TimeLockUser.Value >= now)
-                throw new UserFriendlyException(ErrorCode.UserIsInactiveBecauseMultiLoginTime);
+                return Result.Failure(ErrorCode.UserIsInactiveBecauseMultiLoginTime, this.GetCurrentMethodInfo());
 
             if (user.Status == (int)UserStatus.DEACTIVE)
-                throw new UserFriendlyException(ErrorCode.UserIsDeactive);
+                return Result.Failure(ErrorCode.UserIsDeactive, this.GetCurrentMethodInfo());
 
             if (user.LoginFailCount == 1)
-                throw new UserFriendlyException(ErrorCode.UsernameOrPasswordIncorrect);
+                return Result.Failure(ErrorCode.UsernameOrPasswordIncorrect, this.GetCurrentMethodInfo());
 
-            throw new UserFriendlyException(
+            return Result.Failure(
                 ErrorCode.AppPasswordIncorrect,
+                this.GetCurrentMethodInfo(),
                 loginMaxTurn.ToString(),
                 (loginMaxTurn - user.LoginFailCount).ToString()
             );
@@ -211,14 +215,14 @@ namespace CR.Core.ApplicationServices.AuthenticationModule.Implements
             }
             return Result.Success();
         }
-        public async Task<Result> VerifyOtpForResetAsync(string email, string otpCode)
+        public async Task<Result<object>> VerifyOtpForResetAsync(string email, string otpCode)
         {
             _logger.LogInformation("Method Name {Method}: email = {email}", nameof(VerifyOtpForResetAsync), email);
             var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Email == email && !u.Deleted && u.Status == (int)UserStatus.ACTIVE);
             if (user == null)
-                return Result.Failure(ErrorCode.UserNotFound, this.GetCurrentMethodInfo());
+                return Result.Failure<object>(ErrorCode.UserNotFound, this.GetCurrentMethodInfo());
             var verifyResult = await _otpService.VerifyOtp(otpCode, user.Id);
-            if (!verifyResult.IsSuccess) return verifyResult;
+            if (!verifyResult.IsSuccess) return Result.Failure<object>(verifyResult.ErrorCode, verifyResult.StackTrace);
 
             // Sửa lại thành ToUnixTimeSeconds để đồng bộ với hàm ResetPassword
             var expireUnix = DateTimeOffset.UtcNow.AddMinutes(15).ToUnixTimeSeconds();
@@ -226,7 +230,7 @@ namespace CR.Core.ApplicationServices.AuthenticationModule.Implements
 
             // Phải gọi hàm Protect để mã hóa
             var resetToken = _protector.Protect(plainTextToken);
-            return Result.Success(new { ResetToken = resetToken });
+            return Result.Success<object>(new { ResetToken = resetToken });
         }
         public async Task<Result> ResetPasswordAsync(string email, string resetToken, string newPassword)
         {
