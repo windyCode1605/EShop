@@ -14,7 +14,7 @@ namespace CR.Core.Domain.Catalog
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
-        public int CategoryId { get; set; }
+        public int? CategoryId { get; set; }
 
         [Required, MaxLength(256)]
         public string Name { get; set; } = null!;
@@ -27,7 +27,7 @@ namespace CR.Core.Domain.Catalog
 
         public string? Description { get; set; }
 
-        public virtual Category Category { get; set; } = null!;
+        public virtual Category? Category { get; set; }
         public virtual ICollection<ProductImage> Images { get; set; } = new List<ProductImage>();
         public virtual ICollection<ProductVariant> Variants { get; set; } = new List<ProductVariant>();
         public virtual ICollection<Review.Reviews> Reviews { get; set; } = new List<Review.Reviews>();

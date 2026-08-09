@@ -5,6 +5,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IAdminCategory, ICategoryCreateDto } from '../../../models/admin-category.model';
 import { AdminCategoryService } from '../../../services/admin-category.service';
+import { ToastService } from '../../../../../core/services/toast.service';
 
 @Component({
   selector: 'app-category-form',
@@ -48,7 +49,10 @@ export class CategoryFormComponent {
   submitted = false;
   form: any = {};
 
-  constructor(private categoryService: AdminCategoryService) {}
+  constructor(
+    private categoryService: AdminCategoryService,
+    private toastService: ToastService
+  ) {}
 
   onNameChange(name: string) {
     if (!this.isEdit && name) {
@@ -90,19 +94,27 @@ export class CategoryFormComponent {
       this.categoryService.updateCategory(this.form.categoryId, this.form).subscribe({
         next: () => {
           this.saving.set(false);
+          this.toastService.success('Cập nhật danh mục thành công');
           this.saved.emit(false);
           this.onClose();
         },
-        error: () => this.saving.set(false)
+        error: (err: any) => {
+          this.saving.set(false);
+          this.toastService.error(err?.error?.message || 'Có lỗi xảy ra khi cập nhật danh mục');
+        }
       });
     } else {
       this.categoryService.createCategory(this.form).subscribe({
         next: () => {
           this.saving.set(false);
+          this.toastService.success('Tạo danh mục thành công');
           this.saved.emit(true);
           this.onClose();
         },
-        error: () => this.saving.set(false)
+        error: (err: any) => {
+          this.saving.set(false);
+          this.toastService.error(err?.error?.message || 'Có lỗi xảy ra khi tạo danh mục');
+        }
       });
     }
   }

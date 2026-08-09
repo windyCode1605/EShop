@@ -36,5 +36,6 @@ public sealed class MapErrorCode : MapErrorCodeBase<MapErrorCode.ErrorCodes>
         public const int UserIsInactiveBecauseMultiLoginTime = ErrorCode.UserIsInactiveBecauseMultiLoginTime;
         public const int SysVarsIsNotConfig = ErrorCode.SysVarsIsNotConfig;
         public const int UnknownError = ErrorCode.UnknownError;
+        public const int CategoryNotFound = ErrorCode.CategoryNotFound;
     }
 }

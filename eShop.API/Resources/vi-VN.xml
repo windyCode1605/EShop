@@ -70,5 +70,7 @@
     <!-- Payment (13xxx) -->
     <Text Name="error_13000" value="Thông tin thanh toán không tồn tại." />
     <Text Name="error_13001" value="Không thể hoàn tiền cho đơn hàng này." />
+
+    <Text Name="error_14000" value="Thể loại không tồn tại." />
   </Texts>
 </Localization>

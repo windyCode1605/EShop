@@ -35,6 +35,8 @@ export const API_ENDPOINTS = {
     CATEGORY: {
         ...createCrudEndpoints('/api/Category'),
         GET_ALL: '/api/Category/getCategory',
+        CREATE: '/api/Category/admin/Category',
+        UPDATE_STATUS: (id: string | number) => `/api/Category/admin/${id}/Category`,
         TOGGLE_ACTIVE: (id: string | number) => `/api/Category/${id}/toggle-active`,
     },
 

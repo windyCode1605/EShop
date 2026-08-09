@@ -62,7 +62,12 @@ export class AdminCategoryService {
    * POST /api/Category
    */
   createCategory(dto: ICategoryCreateDto): Observable<IAdminCategory> {
-    return this.http.post<ApiResponse<IAdminCategory>>(API_ENDPOINTS.CATEGORY.CREATE, dto)
+    const payload = {
+      parentId: dto.parentId,
+      name: dto.categoryName,
+      slug: dto.slug
+    };
+    return this.http.post<ApiResponse<IAdminCategory>>(API_ENDPOINTS.CATEGORY.CREATE, payload)
       .pipe(map(res => res.data!));
   }
 
@@ -75,10 +80,10 @@ export class AdminCategoryService {
   }
 
   /**
-   * DELETE /api/Category/:id
+   * PATCH /api/Category/:id/Category (Update Status / Soft Delete)
    */
   deleteCategory(id: number): Observable<void> {
-    return this.http.delete<ApiResponse<void>>(API_ENDPOINTS.CATEGORY.DELETE(id))
+    return this.http.patch<ApiResponse<void>>(API_ENDPOINTS.CATEGORY.UPDATE_STATUS(id), {})
       .pipe(map(res => res.data!));
   }
 

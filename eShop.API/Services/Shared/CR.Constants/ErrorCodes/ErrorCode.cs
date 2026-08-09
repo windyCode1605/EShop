@@ -74,5 +74,8 @@ namespace CR.Constants.ErrorCodes
         //  Payment (13xxx) — tách riêng khỏi Order để tránh trùng mã 
         public const int PaymentNotFound = 13000;
         public const int PaymentCannotRefund = 13001;
+
+        //  Category (14xxx) 
+        public const int CategoryNotFound = 14000;
     }
 }

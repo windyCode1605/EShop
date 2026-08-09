@@ -11,7 +11,7 @@ public class ProductResponseDto : BaseResponseDto
     public string? Description { get; set; }
     public string? AI_Description { get; set; }
     public bool AI_Generated { get; set; }
-    public int CategoryId { get; set; }
+    public int? CategoryId { get; set; }
     public string CategoryName { get; set; } = string.Empty;
     public List<string> ImageUrls { get; set; } = new();
 
