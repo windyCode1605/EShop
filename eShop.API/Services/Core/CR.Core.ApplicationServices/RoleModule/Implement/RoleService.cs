@@ -207,5 +207,16 @@ namespace CR.Core.ApplicationServices.RoleModule.Implement
 
             return Result<bool>.Success(true);
         }
+        public async Task<Result<bool>> DeleteAsync(int id)
+        {
+            _logger.LogInformation("Method : {method}, ID = {id}", nameof(DeleteAsync), id);
+            var role = await _dbContext.Roles
+                .FirstOrDefaultAsync(r => r.Id == id && !r.Deleted);
+            if (role == null)
+                return Result<bool>.Failure(ErrorCode.RoleNotFound, this.GetCurrentMethodInfo());
+            role.Deleted = true;
+            await _dbContext.SaveChangesAsync();
+            return Result<bool>.Success(true);
+        }
     }
 }

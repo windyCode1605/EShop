@@ -409,7 +409,7 @@ public class OrderService : CoreServiceBase, IOrderService
             .Where(o =>
                 !o.Deleted &&
                 (string.IsNullOrEmpty(input.Status) || o.Status == input.Status) &&
-                (string.IsNullOrEmpty(input.Keyword) || o.OrderCode.Contains(input.Keyword) || o.ShippingAddress.Contains(input.Keyword)));
+                (string.IsNullOrEmpty(input.Keyword) || o.OrderCode.Contains(input.Keyword) || o.ShippingAddress.Contains(input.Keyword) || o.Shipments.Any(s => s.ReceiverPhone.Contains(input.Keyword))));
 
         // 2. Đếm tổng số lượng (Nhanh và không bị Timeout)
         var totalItems = await baseQuery.CountAsync();
