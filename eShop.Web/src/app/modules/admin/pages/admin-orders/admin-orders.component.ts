@@ -23,6 +23,9 @@ export class AdminOrdersComponent implements OnInit {
   reason = '';
   isSaving = false;
   errorMessage = '';
+  
+  keyword = '';
+  statusFilter = '';
 
   readonly validTransitions: Record<string, string[]> = {
     'PENDING': ['CONFIRMED', 'PROCESSING', 'CANCELLED'],
@@ -62,7 +65,21 @@ export class AdminOrdersComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.OrderService.loadOrder()
+    this.loadOrders();
+  }
+  
+  loadOrders(): void {
+    this.OrderService.loadOrder({
+      pageNumber: 1,
+      pageSize: 100, // or whatever default they want, maybe omit or use default
+      keyword: this.keyword,
+      status: this.statusFilter
+    });
+  }
+
+  filterByStatus(status: string): void {
+    this.statusFilter = status;
+    this.loadOrders();
   }
   
   openModal(orderId: string | number, orderCode: string, currentStatus: string) {

@@ -56,17 +56,6 @@ import { PERMISSIONS } from '../../../core/constants/permissions.const';
               </svg>
             </button>
 
-            <!-- Desktop Collapse Toggle Button -->
-            <button (click)="toggleSidebar()"
-                    *ngIf="!isCollapsed()"
-                    class="hidden md:block p-1.5 rounded-lg transition-colors outline-none cursor-pointer hover:bg-slate-500/10 text-slate-400 hover:text-indigo-400"
-                    title="Thu gọn menu Sidebar (Ctrl+B)">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect width="18" height="18" x="3" y="3" rx="2"/>
-                <path d="M9 3v18"/>
-                <path d="m14 15-3-3 3-3"/>
-              </svg>
-            </button>
           </div>
 
           <!-- Navigation Links -->
@@ -262,18 +251,6 @@ import { PERMISSIONS } from '../../../core/constants/permissions.const';
                 </svg>
               </button>
 
-              <!-- Search Bar -->
-              <div class="relative hidden sm:block w-64 lg:w-80">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
-                  <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
-                </svg>
-                <input type="text"
-                       placeholder="Tìm kiếm sản phẩm, đơn hàng..."
-                       class="w-full pl-9 pr-4 py-1.5 rounded-xl text-[13px] border outline-none transition-all duration-200 focus:ring-2 focus:ring-indigo-500/30"
-                       [style.background]="isDark() ? '#1F2937' : '#F1F5F9'"
-                       [style.borderColor]="isDark() ? 'rgba(255,255,255,0.08)' : '#E2E8F0'"
-                       [style.color]="isDark() ? '#F3F4F6' : '#1E293B'">
-              </div>
             </div>
 
             <!-- Top Header Actions -->

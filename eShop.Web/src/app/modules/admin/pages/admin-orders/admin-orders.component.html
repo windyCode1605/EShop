@@ -14,13 +14,13 @@
         <circle cx="11" cy="11" r="8" />
         <line x1="21" x2="16.65" y1="21" y2="16.65" />
       </svg>
-      <input type="text" placeholder="Search by Order ID or phone..." />
+      <input type="text" placeholder="Search by Order ID or phone..." [(ngModel)]="keyword" (keyup.enter)="loadOrders()" />
     </div>
-    <button class="filter-btn active">All</button>
-    <button class="filter-btn">Pending</button>
-    <button class="filter-btn">Processing</button>
-    <button class="filter-btn">Shipped</button>
-    <button class="filter-btn">Delivered</button>
+    <button class="filter-btn" [class.active]="statusFilter === ''" (click)="filterByStatus('')">All</button>
+    <button class="filter-btn" [class.active]="statusFilter === 'PENDING'" (click)="filterByStatus('PENDING')">Pending</button>
+    <button class="filter-btn" [class.active]="statusFilter === 'PROCESSING'" (click)="filterByStatus('PROCESSING')">Processing</button>
+    <button class="filter-btn" [class.active]="statusFilter === 'SHIPPING'" (click)="filterByStatus('SHIPPING')">Shipped</button>
+    <button class="filter-btn" [class.active]="statusFilter === 'DELIVERED'" (click)="filterByStatus('DELIVERED')">Delivered</button>
   </div>
 
   <!-- Table -->

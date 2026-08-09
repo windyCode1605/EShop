@@ -18,7 +18,7 @@ const GROUP_PALETTE = ['#6366F1', '#F59E0B', '#10B981', '#F97316', '#EC4899', '#
 @Component({
   selector: 'app-admin-roles',
   standalone: true,
-  imports: [CommonModule, FormsModule, ToastModule, HasPermissionDirective],
+  imports: [CommonModule, FormsModule, HasPermissionDirective],
   styles: [`
     :host { display: block; }
 
@@ -67,8 +67,6 @@ const GROUP_PALETTE = ['#6366F1', '#F59E0B', '#10B981', '#F97316', '#EC4899', '#
     ::-webkit-scrollbar-thumb { background: var(--admin-border); border-radius: 99px; }
   `],
   template: `
-    <p-toast position="bottom-right"></p-toast>
-
     <div class="min-h-screen w-full" style="background:var(--admin-canvas); color:var(--admin-text-primary);">
 
       <!-- ── Page Content ────────────────────────────────────────── -->
@@ -131,8 +129,8 @@ const GROUP_PALETTE = ['#6366F1', '#F59E0B', '#10B981', '#F97316', '#EC4899', '#
         </div>
 
         <!-- Permissions Table -->
-        <div *ngIf="!initialLoading()" class="rounded-2xl overflow-hidden" style="border:1px solid var(--admin-border);">
-
+        <div *ngIf="!initialLoading()" class="rounded-2xl overflow-x-auto overflow-y-hidden" style="border:1px solid var(--admin-border);">
+          <div class="min-w-[900px]">
           <!-- Column Headers -->
           <div class="grid items-center px-4 py-3 text-[11px] font-semibold uppercase tracking-widest select-none"
                [style.grid-template-columns]="columnTemplate()"
@@ -143,7 +141,13 @@ const GROUP_PALETTE = ['#6366F1', '#F59E0B', '#10B981', '#F97316', '#EC4899', '#
             <div>Permission Key</div>
             <div>Display Name</div>
             <div class="hidden xl:block">Description</div>
-            <div *ngFor="let r of visibleRoles()" class="text-center truncate">{{ r.name }}</div>
+            <div *ngFor="let r of visibleRoles()" class="flex items-center justify-center gap-2">
+              <span class="truncate max-w-[70%]">{{ r.name }}</span>
+              <button *hasPermission="PERMISSIONS.IDENTITY.ROLES_MANAGE" (click)="confirmDeleteRole(r.id, r.name)" 
+                      class="text-red-400 hover:text-red-600 transition-colors shrink-0" title="Xóa vai trò">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M10 11v6M14 11v6"/></svg>
+              </button>
+            </div>
           </div>
 
           <!-- Groups -->
@@ -210,7 +214,7 @@ const GROUP_PALETTE = ['#6366F1', '#F59E0B', '#10B981', '#F97316', '#EC4899', '#
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" [attr.stroke]="'var(--admin-border)'" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mb-4"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
             <p class="text-sm" style="color:var(--admin-text-secondary);">No permissions match your search.</p>
           </div>
-
+          </div>
         </div>
 
       </div><!-- /max-w -->
@@ -251,17 +255,41 @@ const GROUP_PALETTE = ['#6366F1', '#F59E0B', '#10B981', '#F97316', '#EC4899', '#
         </div>
       </div>
     </div>
+
+    <!-- ── Delete Role Modal ────────────────────────────────────── -->
+    <div *ngIf="showDeleteModal"
+         class="fixed inset-0 z-50 flex items-center justify-center p-4"
+         style="background:rgba(0,0,0,0.7); backdrop-filter:blur(6px);">
+      <div class="w-full max-w-[400px] rounded-3xl p-8 shadow-2xl"
+           style="background:var(--admin-modal-bg); border:1px solid var(--admin-modal-border);">
+        <h3 class="text-xl font-semibold mb-3 text-red-500">Xác nhận xóa</h3>
+        <p class="text-[14px] mb-6" style="color:var(--admin-text-primary);">
+          Bạn có chắc chắn muốn xóa vai trò <strong class="text-red-400">"{{ roleToDelete?.name }}"</strong> không? Hành động này không thể hoàn tác.
+        </p>
+
+        <div class="mt-6 flex justify-end gap-3">
+          <button (click)="cancelDeleteRole()"
+                  class="px-5 h-[38px] rounded-[10px] text-[13px] font-medium transition-colors"
+                  style="color:var(--admin-text-secondary); background:transparent;">Hủy</button>
+          <button (click)="executeDeleteRole()"
+                  class="px-5 h-[38px] rounded-[10px] text-[13px] font-semibold transition-all active:scale-95 bg-red-500 hover:bg-red-600 text-white border-0">Xóa vai trò</button>
+        </div>
+      </div>
+    </div>
   `
 })
 export class AdminRolesComponent implements OnInit {
   private roleService = inject(AdminRoleService);
-  private messageService = inject(MessageService);
   private toastService = inject(ToastService);
 
   readonly PERMISSIONS = PERMISSIONS;
 
   // ── Signals ──────────────────────────────────────────────────
   roles = this.roleService.roles;
+
+  // Modal State
+  showDeleteModal = false;
+  roleToDelete: { id: number, name: string } | null = null;
   allPermissionsGrouped = this.roleService.allPermissionsGrouped;
   initialLoading = signal(false);
   saving = signal(false);
@@ -296,7 +324,7 @@ export class AdminRolesComponent implements OnInit {
   /** Column template: checkbox + key + name + desc + N role toggles */
   columnTemplate = computed(() => {
     const roleCount = this.visibleRoles().length;
-    const roleCols = roleCount > 0 ? Array(roleCount).fill('72px').join(' ') : '';
+    const roleCols = roleCount > 0 ? `repeat(${roleCount}, minmax(130px, 1fr))` : '';
     return `32px 180px 180px 1fr ${roleCols}`;
   });
 
@@ -340,7 +368,7 @@ export class AdminRolesComponent implements OnInit {
       },
       error: (err: any) => {
         this.initialLoading.set(false);
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: err.message });
+        this.toastService.error(err.message, 'Error', { position: 'bottom-right' });
       }
     });
   }
@@ -505,6 +533,44 @@ export class AdminRolesComponent implements OnInit {
   openCreateRole() { this.newRoleData = { name: '', description: '' }; this.showCreateModal = true; }
   closeCreateRole() { this.showCreateModal = false; }
 
+  confirmDeleteRole(roleId: number, roleName: string) {
+    this.roleToDelete = { id: roleId, name: roleName };
+    this.showDeleteModal = true;
+  }
+
+  cancelDeleteRole() {
+    this.showDeleteModal = false;
+    this.roleToDelete = null;
+  }
+
+  executeDeleteRole() {
+    if (!this.roleToDelete) return;
+    const roleId = this.roleToDelete.id;
+
+    this.roleService.deleteRole(roleId).subscribe({
+      next: () => {
+        this.toastService.success('Xóa vai trò thành công', 'Thành công', { position: 'bottom-right' });
+        
+        const map = new Map(this.rolePermMap());
+        map.delete(roleId);
+        this.rolePermMap.set(map);
+
+        const dirty = new Set(this.dirtyRoles());
+        dirty.delete(roleId);
+        this.dirtyRoles.set(dirty);
+
+        if (this.selectedFilterRoleId === roleId) {
+          this.selectedFilterRoleId = null;
+        }
+        this.cancelDeleteRole();
+      },
+      error: (err: any) => {
+        this.toastService.error(err.message, 'Lỗi', { position: 'bottom-right' });
+        this.cancelDeleteRole();
+      }
+    });
+  }
+
   submitCreateRole() {
     const tempId = -Date.now();
     const newRole: IRole = { id: tempId, name: this.newRoleData.name, description: this.newRoleData.description, isNew: true };
@@ -522,7 +588,7 @@ export class AdminRolesComponent implements OnInit {
     dirty.add(tempId);
     this.dirtyRoles.set(dirty);
 
-    this.messageService.add({ severity: 'info', summary: 'Draft Created', detail: `Assign permissions to "${newRole.name}" and click Apply Changes to save.` });
+    this.toastService.info(`Assign permissions to "${newRole.name}" and click Apply Changes to save.`, 'Draft Created', { position: 'bottom-right' });
     this.closeCreateRole();
   }
 }

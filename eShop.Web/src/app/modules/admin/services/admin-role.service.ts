@@ -43,7 +43,7 @@ export class AdminRoleService {
     // Wait, the user said they are okay with /api/Role or /api/admin/roles.
     // I will use API_ENDPOINTS.ADMIN.ROLE.CREATE which maps to /api/admin/roles as per endpoints file.
     // If it fails, we will adjust it.
-    return this.http.post<ApiResponse<IRole>>('/api/Role', data).pipe(
+    return this.http.post<ApiResponse<IRole>>('/api/admin/Role', data).pipe(
       map(response => {
         if (response.success && response.data) {
           // Add the new role to the signals state
@@ -51,6 +51,22 @@ export class AdminRoleService {
           return response.data;
         }
         throw new Error(response.message || 'Lỗi khi tạo vai trò');
+      })
+    );
+  }
+
+  /**
+   * Delete a role
+   */
+  deleteRole(roleId: number): Observable<boolean> {
+    return this.http.delete<ApiResponse<boolean>>(`/api/admin/Role/${roleId}`).pipe(
+      map(response => {
+        if (response.success) {
+          // Remove from local state
+          this.roles.update(r => r.filter(role => role.id !== roleId));
+          return true;
+        }
+        throw new Error(response.message || 'Lỗi khi xóa vai trò');
       })
     );
   }

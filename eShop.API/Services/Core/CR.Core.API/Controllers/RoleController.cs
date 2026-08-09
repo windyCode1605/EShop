@@ -9,7 +9,7 @@ namespace CR.Core.API.Controllers
 {
     [Authorize(Roles = "SuperAdmin")]
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/admin/[controller]")]
     public class RoleController : ControllerBase
     {
         private readonly IRoleService _roleService;
@@ -22,5 +22,11 @@ namespace CR.Core.API.Controllers
         [ProducesResponseType(typeof(CR.WebAPIBase.Responses.ApiResponse<object>), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> CreateRole(CreateRoleRequest dto)
             => (await _roleService.CreateRoleAsync(dto)).ToActionResult(this, "Thành công");
+
+        [HttpDelete("{id}")]
+        [ProducesResponseType(typeof(CR.WebAPIBase.Responses.ApiResponse<bool>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(CR.WebAPIBase.Responses.ApiResponse<object>), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> DeleteRole(int id)
+            => (await _roleService.DeleteAsync(id)).ToActionResult(this, "Xóa vai trò thành công");
     }
 }

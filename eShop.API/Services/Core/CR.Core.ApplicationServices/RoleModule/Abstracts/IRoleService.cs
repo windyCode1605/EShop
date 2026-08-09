@@ -10,6 +10,6 @@ namespace CR.Core.ApplicationServices.RoleModule.Abstracts
         Task<Result<List<RoleDto>>> GetRolesAsync();
         Task<Result<List<string>>> GetRolePermissionsAsync(int roleId);
         Task<Result<bool>> UpdateRolePermissionsAsync(int roleId, List<string> permissionKeys);
+        Task<Result<bool>> DeleteAsync(int roleId);
     }
-
 }
