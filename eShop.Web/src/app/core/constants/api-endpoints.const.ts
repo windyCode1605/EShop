@@ -130,5 +130,8 @@ export const API_ENDPOINTS = {
         DASHBOARD: {
             SUMMARY: '/api/admin/dashboard/summary',
         },
+        SYSVAR: {
+            ...createCrudEndpoints('/api/admin/SysVar'),
+        },
     },
 } as const;

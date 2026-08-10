@@ -29,6 +29,13 @@ using FirebaseAdmin;
 using Google.Apis.Auth.OAuth2;
 using CR.Core.ApplicationServices.CustomerModule.Abstracts;
 using CR.Core.ApplicationServices.CustomerModule.Implements;
+using CR.Core.ApplicationServices.SysvarModule.Abstracts;
+using CR.Core.ApplicationServices.SysvarModule.Implements;
+using CR.Core.ApplicationServices.RoleModule.Abstracts;
+using CR.Core.ApplicationServices.RoleModule.Implement;
+using CR.Core.ApplicationServices.RoleModule;
+using CR.Core.ApplicationServices.DashboardModule.Abstracts;
+using CR.Core.ApplicationServices.DashboardModule.Implements;
 
 
 var envPath = Path.Combine(AppContext.BaseDirectory, ".env");
@@ -166,6 +173,8 @@ builder.Services.AddSwaggerGen(options =>
             Array.Empty<string>()
         }
     });
+
+    options.CustomSchemaIds(type => type.FullName);
 });
 
 
@@ -310,10 +319,11 @@ builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IAddressService, AddressService>();
 builder.Services.AddScoped<IAttributeService, AttributeService>();
 builder.Services.AddScoped<IAttributeValueService, AttributeValueService>();
-builder.Services.AddScoped<CR.Core.ApplicationServices.RoleModule.Abstracts.IRoleService, CR.Core.ApplicationServices.RoleModule.Implement.RoleService>();
-builder.Services.AddScoped<CR.Core.ApplicationServices.RoleModule.IPermissionService, CR.Core.ApplicationServices.RoleModule.Implement.PermissionService>();
+builder.Services.AddScoped<IRoleService, RoleService>();
+builder.Services.AddScoped<IPermissionService, PermissionService>();
 builder.Services.AddScoped<IAdminCustomerService, AdminCustomerService>();
-builder.Services.AddScoped<CR.Core.ApplicationServices.DashboardModule.Abstracts.IDashboardService, CR.Core.ApplicationServices.DashboardModule.Implements.DashboardService>();
+builder.Services.AddScoped<IDashboardService, DashboardService>();
+builder.Services.AddScoped<ISysvarService, SysVarService>();
 
 builder.Services.AddSingleton<eShop.API.Services.Shared.FirebaseStorageService>();
 builder.Services.AddSingleton<eShop.API.Services.Shared.FirebaseNotificationService>();

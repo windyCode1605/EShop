@@ -31,6 +31,7 @@ namespace CR.Constants.ErrorCodes
 
         //  System / Config (2xxx) 
         public const int SysVarsIsNotConfig = 2000;
+        public const int SysVarNotFound = 2001;
 
         //  Unhandled / Unknown (4xxx) 
         public const int UnknownError = 4013;

@@ -10,6 +10,30 @@ import { PERMISSIONS } from '../../../core/constants/permissions.const';
   selector: 'app-admin-layout',
   standalone: true,
   imports: [CommonModule, RouterOutlet, RouterModule, HasPermissionDirective],
+  styles: [`
+    .nav-item { color: #64748B; font-weight: 500; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+    .nav-item:hover { background-color: rgba(100, 116, 139, 0.1); color: #0F172A; }
+    .nav-item:active { transform: scale(0.96); background-color: rgba(100, 116, 139, 0.15); }
+    .dark .nav-item { color: #94A3B8; }
+    .dark .nav-item:hover { background-color: rgba(148, 163, 184, 0.1); color: #F8FAFC; }
+    .dark .nav-item:active { transform: scale(0.96); background-color: rgba(148, 163, 184, 0.15); }
+    
+    .nav-item.active {
+      background-color: #EEF2FF !important;
+      color: #4F46E5 !important;
+      box-shadow: inset 3px 0 0 0 #4F46E5, 0 0 0 1px rgba(199, 210, 254, 0.6);
+      font-weight: 600;
+    }
+    .dark .nav-item.active {
+      background-color: rgba(79, 70, 229, 0.15) !important;
+      color: #818CF8 !important;
+      box-shadow: inset 3px 0 0 0 #818CF8, 0 0 0 1px rgba(99, 102, 241, 0.2);
+    }
+    
+    .nav-item-mobile { color: #94A3B8; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+    .nav-item-mobile:active { transform: scale(0.92); color: #6366F1; }
+    .nav-item-mobile.active { color: #6366F1 !important; font-weight: 600; }
+  `],
   template: `
     <div [class]="isDark() ? 'dark' : 'light'"
          class="min-h-[100dvh] flex flex-col font-sans selection:bg-indigo-500/30 transition-colors duration-300 antialiased"
@@ -71,9 +95,10 @@ import { PERMISSIONS } from '../../../core/constants/permissions.const';
                 <li *hasPermission="PERMISSIONS.DASHBOARD.VIEW">
                   <a routerLink="/admin/dashboard"
                      (click)="closeMobileDrawer()"
-                     [routerLinkActive]="isDark() ? 'bg-indigo-600/15 text-indigo-400 font-semibold ring-1 ring-indigo-500/20' : 'bg-indigo-50 text-indigo-600 font-semibold ring-1 ring-indigo-200/60'"
+                     [routerLinkActiveOptions]="{exact: true}"
+                     routerLinkActive="active"
                      [class]="'flex items-center gap-3 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-200 outline-none ' + ((isCollapsed() && !isMobileDrawerOpen()) ? 'justify-center px-0' : 'px-3')"
-                     [style.color]="isDark() ? '#94A3B8' : '#64748B'">
+                     >
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
                     <span *ngIf="!isCollapsed() || isMobileDrawerOpen()" class="truncate">Overview</span>
                   </a>
@@ -91,9 +116,10 @@ import { PERMISSIONS } from '../../../core/constants/permissions.const';
                 <li *hasPermission="PERMISSIONS.CATALOG.CATEGORIES_VIEW">
                   <a routerLink="/admin/categories"
                      (click)="closeMobileDrawer()"
-                     [routerLinkActive]="isDark() ? 'bg-indigo-600/15 text-indigo-400 font-semibold ring-1 ring-indigo-500/20' : 'bg-indigo-50 text-indigo-600 font-semibold ring-1 ring-indigo-200/60'"
+                     [routerLinkActiveOptions]="{exact: true}"
+                     routerLinkActive="active"
                      [class]="'flex items-center gap-3 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-200 outline-none ' + ((isCollapsed() && !isMobileDrawerOpen()) ? 'justify-center px-0' : 'px-3')"
-                     [style.color]="isDark() ? '#94A3B8' : '#64748B'">
+                     >
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
                     <span *ngIf="!isCollapsed() || isMobileDrawerOpen()" class="truncate">Danh mục</span>
                   </a>
@@ -101,9 +127,10 @@ import { PERMISSIONS } from '../../../core/constants/permissions.const';
                 <li *hasPermission="PERMISSIONS.CATALOG.PRODUCTS_VIEW">
                   <a routerLink="/admin/products"
                      (click)="closeMobileDrawer()"
-                     [routerLinkActive]="isDark() ? 'bg-indigo-600/15 text-indigo-400 font-semibold ring-1 ring-indigo-500/20' : 'bg-indigo-50 text-indigo-600 font-semibold ring-1 ring-indigo-200/60'"
+                     [routerLinkActiveOptions]="{exact: true}"
+                     routerLinkActive="active"
                      [class]="'flex items-center gap-3 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-200 outline-none ' + ((isCollapsed() && !isMobileDrawerOpen()) ? 'justify-center px-0' : 'px-3')"
-                     [style.color]="isDark() ? '#94A3B8' : '#64748B'">
+                     >
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
                     <span *ngIf="!isCollapsed() || isMobileDrawerOpen()" class="truncate">Sản phẩm</span>
                   </a>
@@ -121,9 +148,10 @@ import { PERMISSIONS } from '../../../core/constants/permissions.const';
                 <li *hasPermission="PERMISSIONS.SALES.ORDERS_VIEW">
                   <a routerLink="/admin/orders"
                      (click)="closeMobileDrawer()"
-                     [routerLinkActive]="isDark() ? 'bg-indigo-600/15 text-indigo-400 font-semibold ring-1 ring-indigo-500/20' : 'bg-indigo-50 text-indigo-600 font-semibold ring-1 ring-indigo-200/60'"
+                     [routerLinkActiveOptions]="{exact: true}"
+                     routerLinkActive="active"
                      [class]="'flex items-center gap-3 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-200 outline-none ' + ((isCollapsed() && !isMobileDrawerOpen()) ? 'justify-center px-0' : 'px-3')"
-                     [style.color]="isDark() ? '#94A3B8' : '#64748B'">
+                     >
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
                     <span *ngIf="!isCollapsed() || isMobileDrawerOpen()" class="truncate">Đơn hàng</span>
                   </a>
@@ -131,9 +159,10 @@ import { PERMISSIONS } from '../../../core/constants/permissions.const';
                 <li *hasPermission="PERMISSIONS.CUSTOMERS.VIEW">
                   <a routerLink="/admin/customers"
                      (click)="closeMobileDrawer()"
-                     [routerLinkActive]="isDark() ? 'bg-indigo-600/15 text-indigo-400 font-semibold ring-1 ring-indigo-500/20' : 'bg-indigo-50 text-indigo-600 font-semibold ring-1 ring-indigo-200/60'"
+                     [routerLinkActiveOptions]="{exact: true}"
+                     routerLinkActive="active"
                      [class]="'flex items-center gap-3 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-200 outline-none ' + ((isCollapsed() && !isMobileDrawerOpen()) ? 'justify-center px-0' : 'px-3')"
-                     [style.color]="isDark() ? '#94A3B8' : '#64748B'">
+                     >
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                     <span *ngIf="!isCollapsed() || isMobileDrawerOpen()" class="truncate">Khách hàng</span>
                   </a>
@@ -151,9 +180,10 @@ import { PERMISSIONS } from '../../../core/constants/permissions.const';
                 <li *hasPermission="PERMISSIONS.SYSTEM.SETTINGS_VIEW">
                   <a routerLink="/admin/settings"
                      (click)="closeMobileDrawer()"
-                     [routerLinkActive]="isDark() ? 'bg-indigo-600/15 text-indigo-400 font-semibold ring-1 ring-indigo-500/20' : 'bg-indigo-50 text-indigo-600 font-semibold ring-1 ring-indigo-200/60'"
+                     [routerLinkActiveOptions]="{exact: true}"
+                     routerLinkActive="active"
                      [class]="'flex items-center gap-3 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-200 outline-none ' + ((isCollapsed() && !isMobileDrawerOpen()) ? 'justify-center px-0' : 'px-3')"
-                     [style.color]="isDark() ? '#94A3B8' : '#64748B'">
+                     >
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
                     <span *ngIf="!isCollapsed() || isMobileDrawerOpen()" class="truncate">Cài đặt</span>
                   </a>
@@ -161,9 +191,10 @@ import { PERMISSIONS } from '../../../core/constants/permissions.const';
                 <li *hasPermission="[PERMISSIONS.IDENTITY.ROLES_VIEW, PERMISSIONS.IDENTITY.ROLES_MANAGE]">
                   <a routerLink="/admin/roles"
                      (click)="closeMobileDrawer()"
-                     [routerLinkActive]="isDark() ? 'bg-indigo-600/15 text-indigo-400 font-semibold ring-1 ring-indigo-500/20' : 'bg-indigo-50 text-indigo-600 font-semibold ring-1 ring-indigo-200/60'"
+                     [routerLinkActiveOptions]="{exact: true}"
+                     routerLinkActive="active"
                      [class]="'flex items-center gap-3 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-200 outline-none ' + ((isCollapsed() && !isMobileDrawerOpen()) ? 'justify-center px-0' : 'px-3')"
-                     [style.color]="isDark() ? '#94A3B8' : '#64748B'">
+                     >
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
                     <span *ngIf="!isCollapsed() || isMobileDrawerOpen()" class="truncate">Phân quyền</span>
                   </a>
@@ -180,7 +211,7 @@ import { PERMISSIONS } from '../../../core/constants/permissions.const';
             <!-- Theme Toggle Button -->
             <button (click)="toggleTheme()"
                     [class]="'flex items-center gap-3 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-200 outline-none cursor-pointer hover:bg-slate-500/10 text-left ' + ((isCollapsed() && !isMobileDrawerOpen()) ? 'justify-center px-0' : 'px-3')"
-                    [style.color]="isDark() ? '#94A3B8' : '#64748B'">
+                    >
               <svg *ngIf="!isDark()" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0">
                 <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
               </svg>
@@ -230,7 +261,7 @@ import { PERMISSIONS } from '../../../core/constants/permissions.const';
               <button (click)="toggleMobileDrawer()"
                       class="md:hidden p-2 rounded-xl transition-all duration-200 outline-none cursor-pointer border hover:bg-slate-500/10"
                       [style.borderColor]="isDark() ? 'rgba(255,255,255,0.1)' : '#E2E8F0'"
-                      [style.color]="isDark() ? '#94A3B8' : '#64748B'">
+                      >
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <line x1="4" x2="20" y1="12" y2="12"/>
                   <line x1="4" x2="20" y1="6" y2="6"/>
@@ -242,7 +273,7 @@ import { PERMISSIONS } from '../../../core/constants/permissions.const';
               <button (click)="toggleSidebar()"
                       class="hidden md:flex p-2 rounded-xl transition-all duration-200 outline-none cursor-pointer border hover:bg-slate-500/10"
                       [style.borderColor]="isDark() ? 'rgba(255,255,255,0.1)' : '#E2E8F0'"
-                      [style.color]="isDark() ? '#94A3B8' : '#64748B'"
+                      
                       [attr.title]="isCollapsed() ? 'Mở rộng menu' : 'Thu gọn menu'">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <line x1="4" x2="20" y1="12" y2="12"/>
@@ -268,7 +299,7 @@ import { PERMISSIONS } from '../../../core/constants/permissions.const';
               <button (click)="toggleTheme()"
                       class="md:hidden p-2 rounded-xl transition-all duration-200 outline-none cursor-pointer border hover:bg-slate-500/10"
                       [style.borderColor]="isDark() ? 'rgba(255,255,255,0.1)' : '#E2E8F0'"
-                      [style.color]="isDark() ? '#94A3B8' : '#64748B'">
+                      >
                 <svg *ngIf="!isDark()" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
                 <svg *ngIf="isDark()" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
               </button>
@@ -296,29 +327,32 @@ import { PERMISSIONS } from '../../../core/constants/permissions.const';
                [style.borderColor]="isDark() ? 'rgba(255,255,255,0.08)' : '#E2E8F0'">
             
             <a routerLink="/admin/dashboard"
-               routerLinkActive="text-indigo-500 font-semibold"
-               class="flex flex-col items-center justify-center w-14 h-full gap-0.5 text-slate-400 outline-none">
+               [routerLinkActiveOptions]="{exact: true}"
+               routerLinkActive="active"
+               class="nav-item-mobile flex flex-col items-center justify-center w-14 h-full gap-0.5 outline-none transition-colors duration-200">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
               <span class="text-[10px] tracking-tight">Overview</span>
             </a>
 
             <a routerLink="/admin/products"
-               routerLinkActive="text-indigo-500 font-semibold"
-               class="flex flex-col items-center justify-center w-14 h-full gap-0.5 text-slate-400 outline-none">
+               [routerLinkActiveOptions]="{exact: true}"
+               routerLinkActive="active"
+               class="nav-item-mobile flex flex-col items-center justify-center w-14 h-full gap-0.5 outline-none transition-colors duration-200">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
               <span class="text-[10px] tracking-tight">Sản phẩm</span>
             </a>
 
             <a routerLink="/admin/orders"
-               routerLinkActive="text-indigo-500 font-semibold"
-               class="flex flex-col items-center justify-center w-14 h-full gap-0.5 text-slate-400 outline-none">
+               [routerLinkActiveOptions]="{exact: true}"
+               routerLinkActive="active"
+               class="nav-item-mobile flex flex-col items-center justify-center w-14 h-full gap-0.5 outline-none transition-colors duration-200">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
               <span class="text-[10px] tracking-tight">Đơn hàng</span>
             </a>
 
             <a routerLink="/admin/settings"
-               routerLinkActive="text-indigo-500 font-semibold"
-               class="flex flex-col items-center justify-center w-14 h-full gap-0.5 text-slate-400 outline-none">
+               routerLinkActive="active"
+               class="nav-item-mobile flex flex-col items-center justify-center w-14 h-full gap-0.5 outline-none transition-colors duration-200">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
               <span class="text-[10px] tracking-tight">Cài đặt</span>
             </a>
