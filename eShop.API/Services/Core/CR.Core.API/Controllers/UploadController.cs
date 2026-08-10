@@ -34,7 +34,7 @@ public class UploadController : ControllerBase
             // 2. Tạo đường dẫn thư mục lưu trữ (wwwroot/uploads/folder)
             var webRootPath = _env.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
             var uploadsFolder = Path.Combine(webRootPath, "uploads", folder);
-            
+
             if (!Directory.Exists(uploadsFolder))
             {
                 Directory.CreateDirectory(uploadsFolder);

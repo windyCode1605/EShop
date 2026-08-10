@@ -1,6 +1,5 @@
 using AutoMapper;
 using CR.ApplicationBase;
-using CR.Common;
 using CR.Constants.ErrorCodes;
 using CR.Core.ApplicationServices.ProductModule.Abstracts;
 using CR.Core.Domain.Catalog;
@@ -57,15 +56,12 @@ public class ProductService : ServiceBase<CoreDbContext>, IProductService
         _dbContext.Products.Add(product);
         await _dbContext.SaveChangesAsync();
 
-        var result = await _dbContext.Products
-            .Include(p => p.Category)
-            .Include(p => p.Variants)
-            .FirstAsync(p => p.Id == product.Id);
+        await _dbContext.Entry(product).Reference(p => p.Category).LoadAsync();
 
-        _logger.LogInformation("Product created: Id={Id}, Name={Name}, Variants={Count}",
-            result.Id, result.Name, result.Variants.Count);
+        _logger.LogInformation("Product created: Id={Id}, Name={Name}",
+            product.Id, product.Name);
 
-        return Result<ProductResponseDto>.Success(_mapper.Map<ProductResponseDto>(result));
+        return Result<ProductResponseDto>.Success(_mapper.Map<ProductResponseDto>(product));
     }
 
     public async Task<Result<PageResult<ProductResponseDto>>> GetAllAsync(ProductQueryDto request)
@@ -167,6 +163,7 @@ public class ProductService : ServiceBase<CoreDbContext>, IProductService
                 .ThenInclude(va => va.Attribute)
             .Include(v => v.VariantAttributes.Where(va => !va.Deleted))
                 .ThenInclude(va => va.AttributeValue)
+            .AsSplitQuery()
             .FirstAsync(v => v.Id == variant.Id);
 
         _logger.LogInformation("ProductVariant created: Id={Id}, SKU={SKU}, ProductId={ProductId}",
@@ -186,6 +183,7 @@ public class ProductService : ServiceBase<CoreDbContext>, IProductService
                 .ThenInclude(va => va.Attribute)
             .Include(v => v.VariantAttributes.Where(va => !va.Deleted))
                 .ThenInclude(va => va.AttributeValue)
+            .AsSplitQuery()
             .FirstOrDefaultAsync(v => v.Id == variantId && !v.Deleted);
 
         if (variant == null)
@@ -203,20 +201,24 @@ public class ProductService : ServiceBase<CoreDbContext>, IProductService
         variant.PriceAdjustment = dto.PriceAdjustment;
         variant.StockQuantity = dto.StockQuantity;
 
-        if (variant.Images != null && variant.Images.Any())
+        if (variant.Images == null)
         {
-            _dbContext.RemoveRange(variant.Images);
+            variant.Images = new List<ProductImage>();
+        }
+        else if (variant.Images.Any())
+        {
+            _dbContext.ProductImages.RemoveRange(variant.Images);
             variant.Images.Clear();
         }
 
-        if (dto.ImageUrls != null && dto.ImageUrls.Any())
+        if (dto.ImageUrls != null && dto.ImageUrls.Count > 0)
         {
-            variant.Images = new List<ProductImage>();
             for (int i = 0; i < dto.ImageUrls.Count; i++)
             {
                 variant.Images.Add(new ProductImage
                 {
                     ProductId = variant.ProductId,
+                    ProductVariantId = variant.Id,
                     Url = dto.ImageUrls[i],
                     SortOrder = i,
                     IsPrimary = (i == 0)
@@ -235,21 +237,20 @@ public class ProductService : ServiceBase<CoreDbContext>, IProductService
     {
         _logger.LogInformation("Method Name: {Method}, ProductId={ProductId}", nameof(UpdateAsync), id);
 
+        var categoryExists = await _dbContext.Categories.AnyAsync(c => c.Id == dto.CategoryId && !c.Deleted);
+        if (!categoryExists)
+        {
+            return Result<ProductResponseDto>.Failure(ErrorCode.InvalidInput, this.GetCurrentMethodInfo(), $"Category with Id {dto.CategoryId} does not exist.");
+        }
+
+
         var product = await _dbContext.Products
             .Include(p => p.Category)
-            .Include(p => p.Variants)
-            .Include(p => p.Images)
             .FirstOrDefaultAsync(p => p.Id == id && !p.Deleted);
 
         if (product == null)
         {
             return Result<ProductResponseDto>.Failure(ErrorCode.InvalidInput, this.GetCurrentMethodInfo(), "Product not found");
-        }
-
-        var categoryExists = await _dbContext.Categories.AnyAsync(c => c.Id == dto.CategoryId && !c.Deleted);
-        if (!categoryExists)
-        {
-            return Result<ProductResponseDto>.Failure(ErrorCode.InvalidInput, this.GetCurrentMethodInfo(), $"Category with Id {dto.CategoryId} does not exist.");
         }
 
         // Cập nhật thông tin cơ bản
@@ -273,54 +274,59 @@ public class ProductService : ServiceBase<CoreDbContext>, IProductService
     {
         _logger.LogInformation("Method : {method}, Product ID : {id}", nameof(DeleteAsync), id);
         var userId = _httpContext.GetCurrentUserId();
-        var product = await _dbContext.Products
-            .Include(p => p.Variants).ThenInclude(pv => pv.VariantAttributes)
-            .Include(p => p.Variants).ThenInclude(pv => pv.Images)
-            .Include(p => p.Images)
-            .Include(p => p.ProductAttributes)
-            .Where(p => p.Id == id && !p.Deleted)
-            .FirstOrDefaultAsync();
-        if (product == null)
-            return Result.Failure(ErrorCode.InvalidInput, this.GetCurrentMethodInfo(), $"Không tìm thấy sản phẩm với ID : {id}");
+
         using var transaction = await _dbContext.Database.BeginTransactionAsync();
         try
         {
             var now = DateTime.UtcNow;
-            product.Deleted = true;
-            product.ModifiedDate = now;
-            product.DeletedDate = now;
-            foreach (var attr in product.ProductAttributes)
+
+            // Dùng ExecuteUpdateAsync thay vì load toàn bộ graph vào memory (Tối ưu truy vấn N+1 & Memory)
+            var rowsAffected = await _dbContext.Products
+                .Where(p => p.Id == id && !p.Deleted)
+                .ExecuteUpdateAsync(s => s
+                    .SetProperty(p => p.Deleted, true)
+                    .SetProperty(p => p.ModifiedDate, now)
+                    .SetProperty(p => p.DeletedDate, now)
+                    .SetProperty(p => p.DeletedBy, userId));
+
+            if (rowsAffected == 0)
             {
-                attr.Deleted = true;
-                attr.DeletedDate = now;
-                attr.DeletedBy = userId;
+                await transaction.RollbackAsync();
+                return Result.Failure(ErrorCode.InvalidInput, this.GetCurrentMethodInfo(), $"Không tìm thấy sản phẩm với ID : {id}");
             }
-            foreach (var pi in product.Images)
-            {
-                pi.Deleted = true;
-                pi.DeletedDate = now;
-                pi.DeletedBy = userId;
-            }
-            foreach (var pv in product.Variants)
-            {
-                pv.Deleted = true;
-                pv.DeletedDate = now;
-                pv.DeletedBy = userId;
-                foreach (var pva in pv.VariantAttributes)
-                {
-                    pva.Deleted = true;
-                    pva.DeletedDate = now;
-                    pva.DeletedBy = userId;
-                }
-                foreach (var pvi in pv.Images)
-                {
-                    pvi.Deleted = true;
-                    pvi.DeletedDate = now;
-                    pvi.DeletedBy = userId;
-                }
-            }
-            _dbContext.Products.Update(product);
-            await _dbContext.SaveChangesAsync();
+
+            // Xóa ProductAttributes liên quan
+            await _dbContext.ProductAttributes
+                .Where(pa => pa.ProductId == id && !pa.Deleted)
+                .ExecuteUpdateAsync(s => s
+                    .SetProperty(p => p.Deleted, true)
+                    .SetProperty(p => p.DeletedDate, now)
+                    .SetProperty(p => p.DeletedBy, userId));
+
+            // Xóa ProductImages (Bao gồm ảnh của product và ảnh của các variants do đều map tới ProductId)
+            await _dbContext.ProductImages
+                .Where(pi => pi.ProductId == id && !pi.Deleted)
+                .ExecuteUpdateAsync(s => s
+                    .SetProperty(p => p.Deleted, true)
+                    .SetProperty(p => p.DeletedDate, now)
+                    .SetProperty(p => p.DeletedBy, userId));
+
+            // Xóa ProductVariantAttributes thông qua relationship với ProductVariant
+            await _dbContext.ProductVariantAttributes
+                .Where(pva => pva.ProductVariant.ProductId == id && !pva.Deleted)
+                .ExecuteUpdateAsync(s => s
+                    .SetProperty(p => p.Deleted, true)
+                    .SetProperty(p => p.DeletedDate, now)
+                    .SetProperty(p => p.DeletedBy, userId));
+
+            // Xóa các ProductVariants
+            await _dbContext.ProductVariants
+                .Where(pv => pv.ProductId == id && !pv.Deleted)
+                .ExecuteUpdateAsync(s => s
+                    .SetProperty(p => p.Deleted, true)
+                    .SetProperty(p => p.DeletedDate, now)
+                    .SetProperty(p => p.DeletedBy, userId));
+
             await transaction.CommitAsync();
 
             return Result.Success();
