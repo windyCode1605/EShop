@@ -74,12 +74,17 @@ public class ProductService : ServiceBase<CoreDbContext>, IProductService
             nameof(GetAllAsync), request.Keyword, request.CategoryId, request.MinPrice, request.MaxPrice);
 
         var query = _dbContext.Products
+            .AsNoTracking()
             .Where(p => !p.Deleted);
 
         if (!string.IsNullOrWhiteSpace(request.Keyword))
         {
-            var keyword = request.Keyword.ToLower();
-            query = query.Where(p => p.Name.ToLower().Contains(keyword) || p.Slug.Contains(keyword));
+            var keyword = request.Keyword.Trim();
+            var searchPattern = $"%{keyword}%";
+
+            query = query.Where(p =>
+                EF.Functions.ILike(p.Name, searchPattern) ||
+                EF.Functions.ILike(p.Slug, searchPattern));
         }
 
         if (request.CategoryId.HasValue)
@@ -91,11 +96,14 @@ public class ProductService : ServiceBase<CoreDbContext>, IProductService
         if (request.MaxPrice.HasValue)
             query = query.Where(p => p.BasePrice <= request.MaxPrice);
 
-        query = query.IncludeFullProductDetails();
-
         var total = await query.CountAsync();
-
+        if (total == 0)
+        {
+            return Result<PageResult<ProductResponseDto>>.Success(
+                PageResult<ProductResponseDto>.Create(new List<ProductResponseDto>(), 0, request));
+        }
         var items = await query
+            .IncludeFullProductDetails()
             .PagingAndSorting(request)
             .AsSplitQuery()
             .ToListAsync();
