@@ -40,7 +40,7 @@ public class UploadController : ControllerBase
                 Directory.CreateDirectory(uploadsFolder);
             }
 
-            // 3. Tạo tên file ngẫu nhiên tránh trùng lặp
+            // 3. Tạo tên file ngẫu nhiên
             var fileName = $"{Guid.NewGuid()}_{file.FileName}";
             var filePath = Path.Combine(uploadsFolder, fileName);
 
@@ -50,14 +50,15 @@ public class UploadController : ControllerBase
                 await file.CopyToAsync(stream);
             }
 
-            // 5. Tạo đường dẫn public URL trả về cho client
-            var baseUrl = $"{Request.Scheme}://{Request.Host}{Request.PathBase}";
-            var url = $"{baseUrl}/uploads/{folder}/{fileName}";
+            // 5. TRẢ VỀ RELATIVE PATH THAY VÌ ABSOLUTE URL
+            // Bỏ Request.Scheme, Request.Host để DB không bị gắn chặt với domain hiện tại (Render, Localhost...)
+            var relativePath = $"/uploads/{folder}/{fileName}";
 
-            return Ok(new { Url = url });
+            return Ok(new { Url = relativePath });
         }
         catch (Exception ex)
         {
+            // Trong thực tế, nên log lỗi qua hệ thống logging có cấu trúc thay vì trả thẳng chi tiết lỗi ra ngoài
             return StatusCode(500, new { Message = $"Lỗi server: {ex.Message}" });
         }
     }
