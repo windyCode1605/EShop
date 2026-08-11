@@ -12,7 +12,7 @@ import { IProduct, IProductVariant, IVariantAttribute, ProductResponseDto } from
 import { ProductFilterModel } from '../../../product-manager/models/product-filter.model';
 import { CategoryService } from '../../services/category.service';
 import { CartService } from '../../../cart/services/cart.service';
-import { environment } from '../../../my-lib/shared/enviroments/enviroment';
+import { environment } from '../../../../my-lib/shared/enviroments/enviroment';
 
 interface ToastMessage {
   id: number;
