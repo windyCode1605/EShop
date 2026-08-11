@@ -12,6 +12,7 @@ import { IProduct, IProductVariant, IVariantAttribute, ProductResponseDto } from
 import { ProductFilterModel } from '../../../product-manager/models/product-filter.model';
 import { CategoryService } from '../../services/category.service';
 import { CartService } from '../../../cart/services/cart.service';
+import { environment } from '../../../../../environments/environment';
 
 interface ToastMessage {
   id: number;
@@ -354,8 +355,14 @@ export class ProductPageComponent implements OnInit, OnDestroy {
   }
 
   getProductImage(product: any): string {
-    return product.imageUrls?.[0] || product.image
-      || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=800';
+    const relativeUrl = product.imageUrls?.[0] || product.image;
+    if (relativeUrl) {
+      if (relativeUrl.startsWith('http')) return relativeUrl;
+      const baseUrl = environment.apiBaseUrl.replace(/\/$/, '');
+      const path = relativeUrl.startsWith('/') ? relativeUrl : `/${relativeUrl}`;
+      return `${baseUrl}${path}`;
+    }
+    return 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=800';
   }
 
   formatPrice(value: number): string {
