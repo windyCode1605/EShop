@@ -6,6 +6,7 @@ import { AdminProductService, AdminProductListResponse } from '../../services/ad
 import { AdminCategoryService } from '../../services/admin-category.service';
 import { ConfirmDialogComponent } from '../../components/confirm-dialog/confirm-dialog.component';
 import { ProductFormComponent } from './product-form/product-form.component';
+import { ImageUrlPipe } from '../../../../shared/pipes/image-url.pipe';
 import {
   IAdminProduct,
   IAdminProductFilter,
@@ -19,7 +20,7 @@ import { IAdminCategory } from '../../models/admin-category.model';
 @Component({
   selector: 'app-admin-products',
   standalone: true,
-  imports: [CommonModule, FormsModule, ProductFormComponent, ConfirmDialogComponent],
+  imports: [CommonModule, FormsModule, ProductFormComponent, ConfirmDialogComponent, ImageUrlPipe],
   styleUrl: './admin-products.component.scss',
   templateUrl: './admin-products.component.html'
 })
@@ -43,7 +44,7 @@ export class AdminProductsComponent implements OnInit, OnDestroy {
   inactiveCount = computed(() => this.products().filter(p => !p.isActive).length);
   lowStockCount = computed(() => this.products().filter(p => p.stock < 10).length);
   totalVariants = computed(() => this.products().reduce((sum, p) => sum + (p.variants?.length || 0), 0));
-  
+
   // Computed Pagination
   totalPages = computed(() => Math.ceil(this.totalCount() / this.pageSize()) || 1);
   paginationFrom = computed(() => (this.currentPage() - 1) * this.pageSize() + 1);
@@ -63,10 +64,10 @@ export class AdminProductsComponent implements OnInit, OnDestroy {
   });
 
   categories = signal<IAdminCategory[]>([]);
-  
+
   formVisible = signal(false);
   selectedProduct = signal<IAdminProduct | null>(null);
-  
+
   confirmVisible = signal(false);
   deleteTarget = signal<IAdminProduct | null>(null);
 
@@ -78,7 +79,7 @@ export class AdminProductsComponent implements OnInit, OnDestroy {
   constructor(
     private productService: AdminProductService,
     private categoryService: AdminCategoryService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loadProducts();
@@ -175,8 +176,8 @@ export class AdminProductsComponent implements OnInit, OnDestroy {
     }
   }
 
-  getProductImage(p: IAdminProduct): string {
-    return p.variants?.[0]?.imageUrls?.[0] || 'assets/placeholder.png';
+  getProductImage(p: any): string {
+    return p.imageUrls?.[0] || p.images?.[0]?.imageUrl || p.variants?.[0]?.imageUrls?.[0] || '';
   }
 
   openCreateForm(): void {

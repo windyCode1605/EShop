@@ -15,19 +15,20 @@ import {
 import { IAdminCategory } from '../../../models/admin-category.model';
 import { AdminProductService } from '../../../services/admin-product.service';
 import { UploadService } from '../../../../../core/services/upload.service';
+import { ImageUrlPipe } from '../../../../../shared/pipes/image-url.pipe';
 
 type FormTab = 'info' | 'images' | 'attributes' | 'variants';
 
 @Component({
   selector: 'app-product-form',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ImageUrlPipe],
   styleUrl: './product-form.component.scss',
   templateUrl: './product-form.component.html'
 })
 export class ProductFormComponent {
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
-  
+
   @Input() visible = false;
   @Input() set product(val: IAdminProduct | null) {
     if (val) {
@@ -58,21 +59,21 @@ export class ProductFormComponent {
   saving = signal(false);
   submitted = false;
   form: any = {};
-  
+
   activeTab: FormTab = 'info';
-  
+
   // Images
   images = signal<any[]>([]);
   newImageUrl = '';
   newImageAlt = '';
-  
+
   // Attributes
   attributes = signal<any[]>([]);
   showAttrForm = false;
   newAttr = { name: '', type: 'Text' as AttributeType };
   newValueLabel: string[] = [];
   newValueRaw: string[] = [];
-  
+
   // Variants
   variants = signal<any[]>([]);
   expandedVariants = new Set<number>();
@@ -84,7 +85,7 @@ export class ProductFormComponent {
   constructor(
     private productService: AdminProductService,
     private uploadService: UploadService
-  ) {}
+  ) { }
 
   setTab(tab: FormTab) { this.activeTab = tab; }
 
@@ -127,8 +128,8 @@ export class ProductFormComponent {
       this.newImageAlt = '';
     }
   }
-  triggerFileUpload() { if(this.fileInput) this.fileInput.nativeElement.click(); }
-  onFileChange(e: any) {}
+  triggerFileUpload() { if (this.fileInput) this.fileInput.nativeElement.click(); }
+  onFileChange(e: any) { }
 
   // --- Attributes ---
   getAttrTypeLabel(t: string) { return t; }
@@ -181,7 +182,7 @@ export class ProductFormComponent {
         stockQuantity: variant.stockQuantity,
         imageUrls: variant.imageUrls || []
       };
-      
+
       this.productService.updateProductVariant(variant.id, dto).subscribe({
         next: (res: any) => {
           this.variants.update(arr => {
@@ -243,7 +244,7 @@ export class ProductFormComponent {
           isActive: true,
           attributes: []
         };
-        
+
         this.productService.createProductVariant(dto).subscribe({
           next: (res) => {
             this.variants.update(arr => [...arr, res]);
@@ -251,7 +252,7 @@ export class ProductFormComponent {
             this.showVariantForm = false;
             this.saving.set(false);
             // Optionally emit saved event if you want the parent to reload
-            this.saved.emit(false); 
+            this.saved.emit(false);
           },
           error: () => {
             this.saving.set(false);

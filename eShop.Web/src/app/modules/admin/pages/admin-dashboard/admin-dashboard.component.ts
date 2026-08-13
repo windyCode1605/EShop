@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { NgxEchartsModule, provideEchartsCore } from 'ngx-echarts';
 import * as echarts from 'echarts';
 import { AdminDashboardService, DashboardResponseDto } from '../../services/admin-dashboard.service';
+import { ImageUrlPipe } from '../../../../shared/pipes/image-url.pipe';
 
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [CommonModule, NgxEchartsModule],
+  imports: [CommonModule, NgxEchartsModule, ImageUrlPipe],
   providers: [provideEchartsCore({ echarts })],
   styleUrl: './admin-dashboard.component.scss',
   templateUrl: './admin-dashboard.component.html'

@@ -88,7 +88,7 @@
             <div class="field">
               <label>Hình ảnh danh mục</label>
               <div class="img-preview-wrap">
-                <img *ngIf="form.imageUrl" [src]="form.imageUrl" alt="Category image" (error)="onImageError()">
+                <img *ngIf="form.imageUrl" [src]="form.imageUrl | imageUrl" alt="Category image" (error)="onImageError()">
                 <div class="img-placeholder" *ngIf="!form.imageUrl">
                   <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"
                        fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">

@@ -125,7 +125,7 @@
 
             <div class="image-grid" *ngIf="images().length > 0">
               <div class="image-card" *ngFor="let img of images(); let i = index" [id]="'img-card-'+i">
-                <img [src]="img.imageUrl" [alt]="img.altText || 'Product image'" loading="lazy">
+                <img [src]="img.imageUrl | imageUrl" [alt]="img.altText || 'Product image'" loading="lazy">
                 <span class="image-badge" *ngIf="img.isPrimary">Chính</span>
                 <div class="image-actions">
                   <button class="img-btn img-btn-primary" (click)="setPrimaryImage(i)"
@@ -365,7 +365,7 @@
 
                   <div class="image-grid" *ngIf="variant.imageUrls && variant.imageUrls.length > 0" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:12px">
                     <div class="img-card" *ngFor="let url of variant.imageUrls; let imgIdx = index" style="position:relative;aspect-ratio:1;border-radius:12px;overflow:hidden;border:1px solid #E4E4E7">
-                      <img [src]="url" style="width:100%;height:100%;object-fit:cover" alt="Variant Image">
+                      <img [src]="url | imageUrl" style="width:100%;height:100%;object-fit:cover" alt="Variant Image">
                       <button class="btn-remove-img" (click)="removeVariantImage(vi, imgIdx)" style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.5);color:white;border:none;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;cursor:pointer">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                           <line x1="18" y1="6" x2="6" y2="18"></line>

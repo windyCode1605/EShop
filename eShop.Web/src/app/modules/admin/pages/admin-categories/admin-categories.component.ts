@@ -6,11 +6,12 @@ import { AdminCategoryService } from '../../services/admin-category.service';
 import { ConfirmDialogComponent } from '../../components/confirm-dialog/confirm-dialog.component';
 import { CategoryFormComponent } from './category-form/category-form.component';
 import { IAdminCategory, ICategoryCreateDto } from '../../models/admin-category.model';
+import { ImageUrlPipe } from '../../../../shared/pipes/image-url.pipe';
 
 @Component({
   selector: 'app-admin-categories',
   standalone: true,
-  imports: [CommonModule, FormsModule, ConfirmDialogComponent, CategoryFormComponent],
+  imports: [CommonModule, FormsModule, ConfirmDialogComponent, CategoryFormComponent, ImageUrlPipe],
   styleUrl: './admin-categories.component.scss',
   templateUrl: './admin-categories.component.html'
 })

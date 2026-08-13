@@ -61,7 +61,7 @@
         <div class="pd-gallery-col">
           <div class="pd-main-image-wrap">
             <img
-              [src]="productImages()[activeImageIndex()]"
+              [src]="productImages()[activeImageIndex()] | imageUrl"
               [alt]="product()!.name"
               class="pd-main-image"
               loading="eager"
@@ -78,7 +78,7 @@
                 (click)="setActiveImage($index)"
                 [attr.aria-label]="'Xem ảnh ' + ($index + 1)"
               >
-                <img [src]="img" [alt]="'Ảnh ' + ($index + 1)" class="pd-thumb-img" loading="lazy"/>
+                <img [src]="img | imageUrl" [alt]="'Ảnh ' + ($index + 1)" class="pd-thumb-img" loading="lazy"/>
               </button>
             }
           </div>

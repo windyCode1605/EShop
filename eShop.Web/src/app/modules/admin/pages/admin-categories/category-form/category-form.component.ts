@@ -6,11 +6,12 @@ import { FormsModule } from '@angular/forms';
 import { IAdminCategory, ICategoryCreateDto } from '../../../models/admin-category.model';
 import { AdminCategoryService } from '../../../services/admin-category.service';
 import { ToastService } from '../../../../../core/services/toast.service';
+import { ImageUrlPipe } from '../../../../../shared/pipes/image-url.pipe';
 
 @Component({
   selector: 'app-category-form',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ImageUrlPipe],
   styleUrl: './category-form.component.scss',
   templateUrl: './category-form.component.html'
 })

@@ -12,8 +12,8 @@ export class ImageUrlPipe implements PipeTransform {
       return '';
     }
 
-    // If the value is already a full URL (http or https), return it directly
-    if (value.startsWith('http://') || value.startsWith('https://')) {
+    // If the value is already a full URL (http or https) or an asset, return it directly
+    if (value.startsWith('http://') || value.startsWith('https://') || value.startsWith('assets/')) {
       return value;
     }
 

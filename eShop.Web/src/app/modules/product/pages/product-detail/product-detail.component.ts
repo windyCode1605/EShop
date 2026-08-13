@@ -5,6 +5,7 @@ import { Subject, takeUntil, finalize } from 'rxjs';
 import { ProductService } from '../../services/product.service';
 import { IProduct, IProductVariant, IVariantAttribute } from '../../../product-manager/models/product.model';
 import { CartService } from '../../../cart/services/cart.service';
+import { ImageUrlPipe } from '../../../../shared/pipes/image-url.pipe';
 
 interface ToastMessage {
   id: number;
@@ -15,7 +16,7 @@ interface ToastMessage {
 @Component({
   selector: 'app-product-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, ImageUrlPipe],
   templateUrl: './product-detail.component.html',
   styleUrls: ['./product-detail.component.scss']
 })

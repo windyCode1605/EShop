@@ -106,7 +106,7 @@
           @for (product of d.topSellingProducts; track product.productId) {
             <div class="product-item">
               @if (product.imageUrl) {
-                <img [src]="product.imageUrl" [alt]="product.productName" class="product-img">
+                <img [src]="product.imageUrl | imageUrl" [alt]="product.productName" class="product-img">
               } @else {
                 <div class="product-img product-img--placeholder"></div>
               }
