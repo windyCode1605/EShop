@@ -10,7 +10,7 @@ namespace CR.Core.API.Controllers
 {
     [ApiController]
     [Route("api/admin/users")]
-    [Authorize(Roles = "ADMIN")]
+    [Authorize]
     public class AdminUserController : ControllerBase
     {
         private readonly IUserService _userService;

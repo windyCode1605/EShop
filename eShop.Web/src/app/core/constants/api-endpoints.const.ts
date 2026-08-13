@@ -106,6 +106,9 @@ export const API_ENDPOINTS = {
             UPDATE_ROLES: (userId: string | number) => `/api/admin/users/${userId}/roles`,
             TEST_PERMISSION: '/api/admin/users/test-permission',
         },
+        EMPLOYEE: {
+            ...createCrudEndpoints('/api/admin/employee'),
+        },
 
         // Vẫn giữ lại để không vỡ service cũ (AdminProductService đang dùng)
         PRODUCT: {

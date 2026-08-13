@@ -57,6 +57,12 @@ export const ADMIN_ROUTES: Routes = [
         loadComponent: () => import('./pages/admin-roles/admin-roles.component').then((m) => m.AdminRolesComponent),
         canActivate: [permissionGuard],
         data: { permissions: [PERMISSIONS.IDENTITY.ROLES_VIEW, PERMISSIONS.IDENTITY.ROLES_MANAGE] }
+      },
+      {
+        path: 'employees',
+        loadComponent: () => import('./pages/admin-employees/admin-employees.component').then((m) => m.AdminEmployeesComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: [PERMISSIONS.IDENTITY.USERS_VIEW, PERMISSIONS.IDENTITY.USERS_MANAGE] }
       }
     ]
   }

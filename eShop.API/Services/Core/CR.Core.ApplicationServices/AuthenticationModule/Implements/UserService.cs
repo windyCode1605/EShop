@@ -256,7 +256,7 @@ namespace CR.Core.ApplicationServices.AuthenticationModule.Implements
             var isRoleExist = await _dbContext.UserRoles
                 .AnyAsync(ur => ur.UserId == userId && ur.RoleId == roleId && !ur.Deleted);
             if (isRoleExist)
-                return Result<bool>.Failure(ErrorCode.BadRequest, "User đã tồn tại quyền này");
+                return Result<bool>.Success(true);
             var userRole = new UserRole
             {
                 UserId = userId,

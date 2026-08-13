@@ -36,6 +36,8 @@ using CR.Core.ApplicationServices.RoleModule.Implement;
 using CR.Core.ApplicationServices.RoleModule;
 using CR.Core.ApplicationServices.DashboardModule.Abstracts;
 using CR.Core.ApplicationServices.DashboardModule.Implements;
+using CR.Core.ApplicationServices.EmployeeModule.Abstracts;
+using CR.Core.ApplicationServices.EmployeeModule.Iplement;
 
 
 var envPath = Path.Combine(AppContext.BaseDirectory, ".env");
@@ -324,6 +326,7 @@ builder.Services.AddScoped<IPermissionService, PermissionService>();
 builder.Services.AddScoped<IAdminCustomerService, AdminCustomerService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<ISysvarService, SysVarService>();
+builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 
 builder.Services.AddSingleton<eShop.API.Services.Shared.FirebaseStorageService>();
 builder.Services.AddSingleton<eShop.API.Services.Shared.FirebaseNotificationService>();
