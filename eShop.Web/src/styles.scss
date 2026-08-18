@@ -427,6 +427,26 @@ html.light {
 }
 
 html.dark {
+  /* Main Canvas & Surfaces */
+  --color-canvas:            #18181B; /* Charcoal */
+  --color-surface:           #27272A; /* Zinc 800 */
+  --color-surface-alt:       #3F3F46;
+  --color-surface-secondary: #52525B;
+
+  /* Main Text */
+  --color-text-primary:   #F9FAFB;
+  --color-text-secondary: #A1A1AA;
+  --color-text-muted:     #71717A;
+
+  /* Main Border */
+  --color-border:       #3F3F46;
+  --color-border-focus: #F9FAFB;
+
+  /* Main Accent — Earthy Green/Brown (Taurus) */
+  --color-accent:       #2F4F4F;
+  --color-accent-dark:  #1C3030;
+  --color-accent-light: #527A7A;
+
   /* Admin surfaces */
   --admin-canvas:      #08090D;
   --admin-surface:     #0F1117;

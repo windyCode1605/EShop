@@ -364,10 +364,13 @@ using (var scope = app.Services.CreateScope())
         var applicationManager = scope.ServiceProvider.GetRequiredService<IOpenIddictApplicationManager>();
         if (await applicationManager.FindByClientIdAsync("client-web") == null)
         {
+            var clientSecret = builder.Configuration["OpenIddict:ClientWeb:Secret"] 
+                ?? throw new InvalidOperationException("Missing OpenIddict Client Secret");
+
             var descriptor = new OpenIddictApplicationDescriptor
             {
                 ClientId = "client-web",
-                ClientSecret = "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",
+                ClientSecret = clientSecret,
                 DisplayName = "Web Client",
             };
 

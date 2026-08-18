@@ -26,10 +26,12 @@ public class CartService : CoreServiceBase, ICartService
         var userId = _httpContext.GetCurrentUserId();
 
         var cart = await _dbContext.Carts
+            .AsNoTracking()
             .Include(c => c.Items)
                 .ThenInclude(ci => ci.ProductVariant)
                     .ThenInclude(pv => pv.Product)
                         .ThenInclude(p => p.Images.Where(i => i.IsPrimary && !i.Deleted))
+            .AsSplitQuery()
             .FirstOrDefaultAsync(c => c.UserId == userId && !c.Deleted);
 
         if (cart == null)
@@ -221,9 +223,11 @@ public class CartService : CoreServiceBase, ICartService
         var userId = _httpContext.GetCurrentUserId();
 
         var cart = await _dbContext.Carts
+            .AsNoTracking()
             .Include(c => c.Items)
             .ThenInclude(ci => ci.ProductVariant)
             .ThenInclude(pv => pv.Product)
+            .AsSplitQuery()
             .FirstOrDefaultAsync(c => c.UserId == userId && !c.Deleted);
         if (cart == null || cart.Items.Count == 0)
             return Result<CartValidationResultDto>.Failure(
@@ -288,10 +292,12 @@ public class CartService : CoreServiceBase, ICartService
         _logger.LogInformation("{method} called with input: {@input}", nameof(ChechoutPerview), input);
         var userId = _httpContext.GetCurrentUserId();
         var cart = await _dbContext.Carts
+            .AsNoTracking()
             .Include(c => c.Items)
             .ThenInclude(ci => ci.ProductVariant)
             .ThenInclude(pv => pv.Product)
             .ThenInclude(p => p.Images.Where(i => i.IsPrimary && !i.Deleted))
+            .AsSplitQuery()
             .FirstOrDefaultAsync(c => c.UserId == userId && !c.Deleted);
         if (cart == null || cart.Items.Count == 0)
             return Result<CheckoutPreviewDto>.Failure(
@@ -308,6 +314,7 @@ public class CartService : CoreServiceBase, ICartService
         {
             var now = DateTime.UtcNow;
             var coupon = await _dbContext.Coupons
+                .AsNoTracking()
                 .FirstOrDefaultAsync(c =>
                     c.Code == input.CouponCode &&
                     c.IsActive &&

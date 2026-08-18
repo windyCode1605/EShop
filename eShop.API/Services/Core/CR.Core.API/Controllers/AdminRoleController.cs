@@ -31,7 +31,6 @@ public class AdminRoleController : ControllerBase
     /// Dùng để hiển thị dropdown khi gán Role cho User.
     /// </summary>
     [HttpGet]
-    [Authorize(Policy = "Permission:Identity.Roles.View")]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetRoles()

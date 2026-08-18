@@ -271,6 +271,7 @@ namespace CR.Core.ApplicationServices.AuthenticationModule.Implements
         public async Task<Result<UserDto>> GetUserByIdAsync(int userId)
         {
             var user = await _dbContext.Users
+                .AsNoTracking()
                 .Include(u => u.Profile)
                 .FirstOrDefaultAsync(u => u.Id == userId && !u.Deleted);
 
@@ -310,6 +311,7 @@ namespace CR.Core.ApplicationServices.AuthenticationModule.Implements
                 );
 
             var userRoles = await _dbContext.UserRoles
+                .AsNoTracking()
                 .Include(ur => ur.Role)
                 .Where(ur => ur.UserId == userId && !ur.Deleted)
                 .Select(ur => new { ur.RoleId, ur.Role.Name })

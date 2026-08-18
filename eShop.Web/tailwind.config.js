@@ -5,7 +5,15 @@ module.exports = {
     "./src/**/*.{html,ts}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        canvas: 'var(--color-canvas)',
+        surface: 'var(--color-surface)',
+        primary: 'var(--color-text-primary)',
+        secondary: 'var(--color-text-secondary)',
+        accent: 'var(--color-accent)'
+      }
+    },
   },
   plugins: [],
 }

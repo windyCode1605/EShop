@@ -45,6 +45,7 @@ namespace CR.Core.ApplicationServices.RoleModule.Implement
             _logger.LogInformation("{Method} called", nameof(GetAllPermissionsGroupedAsync));
 
             var permissions = await _dbContext.Permissions
+                .AsNoTracking()
                 .OrderBy(p => p.PermissionGroup)
                 .ThenBy(p => p.PermissionKey)
                 .Select(p => new PermissionItemDto

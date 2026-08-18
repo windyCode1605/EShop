@@ -111,11 +111,13 @@ public class ProductService : ServiceBase<CoreDbContext>, IProductService
     {
         _logger.LogInformation("Method Name: {method}", nameof(GetByIdAsync));
         var product = await _dbContext.Products
+            .AsNoTracking()
             .IncludeFullProductDetails()
             .Include(p => p.ProductAttributes.Where(pa => !pa.Deleted))
                 .ThenInclude(pa => pa.Attribute)
             .Include(p => p.ProductAttributes.Where(pa => !pa.Deleted))
                 .ThenInclude(pa => pa.AttributeValue)
+            .AsSplitQuery()
             .FirstOrDefaultAsync(p => p.Id == id && !p.Deleted);
 
         if (product == null)

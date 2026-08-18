@@ -31,6 +31,7 @@ namespace CR.Core.ApplicationServices.RoleModule.Implement
             var distinctKeys = dto.PermissionKeys.Select(x => x.PermissionKey).Distinct().ToList();
 
             var existingKeys = await _dbContext.Permissions
+            .AsNoTracking()
             .Where(p => distinctKeys.Contains(p.PermissionKey))
             .Select(p => new PermissionKeyDto
             {
@@ -127,6 +128,7 @@ namespace CR.Core.ApplicationServices.RoleModule.Implement
             _logger.LogInformation("{Method} called", nameof(GetRolesAsync));
 
             var roles = await _dbContext.Roles
+                .AsNoTracking()
                 .Where(r => !r.Deleted)
                 .Select(r => new RoleDto
                 {
@@ -161,6 +163,7 @@ namespace CR.Core.ApplicationServices.RoleModule.Implement
                 return Result<bool>.Failure(ErrorCode.RoleNotFound, this.GetCurrentMethodInfo(), $"Role {roleId} không tồn tại");
 
             var validKeys = await _dbContext.Permissions
+                .AsNoTracking()
                 .Where(p => permissionKeys.Contains(p.PermissionKey))
                 .Select(p => p.PermissionKey)
                 .ToListAsync();

@@ -79,6 +79,7 @@ namespace CR.Core.ApplicationServices.CustomerModule.Implements
             _logger.LogInformation("Method : {method} Customer id = {ID}", nameof(GetCustomerDetailAsync), id);
 
             var customer = await _dbContext.Users
+                .AsNoTracking()
                 .Where(u => u.UserType == UserTypeEnum.CUSTOMER && u.Id == id)
                 .Select(c => new CustomerDetail360Dto
                 {

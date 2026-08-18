@@ -21,6 +21,7 @@ public class CategoryService : CoreServiceBase, ICategoryService
     {
         _logger.LogInformation("{method} called", nameof(GetCategories));
         var categories = await _dbContext.Categories
+            .AsNoTracking()
             .Where(c => !c.Deleted)
             .Select(c => new CategoryResponseDto
             {
